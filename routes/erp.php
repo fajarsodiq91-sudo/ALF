@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Finance\AccountController;
 use App\Http\Controllers\Finance\CategoryController;
+use App\Http\Controllers\Finance\DashboardController;
 use App\Http\Controllers\Finance\IncomeTransactionController;
 use App\Http\Controllers\Finance\ExpenseTransactionController;
 use App\Http\Controllers\Finance\ReportController;
@@ -21,10 +22,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     Route::redirect('/finance', '/finance/dashboard');
 
     Route::middleware('permission:finance.view')->prefix('finance')->name('finance.')->group(function () {
-        Route::view('/dashboard', 'erp.coming-soon', [
-            'title' => 'Finance Dashboard',
-            'description' => 'Balance, income, expense, and cash-flow widgets are built in the Finance Dashboard phase, once real transaction data exists.',
-        ])->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::resource('accounts', AccountController::class)->except(['show'])->names([
             'index' => 'accounts',

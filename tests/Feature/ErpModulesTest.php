@@ -22,18 +22,31 @@ class ErpModulesTest extends TestCase
     }
 
     /**
-     * Finance pages not yet built (Accounts/Categories/Income/Expenses/Transfers/Transactions/Reports
-     * became real CRUD in Phase 6-11 and are tested separately in their own test classes).
+     * Finance pages not yet built (all main finance pages became real CRUD in Phase 6-12).
+     * Only the main ERP dashboard stub remains.
      */
     public static function financeStubRoutes(): array
     {
-        return [
-            ['finance.dashboard'],
-        ];
+        return [];
     }
 
     /** All finance.* routes, regardless of whether they're stubs or real, for permission-gate coverage. */
     public static function allFinanceRoutes(): array
+    {
+        return [
+            ['finance.dashboard'],
+            ['finance.accounts'],
+            ['finance.categories'],
+            ['finance.income'],
+            ['finance.expenses'],
+            ['finance.transfers'],
+            ['finance.transactions'],
+            ['finance.reports.index'],
+        ];
+    }
+
+    /** Real finance modules for comprehensive coverage. */
+    public static function realFinanceRoutes(): array
     {
         return [
             ['finance.dashboard'],
