@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Finance\AccountController;
+use App\Http\Controllers\Finance\CategoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/erp', '/erp/dashboard');
@@ -19,15 +21,23 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'description' => 'Balance, income, expense, and cash-flow widgets are built in the Finance Dashboard phase, once real transaction data exists.',
         ])->name('dashboard');
 
-        Route::view('/accounts', 'erp.coming-soon', [
-            'title' => 'Accounts',
-            'description' => 'Manage company funding sources (cash, bank, e-wallet). Built in the Accounts & Categories phase.',
-        ])->name('accounts');
+        Route::resource('accounts', AccountController::class)->except(['show'])->names([
+            'index' => 'accounts',
+            'create' => 'accounts.create',
+            'store' => 'accounts.store',
+            'edit' => 'accounts.edit',
+            'update' => 'accounts.update',
+            'destroy' => 'accounts.destroy',
+        ]);
 
-        Route::view('/categories', 'erp.coming-soon', [
-            'title' => 'Categories',
-            'description' => 'Configurable income and expense categories. Built in the Accounts & Categories phase.',
-        ])->name('categories');
+        Route::resource('categories', CategoryController::class)->except(['show'])->names([
+            'index' => 'categories',
+            'create' => 'categories.create',
+            'store' => 'categories.store',
+            'edit' => 'categories.edit',
+            'update' => 'categories.update',
+            'destroy' => 'categories.destroy',
+        ]);
 
         Route::view('/income', 'erp.coming-soon', [
             'title' => 'Income',
