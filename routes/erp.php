@@ -3,6 +3,7 @@
 use App\Http\Controllers\Finance\AccountController;
 use App\Http\Controllers\Finance\CategoryController;
 use App\Http\Controllers\Finance\IncomeTransactionController;
+use App\Http\Controllers\Finance\ExpenseTransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/erp', '/erp/dashboard');
@@ -49,10 +50,14 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'destroy' => 'income.destroy',
         ]);
 
-        Route::view('/expenses', 'erp.coming-soon', [
-            'title' => 'Expenses',
-            'description' => 'Record company expenses with auto-numbered transactions. Built in the Expense phase.',
-        ])->name('expenses');
+        Route::resource('expenses', ExpenseTransactionController::class)->except(['show'])->names([
+            'index' => 'expenses',
+            'create' => 'expenses.create',
+            'store' => 'expenses.store',
+            'edit' => 'expenses.edit',
+            'update' => 'expenses.update',
+            'destroy' => 'expenses.destroy',
+        ]);
 
         Route::view('/transfers', 'erp.coming-soon', [
             'title' => 'Transfers',
