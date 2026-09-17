@@ -4,6 +4,7 @@ use App\Http\Controllers\Finance\AccountController;
 use App\Http\Controllers\Finance\CategoryController;
 use App\Http\Controllers\Finance\IncomeTransactionController;
 use App\Http\Controllers\Finance\ExpenseTransactionController;
+use App\Http\Controllers\Finance\ReportController;
 use App\Http\Controllers\Finance\TransactionLedgerController;
 use App\Http\Controllers\Finance\TransferTransactionController;
 use Illuminate\Support\Facades\Route;
@@ -72,10 +73,13 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
 
         Route::get('/transactions', [TransactionLedgerController::class, 'index'])->name('transactions');
 
-        Route::view('/reports', 'erp.coming-soon', [
-            'title' => 'Reports',
-            'description' => 'Income, expense, cash-flow, account balance, and monthly summary reports. Built in the Financial Reports phase.',
-        ])->name('reports');
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/', [ReportController::class, 'index'])->name('index');
+            Route::get('/income-by-category', [ReportController::class, 'incomeByCategory'])->name('income-by-category');
+            Route::get('/expense-by-category', [ReportController::class, 'expenseByCategory'])->name('expense-by-category');
+            Route::get('/monthly-flow', [ReportController::class, 'monthlyFlow'])->name('monthly-flow');
+            Route::get('/account-balances', [ReportController::class, 'accountBalances'])->name('account-balances');
+        });
     });
 
     // Planned modules — placeholder pages only, no functionality yet.

@@ -42,7 +42,7 @@
                             <x-erp.nav-link :href="route('finance.expenses')" :active="request()->routeIs('finance.expenses')" nested>Expenses</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.transfers')" :active="request()->routeIs('finance.transfers')" nested>Transfers</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.transactions')" :active="request()->routeIs('finance.transactions')" nested>Transactions</x-erp.nav-link>
-                            <x-erp.nav-link :href="route('finance.reports')" :active="request()->routeIs('finance.reports')" nested>Reports</x-erp.nav-link>
+                            <x-erp.nav-link :href="route('finance.reports.index')" :active="request()->routeIs('finance.reports.*')" nested>Reports</x-erp.nav-link>
                         </x-erp.nav-group>
                     @endcanany
 

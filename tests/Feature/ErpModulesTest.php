@@ -22,14 +22,13 @@ class ErpModulesTest extends TestCase
     }
 
     /**
-     * Finance pages not yet built (Accounts/Categories/Income/Expenses/Transfers/Transactions
-     * became real CRUD in Phase 6-10 and are tested separately in their own test classes).
+     * Finance pages not yet built (Accounts/Categories/Income/Expenses/Transfers/Transactions/Reports
+     * became real CRUD in Phase 6-11 and are tested separately in their own test classes).
      */
     public static function financeStubRoutes(): array
     {
         return [
             ['finance.dashboard'],
-            ['finance.reports'],
         ];
     }
 
@@ -44,7 +43,7 @@ class ErpModulesTest extends TestCase
             ['finance.expenses'],
             ['finance.transfers'],
             ['finance.transactions'],
-            ['finance.reports'],
+            ['finance.reports.index'],
         ];
     }
 
