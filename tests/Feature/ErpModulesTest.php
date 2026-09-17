@@ -22,14 +22,13 @@ class ErpModulesTest extends TestCase
     }
 
     /**
-     * Finance pages not yet built (Accounts/Categories/Income/Expenses became
-     * real CRUD in Phase 6-8 and are tested separately in their own test classes).
+     * Finance pages not yet built (Accounts/Categories/Income/Expenses/Transfers
+     * became real CRUD in Phase 6-9 and are tested separately in their own test classes).
      */
     public static function financeStubRoutes(): array
     {
         return [
             ['finance.dashboard'],
-            ['finance.transfers'],
             ['finance.transactions'],
             ['finance.reports'],
         ];

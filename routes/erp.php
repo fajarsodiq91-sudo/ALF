@@ -4,6 +4,7 @@ use App\Http\Controllers\Finance\AccountController;
 use App\Http\Controllers\Finance\CategoryController;
 use App\Http\Controllers\Finance\IncomeTransactionController;
 use App\Http\Controllers\Finance\ExpenseTransactionController;
+use App\Http\Controllers\Finance\TransferTransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/erp', '/erp/dashboard');
@@ -59,10 +60,14 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'destroy' => 'expenses.destroy',
         ]);
 
-        Route::view('/transfers', 'erp.coming-soon', [
-            'title' => 'Transfers',
-            'description' => 'Move funds between company accounts without affecting income or expense totals. Built in the Transfer phase.',
-        ])->name('transfers');
+        Route::resource('transfers', TransferTransactionController::class)->except(['show'])->names([
+            'index' => 'transfers',
+            'create' => 'transfers.create',
+            'store' => 'transfers.store',
+            'edit' => 'transfers.edit',
+            'update' => 'transfers.update',
+            'destroy' => 'transfers.destroy',
+        ]);
 
         Route::view('/transactions', 'erp.coming-soon', [
             'title' => 'Transactions',
