@@ -44,7 +44,7 @@ class ErpAccessTest extends TestCase
         $response = $this->actingAs($user)->get('/erp/dashboard');
 
         $response->assertOk();
-        $response->assertSee('ERP Dashboard');
+        $response->assertSee('Welcome, '.$user->name);
     }
 
     public function test_finance_role_can_access_erp_dashboard(): void

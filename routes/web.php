@@ -11,12 +11,6 @@ Route::get('/portfolio', [PublicSiteController::class, 'portfolio'])->name('port
 Route::get('/contact', [PublicSiteController::class, 'contact'])->name('contact');
 Route::get('/thank-you', [PublicSiteController::class, 'thankYou'])->name('thank-you');
 
-Route::redirect('/erp', '/erp/dashboard');
-
-Route::get('/erp/dashboard', function () {
-    return view('erp.dashboard');
-})->middleware(['auth', 'verified', 'permission:access-erp'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -24,3 +18,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+require __DIR__.'/erp.php';
