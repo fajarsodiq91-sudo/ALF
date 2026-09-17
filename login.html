@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Login | PT Alfajar Logic Futura</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="assets/icons/alf.svg" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="auth-page">
+      <div class="auth-card reveal is-active">
+        <a class="brand auth-card__brand" href="index.html">
+          <img class="brand__logo" src="assets/images/company-logo.svg" alt="PT Alfajar Logic Futura logo" />
+        </a>
+
+        <p class="eyebrow">Client &amp; Team Portal</p>
+        <h1>Sign in</h1>
+        <p class="auth-card__hint">
+          This portal is being prepared. Sign-in for the client and internal
+          workspace will be available here soon.
+        </p>
+
+        <form class="auth-form" id="loginForm" novalidate>
+          <label>
+            Username
+            <input type="text" name="username" placeholder="Your username" autocomplete="username" disabled />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" placeholder="••••••••" autocomplete="current-password" disabled />
+          </label>
+          <button class="btn btn--primary" type="submit" disabled>Sign in</button>
+          <p class="auth-form__status" role="status" aria-live="polite">Coming soon — the workspace is not open yet.</p>
+        </form>
+
+        <a class="link-btn" href="index.html">&larr; Back to homepage</a>
+      </div>
+    </main>
+  </body>
+</html>
