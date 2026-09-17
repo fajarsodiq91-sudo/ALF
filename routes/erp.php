@@ -4,6 +4,7 @@ use App\Http\Controllers\Finance\AccountController;
 use App\Http\Controllers\Finance\CategoryController;
 use App\Http\Controllers\Finance\IncomeTransactionController;
 use App\Http\Controllers\Finance\ExpenseTransactionController;
+use App\Http\Controllers\Finance\TransactionLedgerController;
 use App\Http\Controllers\Finance\TransferTransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -69,10 +70,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'destroy' => 'transfers.destroy',
         ]);
 
-        Route::view('/transactions', 'erp.coming-soon', [
-            'title' => 'Transactions',
-            'description' => 'A combined, filterable ledger of income, expenses, and transfers. Built in the Transaction Ledger phase.',
-        ])->name('transactions');
+        Route::get('/transactions', [TransactionLedgerController::class, 'index'])->name('transactions');
 
         Route::view('/reports', 'erp.coming-soon', [
             'title' => 'Reports',

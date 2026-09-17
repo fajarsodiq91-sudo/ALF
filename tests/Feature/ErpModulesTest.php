@@ -22,14 +22,13 @@ class ErpModulesTest extends TestCase
     }
 
     /**
-     * Finance pages not yet built (Accounts/Categories/Income/Expenses/Transfers
-     * became real CRUD in Phase 6-9 and are tested separately in their own test classes).
+     * Finance pages not yet built (Accounts/Categories/Income/Expenses/Transfers/Transactions
+     * became real CRUD in Phase 6-10 and are tested separately in their own test classes).
      */
     public static function financeStubRoutes(): array
     {
         return [
             ['finance.dashboard'],
-            ['finance.transactions'],
             ['finance.reports'],
         ];
     }
@@ -46,6 +45,21 @@ class ErpModulesTest extends TestCase
             ['finance.transfers'],
             ['finance.transactions'],
             ['finance.reports'],
+        ];
+    }
+
+    /**
+     * Routes that require finance.view permission specifically.
+     * These are read-only: Accounts (view only in list), Income, Expenses, Transfers, Transactions.
+     */
+    public static function financeViewOnlyRoutes(): array
+    {
+        return [
+            ['finance.accounts'],
+            ['finance.income'],
+            ['finance.expenses'],
+            ['finance.transfers'],
+            ['finance.transactions'],
         ];
     }
 
