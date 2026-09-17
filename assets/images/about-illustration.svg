@@ -1,0 +1,19 @@
+<svg width="560" height="420" viewBox="0 0 560 420" xmlns="http://www.w3.org/2000/svg">
+  <rect width="560" height="420" rx="24" fill="#14161a"/>
+  <circle cx="90" cy="80" r="4" fill="#B00000"/>
+  <circle cx="120" cy="60" r="3" fill="#ffffff" opacity="0.4"/>
+  <circle cx="470" cy="340" r="4" fill="#B00000"/>
+  <circle cx="440" cy="360" r="3" fill="#ffffff" opacity="0.4"/>
+  <rect x="120" y="90" width="320" height="240" rx="18" fill="#1f2229" stroke="#2c2f38" stroke-width="1"/>
+  <rect x="150" y="120" width="90" height="90" rx="10" fill="#B00000"/>
+  <rect x="260" y="120" width="150" height="12" rx="6" fill="#3a3d47"/>
+  <rect x="260" y="146" width="120" height="10" rx="5" fill="#2c2f38"/>
+  <rect x="260" y="166" width="130" height="10" rx="5" fill="#2c2f38"/>
+  <rect x="150" y="232" width="260" height="10" rx="5" fill="#2c2f38"/>
+  <rect x="150" y="252" width="200" height="10" rx="5" fill="#2c2f38"/>
+  <rect x="150" y="288" width="260" height="24" rx="12" fill="#B00000"/>
+  <g stroke="#B00000" stroke-width="2" opacity="0.5">
+    <line x1="60" y1="200" x2="120" y2="200"/>
+    <line x1="440" y1="220" x2="500" y2="220"/>
+  </g>
+</svg>

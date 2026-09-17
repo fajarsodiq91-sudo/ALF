@@ -197,7 +197,6 @@ h1, h2, h3 {
 
 .brand__logo--footer {
   height: 32px;
-  filter: brightness(0) invert(1);
 }
 
 .site-nav {
