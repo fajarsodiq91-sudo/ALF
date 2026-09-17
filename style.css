@@ -1,0 +1,237 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, sans-serif;
+}
+
+.navbar{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:20px 60px;
+
+    background:#ffffff;
+
+    border-bottom:1px solid #eeeeee;
+}
+
+.menu{
+
+    display:flex;
+
+    list-style:none;
+
+    gap:30px;
+}
+
+.menu a{
+
+    text-decoration:none;
+
+    color:#222222;
+
+    font-weight:500;
+}
+
+.hero{
+
+    min-height:90vh;
+
+    background:#1a1a1a;
+
+    color:white;
+
+    display:flex;
+
+    align-items:center;
+}
+
+.hero-content{
+
+    width:1200px;
+
+    margin:auto;
+}
+
+.hero h1{
+
+    font-size:64px;
+
+    margin-bottom:20px;
+}
+
+.hero p{
+
+    font-size:22px;
+
+    max-width:700px;
+
+    margin-bottom:30px;
+}
+
+.btn-primary{
+
+    background:#B00000;
+
+    color:white;
+
+    padding:15px 25px;
+
+    text-decoration:none;
+
+    border-radius:8px;
+}
+
+.btn-secondary{
+
+    border:1px solid white;
+
+    color:white;
+
+    padding:15px 25px;
+
+    text-decoration:none;
+
+    border-radius:8px;
+
+    margin-left:10px;
+}
+
+.container{
+    width:90%;
+    max-width:1200px;
+    margin:auto;
+}
+
+.hero{
+
+    min-height:90vh;
+
+    display:flex;
+
+    align-items:center;
+
+    background:#f8f9fa;
+}
+
+.hero-grid{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:50px;
+
+    align-items:center;
+}
+
+.hero-tag{
+
+    background:#ffe6e6;
+
+    color:#B00000;
+
+    padding:10px 20px;
+
+    border-radius:30px;
+
+    display:inline-block;
+
+    margin-bottom:20px;
+}
+
+.hero h1{
+
+    font-size:64px;
+
+    color:#222;
+
+    line-height:1.2;
+
+    margin-bottom:20px;
+}
+
+.hero p{
+
+    font-size:20px;
+
+    color:#666;
+
+    margin-bottom:30px;
+}
+
+.hero-button{
+
+    display:flex;
+
+    gap:15px;
+}
+
+.hero-card{
+
+    background:white;
+
+    padding:30px;
+
+    margin-bottom:20px;
+
+    border-radius:15px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+
+    transition:0.3s;
+}
+
+.hero-card:hover{
+
+    transform:translateY(-8px);
+}
+
+.services{
+
+    padding:100px 0;
+}
+
+.section-title{
+
+    text-align:center;
+
+    font-size:40px;
+
+    margin-bottom:50px;
+}
+
+.service-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:30px;
+}
+
+.service-card{
+
+    background:white;
+
+    padding:30px;
+
+    border-radius:15px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,0.05);
+
+    transition:0.3s;
+}
+
+.service-card:hover{
+
+    transform:translateY(-10px);
+}
