@@ -7,39 +7,24 @@
             <h2 class="text-lg font-semibold text-gray-900 mb-4">This Month ({{ now()->format('F Y') }})</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Income</p>
-                            <p class="mt-2 text-2xl font-bold text-green-600">
-                                Rp {{ number_format($monthlyIncome, 2, ',', '.') }}
-                            </p>
-                        </div>
-                        <div class="text-4xl text-green-100">📈</div>
-                    </div>
+                    <p class="text-sm font-medium text-gray-600">Income</p>
+                    <p class="mt-2 text-2xl font-bold text-gray-900">
+                        Rp {{ number_format($monthlyIncome, 2, ',', '.') }}
+                    </p>
                 </div>
 
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Expense</p>
-                            <p class="mt-2 text-2xl font-bold text-red-600">
-                                Rp {{ number_format($monthlyExpense, 2, ',', '.') }}
-                            </p>
-                        </div>
-                        <div class="text-4xl text-red-100">📉</div>
-                    </div>
+                    <p class="text-sm font-medium text-gray-600">Expense</p>
+                    <p class="mt-2 text-2xl font-bold text-gray-900">
+                        Rp {{ number_format($monthlyExpense, 2, ',', '.') }}
+                    </p>
                 </div>
 
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600">Net</p>
-                            <p class="mt-2 text-2xl font-bold {{ $monthlyNet >= 0 ? 'text-blue-600' : 'text-red-600' }}">
-                                Rp {{ number_format($monthlyNet, 2, ',', '.') }}
-                            </p>
-                        </div>
-                        <div class="text-4xl {{ $monthlyNet >= 0 ? 'text-blue-100' : 'text-red-100' }}">💼</div>
-                    </div>
+                    <p class="text-sm font-medium text-gray-600">Net</p>
+                    <p class="mt-2 text-2xl font-bold text-gray-900">
+                        Rp {{ number_format($monthlyNet, 2, ',', '.') }}
+                    </p>
                 </div>
             </div>
         </div>
@@ -86,9 +71,9 @@
                 </div>
 
                 <!-- Total Balance -->
-                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-sm border border-blue-200 p-6">
-                    <p class="text-sm font-medium text-blue-700 uppercase tracking-wide">Total Balance</p>
-                    <p class="mt-2 text-3xl font-bold text-blue-900">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total Balance</p>
+                    <p class="mt-2 text-3xl font-bold text-gray-900">
                         Rp {{ number_format($totalBalance, 2, ',', '.') }}
                     </p>
                 </div>
@@ -110,26 +95,20 @@
                     @else
                         <div class="divide-y divide-gray-200">
                             @foreach ($recentTransactions as $txn)
-                                <div class="px-6 py-4 hover:bg-gray-50 transition">
+                                <div class="px-6 py-4 border-b border-gray-100 last:border-b-0">
                                     <div class="flex items-center justify-between">
                                         <div class="flex-1">
-                                            <div class="flex items-center gap-3">
-                                                <div class="flex-shrink-0">
-                                                    @if ($txn['type'] === 'income')
-                                                        <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600 text-sm font-bold">+</span>
-                                                    @elseif ($txn['type'] === 'expense')
-                                                        <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 text-sm font-bold">−</span>
-                                                    @else
-                                                        <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 text-sm font-bold">↔</span>
-                                                    @endif
-                                                </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs font-semibold px-2 py-1 rounded bg-gray-100 text-gray-700">
+                                                    {{ ucfirst($txn['type']) }}
+                                                </span>
                                                 <div>
                                                     <p class="text-sm font-medium text-gray-900">{{ $txn['description'] }}</p>
-                                                    <p class="text-xs text-gray-500">{{ $txn['number'] }} • {{ $txn['date']->format('M d') }}</p>
+                                                    <p class="text-xs text-gray-500">{{ $txn['number'] }} • {{ $txn['date']->format('M d, Y') }}</p>
                                                 </div>
                                             </div>
                                         </div>
-                                        <p class="text-sm font-semibold {{ $txn['type'] === 'income' ? 'text-green-600' : ($txn['type'] === 'expense' ? 'text-red-600' : 'text-gray-600') }}">
+                                        <p class="text-sm font-semibold text-gray-900">
                                             @if ($txn['type'] === 'income')
                                                 +Rp {{ number_format($txn['amount'], 0, ',', '.') }}
                                             @elseif ($txn['type'] === 'expense')
