@@ -35,7 +35,7 @@
         </div>
       </div>
       <div class="about__sidebar reveal reveal--right">
-        <img src="{{ asset('assets/images/about-illustration.svg') }}" alt="Technology innovation illustration" loading="lazy" />
+        <img src="{{ asset('assets/images/about-illustration.png') }}" alt="Technology innovation illustration" loading="lazy" />
         <div class="timeline">
           <h3>Company Timeline</h3>
           <ul>

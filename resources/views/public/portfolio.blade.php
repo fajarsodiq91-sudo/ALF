@@ -22,28 +22,28 @@
       </div>
       <div class="portfolio-grid">
         <article class="portfolio-card reveal" data-category="analytics">
-          <img src="{{ asset('assets/images/portfolio-1.svg') }}" alt="Business intelligence dashboard project" loading="lazy" />
+          <img src="{{ asset('assets/images/portfolio-1.png') }}" alt="Business intelligence dashboard project" loading="lazy" />
           <div class="portfolio-card__content">
             <h3>Enterprise BI Platform</h3>
             <p>Modern dashboards and performance tracking for manufacturing operations.</p>
           </div>
         </article>
         <article class="portfolio-card reveal" data-category="development">
-          <img src="{{ asset('assets/images/portfolio-2.svg') }}" alt="Custom web application project" loading="lazy" />
+          <img src="{{ asset('assets/images/portfolio-2.png') }}" alt="Custom web application project" loading="lazy" />
           <div class="portfolio-card__content">
             <h3>Client Portal Web App</h3>
             <p>Secure portal for service workflows, reporting, and user collaboration.</p>
           </div>
         </article>
         <article class="portfolio-card reveal" data-category="training">
-          <img src="{{ asset('assets/images/portfolio-3.svg') }}" alt="Corporate training program project" loading="lazy" />
+          <img src="{{ asset('assets/images/portfolio-3.png') }}" alt="Corporate training program project" loading="lazy" />
           <div class="portfolio-card__content">
             <h3>Power BI Upskilling Program</h3>
             <p>Training initiative designed to accelerate analyst adoption across teams.</p>
           </div>
         </article>
         <article class="portfolio-card reveal" data-category="development">
-          <img src="{{ asset('assets/images/portfolio-4.svg') }}" alt="ERP system interface project" loading="lazy" />
+          <img src="{{ asset('assets/images/portfolio-4.png') }}" alt="ERP system interface project" loading="lazy" />
           <div class="portfolio-card__content">
             <h3>ERP Architecture Design</h3>
             <p>Scalable architecture plan for future-ready enterprise operations.</p>

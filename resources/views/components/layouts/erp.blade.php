@@ -9,7 +9,7 @@
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
-        <link rel="icon" type="image/svg+xml" href="{{ asset('assets/icons/alf.svg') }}" />
+        <link rel="icon" type="image/png" href="{{ asset('assets/icons/alf.png') }}" />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -21,7 +21,7 @@
                 :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             >
                 <div class="h-16 flex items-center gap-2 px-5 border-b border-white/10">
-                    <img src="{{ asset('assets/icons/alf.svg') }}" alt="" class="h-8 w-8 rounded" />
+                    <img src="{{ asset('assets/icons/alf.png') }}" alt="" class="h-8 w-8 rounded" />
                     <span class="font-semibold text-white leading-tight text-sm">
                         Alfajar Logic<br class="hidden" />
                         <span class="text-brand-50/70 font-normal text-xs">ERP</span>

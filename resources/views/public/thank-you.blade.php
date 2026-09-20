@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Thank You | PT Alfajar Logic Futura</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('assets/icons/alf.svg') }}" />
+    <link rel="icon" type="image/png" href="{{ asset('assets/icons/alf.png') }}" />
     <style>
       body {
         margin: 0;

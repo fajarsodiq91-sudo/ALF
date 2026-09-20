@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="icon" type="image/svg+xml" href="{{ asset('assets/icons/alf.svg') }}" />
+    <link rel="icon" type="image/png" href="{{ asset('assets/icons/alf.png') }}" />
     <link rel="stylesheet" href="{{ asset('css/site.css') }}" />
   </head>
   <body>
@@ -25,7 +25,7 @@
     <header class="site-header" id="top">
       <div class="container nav-wrap">
         <a class="brand" href="{{ route('home') }}" aria-label="PT Alfajar Logic Futura home">
-          <img class="brand__logo" src="{{ asset('assets/images/company-logo.svg') }}" alt="PT Alfajar Logic Futura logo" />
+          <img class="brand__logo" src="{{ asset('assets/images/company-logo.png') }}" alt="PT Alfajar Logic Futura logo" />
         </a>
 
         <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
@@ -62,7 +62,7 @@
       <div class="container footer-grid">
         <div>
           <a class="brand brand--footer" href="{{ route('home') }}">
-            <img class="brand__logo brand__logo--footer" src="{{ asset('assets/images/company-logo-footer.svg') }}" alt="PT Alfajar Logic Futura logo" />
+            <img class="brand__logo brand__logo--footer" src="{{ asset('assets/images/company-logo-footer.png') }}" alt="PT Alfajar Logic Futura logo" />
           </a>
           <p>We build digital foundations for modern organizations through technology, training, and strategy.</p>
         </div>
