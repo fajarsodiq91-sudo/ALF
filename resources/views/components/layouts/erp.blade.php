@@ -39,9 +39,11 @@
                             <x-erp.nav-link :href="route('finance.accounts')" :active="request()->routeIs('finance.accounts')" nested>Accounts</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.categories')" :active="request()->routeIs('finance.categories')" nested>Categories</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.taxes')" :active="request()->routeIs('finance.taxes*')" nested>Taxes</x-erp.nav-link>
+                            <x-erp.nav-link :href="route('finance.tax-payments')" :active="request()->routeIs('finance.tax-payments*')" nested>Tax Payments</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.income')" :active="request()->routeIs('finance.income')" nested>Income</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.expenses')" :active="request()->routeIs('finance.expenses')" nested>Expenses</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.transfers')" :active="request()->routeIs('finance.transfers')" nested>Transfers</x-erp.nav-link>
+                            <x-erp.nav-link :href="route('finance.loans')" :active="request()->routeIs('finance.loans*')" nested>Loans</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.transactions')" :active="request()->routeIs('finance.transactions')" nested>Transactions</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.reports.index')" :active="request()->routeIs('finance.reports.*')" nested>Reports</x-erp.nav-link>
                         </x-erp.nav-group>

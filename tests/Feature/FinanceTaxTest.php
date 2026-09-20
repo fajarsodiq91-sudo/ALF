@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\ExpenseTransaction;
 use App\Models\IncomeTransaction;
 use App\Models\Tax;
+use App\Models\TaxPayment;
 use App\Models\User;
 use App\Services\TaxCalculator;
 use Database\Seeders\RolePermissionSeeder;
@@ -130,5 +131,64 @@ class FinanceTaxTest extends TestCase
         $this->actingAs($viewer)->post(route('finance.taxes.store'), [
             'name' => 'X', 'type' => 'vat', 'rate' => 5,
         ])->assertForbidden();
+    }
+
+    public function test_tax_payment_reduces_balance_and_is_recorded_as_expense(): void
+    {
+        $account = Account::factory()->create(['opening_balance' => 5_000_000]);
+
+        $this->actingAs($this->user())->post(route('finance.tax-payments.store'), [
+            'tax_type' => 'vat', 'period' => '2026-08', 'payment_date' => '2026-09-10',
+            'account_id' => $account->id, 'amount' => 800_000, 'reference' => 'NTPN123',
+        ])->assertRedirect(route('finance.tax-payments'));
+
+        $payment = TaxPayment::firstOrFail();
+        $this->assertEquals(800_000, $payment->expense->amount);
+        $this->assertSame('Tax Payments', $payment->expense->category->name);
+        $this->assertEquals(4_200_000, $account->currentBalance());
+    }
+
+    public function test_tax_payment_update_and_delete_keep_expense_in_sync(): void
+    {
+        $account = Account::factory()->create(['opening_balance' => 1_000_000]);
+        $payment = TaxPayment::factory()->create(['account_id' => $account->id, 'amount' => 100_000]);
+        $user = $this->user();
+        $this->actingAs($user)->put(route('finance.tax-payments.update', $payment), [
+            'tax_type' => 'vat', 'period' => '2026-08', 'payment_date' => '2026-09-10',
+            'account_id' => $account->id, 'amount' => 250_000,
+        ])->assertRedirect(route('finance.tax-payments'));
+
+        $this->assertSame(1, ExpenseTransaction::count());
+        $this->assertEquals(250_000, $payment->fresh()->expense->amount);
+
+        $this->actingAs($user)->delete(route('finance.tax-payments.destroy', $payment));
+        $this->assertSame(0, ExpenseTransaction::count());
+    }
+
+    public function test_tax_summary_shows_paid_and_outstanding(): void
+    {
+        $vat = Tax::factory()->vat(10)->create();
+        IncomeTransaction::factory()->create(['transaction_date' => '2026-08-05', 'tax_id' => $vat->id, 'tax_amount' => 1_000, 'subtotal' => 10_000, 'amount' => 11_000]);
+        TaxPayment::factory()->create(['tax_type' => 'vat', 'period' => '2026-08', 'amount' => 400]);
+
+        $response = $this->actingAs($this->user())->get(route('finance.reports.tax-summary'))->assertOk();
+        $data = $response->viewData('data')->firstWhere('month', '2026-08');
+        $this->assertEquals(1_000, $data['vat_payable']);
+        $this->assertEquals(400, $data['vat_paid']);
+        $this->assertEquals(600, $data['vat_outstanding']);
+    }
+
+    public function test_tax_payment_validation_and_permissions(): void
+    {
+        $account = Account::factory()->create();
+
+        $this->actingAs($this->user())->post(route('finance.tax-payments.store'), [
+            'tax_type' => 'vat', 'period' => '2026-13', 'payment_date' => '2026-09-10',
+            'account_id' => $account->id, 'amount' => 1,
+        ])->assertSessionHasErrors('period');
+
+        $viewer = $this->user('Viewer');
+        $this->actingAs($viewer)->get(route('finance.tax-payments'))->assertOk();
+        $this->actingAs($viewer)->get(route('finance.tax-payments.create'))->assertForbidden();
     }
 }

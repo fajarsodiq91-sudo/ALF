@@ -158,7 +158,7 @@ class FinanceAccountsCategoriesTest extends TestCase
         ]);
 
         $response->assertForbidden();
-        $this->assertDatabaseCount('categories', 0);
+        $this->assertDatabaseMissing('categories', ['name' => 'Consulting']);
     }
 
     public function test_category_with_transactions_cannot_be_deleted(): void

@@ -46,6 +46,16 @@
     </div>
 
     <div class="sm:col-span-2">
+        <label for="fee" class="block text-sm font-medium text-gray-700">Bank admin fee (Rp)</label>
+        <input type="number" step="0.01" min="0" name="fee" id="fee"
+               value="{{ old('fee', $transfer?->feeExpense?->amount ?? '') }}"
+               placeholder="0 if the bank charges nothing"
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+        <p class="mt-1 text-xs text-gray-500">Deducted from the source account and recorded as an expense in the "Bank Charges" category.</p>
+        @error('fee') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+
+    <div class="sm:col-span-2">
         <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
         <textarea name="description" id="description" rows="3"
                   placeholder="Why is this transfer being made? (optional)"

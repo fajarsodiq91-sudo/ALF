@@ -20,6 +20,7 @@
                         <th class="px-4 py-3 text-left font-medium text-gray-500">From Account</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">To Account</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Amount</th>
+                        <th class="px-4 py-3 text-right font-medium text-gray-500">Admin Fee</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Description</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">By</th>
                         @can('finance.manage')
@@ -35,6 +36,7 @@
                             <td class="px-4 py-3 text-gray-800">{{ $transfer->fromAccount->name }}</td>
                             <td class="px-4 py-3 text-gray-800">{{ $transfer->toAccount->name }}</td>
                             <td class="px-4 py-3 text-right font-medium text-gray-700">Rp {{ number_format($transfer->amount, 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right text-gray-500">{{ $transfer->feeExpense ? 'Rp ' . number_format($transfer->feeExpense->amount, 0, ',', '.') : '—' }}</td>
                             <td class="px-4 py-3 text-gray-500 truncate">{{ $transfer->description ?: '—' }}</td>
                             <td class="px-4 py-3 text-gray-500 text-xs">{{ $transfer->createdBy->name }}</td>
                             @can('finance.manage')
@@ -50,7 +52,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-6 text-center text-gray-400">No transfers recorded yet.</td>
+                            <td colspan="9" class="px-4 py-6 text-center text-gray-400">No transfers recorded yet.</td>
                         </tr>
                     @endforelse
                 </tbody>

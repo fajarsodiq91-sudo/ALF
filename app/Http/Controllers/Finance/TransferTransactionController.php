@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Finance;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\StoreTransferTransactionRequest;
 use App\Http\Requests\Finance\UpdateTransferTransactionRequest;
+use App\Models\Category;
+use App\Models\ExpenseTransaction;
 use App\Models\Transfer;
+use Illuminate\Support\Facades\DB;
 
 class TransferTransactionController extends Controller
 {
@@ -14,7 +17,7 @@ class TransferTransactionController extends Controller
         $this->authorize('finance.manage');
 
         $transfers = Transfer::query()
-            ->with(['fromAccount', 'toAccount', 'createdBy'])
+            ->with(['fromAccount', 'toAccount', 'feeExpense', 'createdBy'])
             ->latest('transfer_date')
             ->paginate(20);
 
@@ -30,11 +33,15 @@ class TransferTransactionController extends Controller
 
     public function store(StoreTransferTransactionRequest $request)
     {
-        $transfer = Transfer::create([
-            ...$request->validated(),
-            'created_by' => auth()->id(),
-            'transfer_number' => 'TRF-' . date('YmdHis') . '-' . rand(1000, 9999),
-        ]);
+        DB::transaction(function () use ($request) {
+            $transfer = Transfer::create([
+                ...$request->safe()->except('fee'),
+                'created_by' => auth()->id(),
+                'transfer_number' => 'TRF-' . date('YmdHis') . '-' . rand(1000, 9999),
+            ]);
+
+            $this->syncFee($transfer, (float) $request->input('fee', 0));
+        });
 
         return redirect()->route('finance.transfers')->with('status', 'Transfer recorded.');
     }
@@ -48,7 +55,11 @@ class TransferTransactionController extends Controller
 
     public function update(UpdateTransferTransactionRequest $request, Transfer $transfer)
     {
-        $transfer->update($request->validated());
+        DB::transaction(function () use ($request, $transfer) {
+            $transfer->update($request->safe()->except('fee'));
+
+            $this->syncFee($transfer, (float) $request->input('fee', 0));
+        });
 
         return redirect()->route('finance.transfers')->with('status', 'Transfer updated.');
     }
@@ -60,5 +71,47 @@ class TransferTransactionController extends Controller
         $transfer->delete();
 
         return redirect()->route('finance.transfers')->with('status', 'Transfer deleted.');
+    }
+
+    /** The bank admin fee is stored as an expense on the source account so balances and reports pick it up. */
+    private function syncFee(Transfer $transfer, float $fee): void
+    {
+        $existing = $transfer->feeExpense;
+
+        if ($fee <= 0) {
+            $existing?->delete();
+
+            return;
+        }
+
+        $category = Category::firstOrCreate(
+            ['name' => 'Bank Charges', 'type' => 'expense'],
+            ['is_active' => true, 'description' => 'Bank admin fees and account charges'],
+        );
+
+        $attributes = [
+            'transaction_date' => $transfer->transfer_date,
+            'account_id' => $transfer->from_account_id,
+            'category_id' => $category->id,
+            'payee' => 'Bank admin fee',
+            'description' => "Admin fee for {$transfer->transfer_number}",
+            'payment_method' => 'Bank Fee',
+            'subtotal' => $fee,
+            'tax_amount' => 0,
+            'amount' => $fee,
+        ];
+
+        if ($existing) {
+            $existing->update($attributes);
+
+            return;
+        }
+
+        ExpenseTransaction::create([
+            ...$attributes,
+            'transfer_id' => $transfer->id,
+            'transaction_number' => 'EXP-' . date('YmdHis') . '-' . rand(1000, 9999),
+            'created_by' => auth()->id(),
+        ]);
     }
 }

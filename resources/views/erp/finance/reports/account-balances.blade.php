@@ -61,6 +61,13 @@
                                     -Rp {{ number_format($account['transfers_out'], 2, ',', '.') }}
                                 </p>
                             </div>
+
+                            <div class="px-6 py-4 border-t border-gray-200 col-span-2">
+                                <p class="text-sm text-gray-600">Loans (net cash effect)</p>
+                                <p class="mt-1 text-lg font-semibold {{ $account['loans'] >= 0 ? 'text-blue-600' : 'text-orange-600' }}">
+                                    {{ $account['loans'] >= 0 ? '+' : '-' }}Rp {{ number_format(abs($account['loans']), 2, ',', '.') }}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 @endforeach

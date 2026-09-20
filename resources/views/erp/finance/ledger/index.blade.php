@@ -3,7 +3,7 @@
         <x-erp.flash />
 
         <div class="flex items-center justify-between mb-4">
-            <p class="text-sm text-gray-500">Combined view of all income, expense, and transfer transactions.</p>
+            <p class="text-sm text-gray-500">Combined view of all income, expense, transfer, and loan transactions.</p>
         </div>
 
         @if ($transactions->isEmpty())
@@ -38,6 +38,10 @@
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Income</span>
                                     @elseif ($transaction['type'] === 'expense')
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Expense</span>
+                                    @elseif ($transaction['type'] === 'loan')
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">Loan</span>
+                                    @elseif ($transaction['type'] === 'repayment')
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">Repayment</span>
                                     @else
                                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Transfer</span>
                                     @endif
@@ -52,6 +56,8 @@
                                 <td class="px-4 py-3 text-gray-700 max-w-xs truncate">
                                     @if ($transaction['type'] === 'transfer')
                                         {{ $transaction['description'] ?? '-' }}
+                                    @elseif (in_array($transaction['type'], ['loan', 'repayment']))
+                                        {{ $transaction['description'] }}
                                     @else
                                         {{ $transaction['category'] ?? '-' }} • {{ $transaction['description'] }}
                                     @endif
@@ -61,6 +67,8 @@
                                         <span class="text-green-600">+Rp {{ number_format($transaction['amount'], 2, ',', '.') }}</span>
                                     @elseif ($transaction['type'] === 'expense')
                                         <span class="text-red-600">-Rp {{ number_format($transaction['amount'], 2, ',', '.') }}</span>
+                                    @elseif (in_array($transaction['type'], ['loan', 'repayment']))
+                                        <span class="{{ $transaction['flow'] > 0 ? 'text-green-600' : 'text-red-600' }}">{{ $transaction['flow'] > 0 ? '+' : '-' }}Rp {{ number_format($transaction['amount'], 2, ',', '.') }}</span>
                                     @else
                                         <span class="text-gray-600">Rp {{ number_format($transaction['amount'], 2, ',', '.') }}</span>
                                     @endif

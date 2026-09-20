@@ -113,7 +113,7 @@ class DashboardController extends Controller
     private function getAccountBalances()
     {
         return Account::query()
-            ->with('incomeTransactions', 'expenseTransactions', 'transfersOut', 'transfersIn')
+            ->with('incomeTransactions', 'expenseTransactions', 'transfersOut', 'transfersIn', 'loans', 'loanRepayments.loan')
             ->get()
             ->map(function ($account) {
                 $income = $account->incomeTransactions->sum('amount');
@@ -121,7 +121,8 @@ class DashboardController extends Controller
                 $outgoing = $account->transfersOut->sum('amount');
                 $incoming = $account->transfersIn->sum('amount');
 
-                $balance = $account->opening_balance + $income - $expense + $incoming - $outgoing;
+                $loans = $account->loanEffect();
+                $balance = $account->opening_balance + $income - $expense + $incoming - $outgoing + $loans;
 
                 return [
                     'name' => $account->name,

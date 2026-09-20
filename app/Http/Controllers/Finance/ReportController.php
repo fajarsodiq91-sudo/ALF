@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\ExpenseTransaction;
 use App\Models\IncomeTransaction;
+use App\Models\TaxPayment;
 use App\Models\Transfer;
 use Illuminate\Support\Facades\DB;
 
@@ -121,18 +122,37 @@ class ReportController extends Controller
         $whtIncome = $collect(IncomeTransaction::class, 'withholding');
         $whtExpense = $collect(ExpenseTransaction::class, 'withholding');
 
+        $paid = fn (string $type) => TaxPayment::query()
+            ->where('tax_type', $type)
+            ->selectRaw('period, SUM(amount) as total')
+            ->groupBy('period')
+            ->pluck('total', 'period');
+
+        $vatPaid = $paid('vat');
+        $whtPaid = $paid('withholding');
+
         $data = collect()
             ->merge($vatOut->keys())->merge($vatIn->keys())
             ->merge($whtIncome->keys())->merge($whtExpense->keys())
+            ->merge($vatPaid->keys())->merge($whtPaid->keys())
             ->unique()->sort()->values()
-            ->map(fn ($month) => [
-                'month' => $month,
-                'vat_out' => (float) ($vatOut[$month] ?? 0),
-                'vat_in' => (float) ($vatIn[$month] ?? 0),
-                'vat_payable' => (float) ($vatOut[$month] ?? 0) - (float) ($vatIn[$month] ?? 0),
-                'wht_income' => (float) ($whtIncome[$month] ?? 0),
-                'wht_expense' => (float) ($whtExpense[$month] ?? 0),
-            ]);
+            ->map(function ($month) use ($vatOut, $vatIn, $whtIncome, $whtExpense, $vatPaid, $whtPaid) {
+                $vatPayable = (float) ($vatOut[$month] ?? 0) - (float) ($vatIn[$month] ?? 0);
+                $whtOwed = (float) ($whtExpense[$month] ?? 0);
+
+                return [
+                    'month' => $month,
+                    'vat_out' => (float) ($vatOut[$month] ?? 0),
+                    'vat_in' => (float) ($vatIn[$month] ?? 0),
+                    'vat_payable' => $vatPayable,
+                    'vat_paid' => (float) ($vatPaid[$month] ?? 0),
+                    'vat_outstanding' => $vatPayable - (float) ($vatPaid[$month] ?? 0),
+                    'wht_income' => (float) ($whtIncome[$month] ?? 0),
+                    'wht_expense' => $whtOwed,
+                    'wht_paid' => (float) ($whtPaid[$month] ?? 0),
+                    'wht_outstanding' => $whtOwed - (float) ($whtPaid[$month] ?? 0),
+                ];
+            });
 
         return view('erp.finance.reports.tax-summary', compact('data'));
     }
@@ -149,7 +169,7 @@ class ReportController extends Controller
     private function calculateAccountBalances(): \Illuminate\Support\Collection
     {
         $accounts = Account::query()
-            ->with('incomeTransactions', 'expenseTransactions', 'transfersOut', 'transfersIn')
+            ->with('incomeTransactions', 'expenseTransactions', 'transfersOut', 'transfersIn', 'loans', 'loanRepayments.loan')
             ->get();
 
         return $accounts->map(function ($account) {
@@ -158,7 +178,8 @@ class ReportController extends Controller
             $outgoing = $account->transfersOut->sum('amount');
             $incoming = $account->transfersIn->sum('amount');
 
-            $balance = $account->opening_balance + $income - $expense + $incoming - $outgoing;
+            $loans = $account->loanEffect();
+                $balance = $account->opening_balance + $income - $expense + $incoming - $outgoing + $loans;
 
             return [
                 'account' => $account->name,
@@ -167,6 +188,7 @@ class ReportController extends Controller
                 'expense' => $expense,
                 'transfers_in' => $incoming,
                 'transfers_out' => $outgoing,
+                'loans' => $loans,
                 'balance' => $balance,
             ];
         });

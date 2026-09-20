@@ -19,6 +19,7 @@ class StoreTransferTransactionRequest extends FormRequest
             'amount' => 'required|decimal:0,2|min:0.01',
             'from_account_id' => 'required|exists:accounts,id',
             'to_account_id' => ['required', 'exists:accounts,id', new DifferentAccountsRule()],
+            'fee' => 'nullable|decimal:0,2|min:0',
             'description' => 'nullable|string|max:500',
         ];
     }

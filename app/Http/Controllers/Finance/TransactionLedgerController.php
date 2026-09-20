@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Finance;
 use App\Http\Controllers\Controller;
 use App\Models\ExpenseTransaction;
 use App\Models\IncomeTransaction;
+use App\Models\Loan;
+use App\Models\LoanRepayment;
 use App\Models\Transfer;
 use Illuminate\Support\Collection;
 
@@ -56,10 +58,40 @@ class TransactionLedgerController extends Controller
                 'created_by' => $t->createdBy?->name,
             ]);
 
+        $loans = Loan::query()
+            ->with(['account', 'createdBy'])
+            ->get()
+            ->map(fn ($t) => [
+                'type' => 'loan',
+                'date' => $t->loan_date,
+                'number' => $t->loan_number,
+                'account' => $t->account?->name,
+                'description' => Loan::DIRECTIONS[$t->direction] . ' — ' . $t->party_name,
+                'amount' => $t->amount,
+                'flow' => $t->disbursementSign(),
+                'created_by' => $t->createdBy?->name,
+            ]);
+
+        $repayments = LoanRepayment::query()
+            ->with(['loan', 'account', 'createdBy'])
+            ->get()
+            ->map(fn ($t) => [
+                'type' => 'repayment',
+                'date' => $t->repayment_date,
+                'number' => $t->repayment_number,
+                'account' => $t->account?->name,
+                'description' => 'Repayment of ' . $t->loan->loan_number . ' — ' . $t->loan->party_name,
+                'amount' => $t->amount,
+                'flow' => -$t->loan->disbursementSign(),
+                'created_by' => $t->createdBy?->name,
+            ]);
+
         $transactions = collect()
             ->merge($income)
             ->merge($expenses)
             ->merge($transfers)
+            ->merge($loans)
+            ->merge($repayments)
             ->sortByDesc('date')
             ->values();
 

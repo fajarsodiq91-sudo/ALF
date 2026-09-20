@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable([
     'transfer_number', 'transfer_date', 'from_account_id', 'to_account_id',
@@ -32,6 +33,11 @@ class Transfer extends Model
     public function toAccount(): BelongsTo
     {
         return $this->belongsTo(Account::class, 'to_account_id');
+    }
+
+    public function feeExpense(): HasOne
+    {
+        return $this->hasOne(ExpenseTransaction::class, 'transfer_id');
     }
 
     public function createdBy(): BelongsTo

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'transaction_number', 'transaction_date', 'account_id', 'category_id',
     'payee', 'description', 'amount', 'payment_method',
     'attachment_path', 'notes', 'created_by',
-    'subtotal', 'tax_id', 'tax_rate', 'tax_amount',
+    'subtotal', 'tax_id', 'tax_rate', 'tax_amount', 'transfer_id', 'tax_payment_id',
 ])]
 class ExpenseTransaction extends Model
 {

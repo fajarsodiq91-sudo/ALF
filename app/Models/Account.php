@@ -41,8 +41,37 @@ class Account extends Model
         return $this->hasMany(Transfer::class, 'to_account_id');
     }
 
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class);
+    }
+
+    public function loanRepayments(): HasMany
+    {
+        return $this->hasMany(LoanRepayment::class);
+    }
+
     /**
-     * Current balance = opening balance + income - expense + transfers in - transfers out.
+     * Net cash effect of loans on this account. Owner-borrows loans take cash out
+     * and their repayments put it back; company-borrows loans work the other way.
+     */
+    public function loanEffect(): float
+    {
+        $effect = 0.0;
+
+        foreach ($this->loans as $loan) {
+            $effect += $loan->disbursementSign() * (float) $loan->amount;
+        }
+
+        foreach ($this->loanRepayments as $repayment) {
+            $effect -= $repayment->loan->disbursementSign() * (float) $repayment->amount;
+        }
+
+        return $effect;
+    }
+
+    /**
+     * Current balance = opening balance + income - expense + transfers in - transfers out + loan effect.
      * Transfers never change the company's total balance across all accounts,
      * only which account the money sits in.
      */
@@ -53,6 +82,7 @@ class Account extends Model
         $transfersIn = (float) $this->transfersIn()->sum('amount');
         $transfersOut = (float) $this->transfersOut()->sum('amount');
 
-        return (float) $this->opening_balance + $income - $expense + $transfersIn - $transfersOut;
+        return (float) $this->opening_balance + $income - $expense + $transfersIn - $transfersOut
+            + $this->load('loans', 'loanRepayments.loan')->loanEffect();
     }
 }

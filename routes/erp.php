@@ -4,9 +4,12 @@ use App\Http\Controllers\Finance\AccountController;
 use App\Http\Controllers\Finance\CategoryController;
 use App\Http\Controllers\Finance\DashboardController;
 use App\Http\Controllers\Finance\IncomeTransactionController;
+use App\Http\Controllers\Finance\LoanController;
+use App\Http\Controllers\Finance\LoanRepaymentController;
 use App\Http\Controllers\Finance\ExpenseTransactionController;
 use App\Http\Controllers\Finance\ReportController;
 use App\Http\Controllers\Finance\TaxController;
+use App\Http\Controllers\Finance\TaxPaymentController;
 use App\Http\Controllers\Finance\TransactionLedgerController;
 use App\Http\Controllers\Finance\TransferTransactionController;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +55,15 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'destroy' => 'taxes.destroy',
         ]);
 
+        Route::resource('tax-payments', TaxPaymentController::class)->except(['show'])->parameters(['tax-payments' => 'taxPayment'])->names([
+            'index' => 'tax-payments',
+            'create' => 'tax-payments.create',
+            'store' => 'tax-payments.store',
+            'edit' => 'tax-payments.edit',
+            'update' => 'tax-payments.update',
+            'destroy' => 'tax-payments.destroy',
+        ]);
+
         Route::resource('income', IncomeTransactionController::class)->except(['show'])->names([
             'index' => 'income',
             'create' => 'income.create',
@@ -78,6 +90,18 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'update' => 'transfers.update',
             'destroy' => 'transfers.destroy',
         ]);
+
+        Route::resource('loans', LoanController::class)->names([
+            'index' => 'loans',
+            'create' => 'loans.create',
+            'store' => 'loans.store',
+            'show' => 'loans.show',
+            'edit' => 'loans.edit',
+            'update' => 'loans.update',
+            'destroy' => 'loans.destroy',
+        ]);
+        Route::post('loans/{loan}/repayments', [LoanRepaymentController::class, 'store'])->name('loans.repayments.store');
+        Route::delete('loan-repayments/{repayment}', [LoanRepaymentController::class, 'destroy'])->name('loans.repayments.destroy');
 
         Route::get('/transactions', [TransactionLedgerController::class, 'index'])->name('transactions');
 

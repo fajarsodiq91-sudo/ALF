@@ -2,10 +2,11 @@
 
 namespace App\Http\Requests\Finance;
 
-use App\Rules\DifferentAccountsRule;
+use App\Models\Loan;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class UpdateTransferTransactionRequest extends FormRequest
+class StoreLoanRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,12 +16,13 @@ class UpdateTransferTransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'transfer_date' => 'required|date',
+            'direction' => ['required', Rule::in(array_keys(Loan::DIRECTIONS))],
+            'loan_date' => 'required|date',
+            'account_id' => 'required|exists:accounts,id',
+            'party_name' => 'required|string|max:255',
             'amount' => 'required|decimal:0,2|min:0.01',
-            'from_account_id' => 'required|exists:accounts,id',
-            'to_account_id' => ['required', 'exists:accounts,id', new DifferentAccountsRule()],
-            'fee' => 'nullable|decimal:0,2|min:0',
             'description' => 'nullable|string|max:500',
+            'notes' => 'nullable|string|max:500',
         ];
     }
 }
