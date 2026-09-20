@@ -17,6 +17,7 @@ class UpdateExpenseTransactionRequest extends FormRequest
         return [
             'transaction_date' => 'required|date',
             'amount' => 'required|decimal:0,2|min:0.01',
+            'tax_id' => 'nullable|exists:taxes,id',
             'account_id' => 'required|exists:accounts,id',
             'category_id' => ['required', 'exists:categories,id', new ExpenseCategoryRule()],
             'payee' => 'required|string|max:255',

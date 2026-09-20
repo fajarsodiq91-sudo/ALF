@@ -103,6 +103,40 @@ class ReportController extends Controller
         return view('erp.finance.reports.monthly-flow', compact('data'));
     }
 
+    public function taxSummary()
+    {
+        $this->authorize('finance.view');
+
+        $dateFormat = DB::getDriverName() === 'sqlite' ? "strftime('%Y-%m', transaction_date)" : "DATE_FORMAT(transaction_date, '%Y-%m')";
+
+        $collect = fn (string $model, string $type) => $model::query()
+            ->join('taxes', 'taxes.id', '=', 'tax_id')
+            ->where('taxes.type', $type)
+            ->selectRaw("{$dateFormat} as month, SUM(tax_amount) as total")
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $vatOut = $collect(IncomeTransaction::class, 'vat');
+        $vatIn = $collect(ExpenseTransaction::class, 'vat');
+        $whtIncome = $collect(IncomeTransaction::class, 'withholding');
+        $whtExpense = $collect(ExpenseTransaction::class, 'withholding');
+
+        $data = collect()
+            ->merge($vatOut->keys())->merge($vatIn->keys())
+            ->merge($whtIncome->keys())->merge($whtExpense->keys())
+            ->unique()->sort()->values()
+            ->map(fn ($month) => [
+                'month' => $month,
+                'vat_out' => (float) ($vatOut[$month] ?? 0),
+                'vat_in' => (float) ($vatIn[$month] ?? 0),
+                'vat_payable' => (float) ($vatOut[$month] ?? 0) - (float) ($vatIn[$month] ?? 0),
+                'wht_income' => (float) ($whtIncome[$month] ?? 0),
+                'wht_expense' => (float) ($whtExpense[$month] ?? 0),
+            ]);
+
+        return view('erp.finance.reports.tax-summary', compact('data'));
+    }
+
     public function accountBalances()
     {
         $this->authorize('finance.view');

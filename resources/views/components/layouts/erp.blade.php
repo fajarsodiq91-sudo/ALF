@@ -38,6 +38,7 @@
                             <x-erp.nav-link :href="route('finance.dashboard')" :active="request()->routeIs('finance.dashboard')" nested>Dashboard</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.accounts')" :active="request()->routeIs('finance.accounts')" nested>Accounts</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.categories')" :active="request()->routeIs('finance.categories')" nested>Categories</x-erp.nav-link>
+                            <x-erp.nav-link :href="route('finance.taxes')" :active="request()->routeIs('finance.taxes*')" nested>Taxes</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.income')" :active="request()->routeIs('finance.income')" nested>Income</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.expenses')" :active="request()->routeIs('finance.expenses')" nested>Expenses</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.transfers')" :active="request()->routeIs('finance.transfers')" nested>Transfers</x-erp.nav-link>

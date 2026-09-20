@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\StoreExpenseTransactionRequest;
 use App\Http\Requests\Finance\UpdateExpenseTransactionRequest;
 use App\Models\ExpenseTransaction;
+use App\Services\TaxCalculator;
 
 class ExpenseTransactionController extends Controller
 {
@@ -14,7 +15,7 @@ class ExpenseTransactionController extends Controller
         $this->authorize('finance.manage');
 
         $transactions = ExpenseTransaction::query()
-            ->with(['account', 'category', 'createdBy'])
+            ->with(['account', 'category', 'tax', 'createdBy'])
             ->latest('transaction_date')
             ->paginate(20);
 
@@ -31,7 +32,7 @@ class ExpenseTransactionController extends Controller
     public function store(StoreExpenseTransactionRequest $request)
     {
         $transaction = ExpenseTransaction::create([
-            ...$request->validated(),
+            ...$this->withTax($request->validated()),
             'created_by' => auth()->id(),
             'transaction_number' => 'EXP-' . date('YmdHis') . '-' . rand(1000, 9999),
         ]);
@@ -48,7 +49,7 @@ class ExpenseTransactionController extends Controller
 
     public function update(UpdateExpenseTransactionRequest $request, ExpenseTransaction $expense)
     {
-        $expense->update($request->validated());
+        $expense->update($this->withTax($request->validated()));
 
         return redirect()->route('finance.expenses')->with('status', 'Expense transaction updated.');
     }
@@ -60,5 +61,10 @@ class ExpenseTransactionController extends Controller
         $expense->delete();
 
         return redirect()->route('finance.expenses')->with('status', 'Expense transaction deleted.');
+    }
+
+    private function withTax(array $data): array
+    {
+        return [...$data, ...TaxCalculator::apply($data['amount'], $data['tax_id'] ?? null)];
     }
 }

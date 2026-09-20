@@ -116,6 +116,16 @@
                         </div>
                     </a>
 
+                    <a href="{{ route('finance.reports.tax-summary') }}" class="block p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium text-gray-900">Tax Summary</p>
+                                <p class="text-sm text-gray-500">PPN output vs input and PPh withheld by month</p>
+                            </div>
+                            <span class="text-gray-400">→</span>
+                        </div>
+                    </a>
+
                     <a href="{{ route('finance.reports.monthly-flow') }}" class="block p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
                         <div class="flex items-center justify-between">
                             <div>

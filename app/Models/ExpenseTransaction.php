@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'transaction_number', 'transaction_date', 'account_id', 'category_id',
     'payee', 'description', 'amount', 'payment_method',
     'attachment_path', 'notes', 'created_by',
+    'subtotal', 'tax_id', 'tax_rate', 'tax_amount',
 ])]
 class ExpenseTransaction extends Model
 {
@@ -22,6 +23,9 @@ class ExpenseTransaction extends Model
         return [
             'transaction_date' => 'date',
             'amount' => 'decimal:2',
+            'subtotal' => 'decimal:2',
+            'tax_rate' => 'decimal:2',
+            'tax_amount' => 'decimal:2',
         ];
     }
 
@@ -33,6 +37,11 @@ class ExpenseTransaction extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function tax(): BelongsTo
+    {
+        return $this->belongsTo(Tax::class);
     }
 
     public function createdBy(): BelongsTo

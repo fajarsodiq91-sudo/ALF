@@ -20,7 +20,9 @@
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Account</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Category</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Source</th>
-                        <th class="px-4 py-3 text-right font-medium text-gray-500">Amount</th>
+                        <th class="px-4 py-3 text-right font-medium text-gray-500">Subtotal</th>
+                        <th class="px-4 py-3 text-right font-medium text-gray-500">Tax</th>
+                        <th class="px-4 py-3 text-right font-medium text-gray-500">Total</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">By</th>
                         @can('finance.manage')
                             <th class="px-4 py-3 text-right font-medium text-gray-500">Actions</th>
@@ -35,6 +37,15 @@
                             <td class="px-4 py-3 text-gray-800">{{ $transaction->account->name }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $transaction->category->name }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $transaction->source ?: '—' }}</td>
+                            <td class="px-4 py-3 text-right text-gray-600">Rp {{ number_format($transaction->subtotal, 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right text-gray-500">
+                                @if ($transaction->tax)
+                                    {{ $transaction->tax->name }}<br>
+                                    <span class="text-xs">{{ $transaction->tax->type === 'vat' ? '+' : '−' }}Rp {{ number_format($transaction->tax_amount, 0, ',', '.') }}</span>
+                                @else
+                                    —
+                                @endif
+                            </td>
                             <td class="px-4 py-3 text-right font-medium text-green-700">+Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-gray-500 text-xs">{{ $transaction->createdBy->name }}</td>
                             @can('finance.manage')
@@ -50,7 +61,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-6 text-center text-gray-400">No income recorded yet.</td>
+                            <td colspan="10" class="px-4 py-6 text-center text-gray-400">No income recorded yet.</td>
                         </tr>
                     @endforelse
                 </tbody>

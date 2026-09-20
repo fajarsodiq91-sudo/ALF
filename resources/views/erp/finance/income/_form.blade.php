@@ -10,11 +10,28 @@
     </div>
 
     <div>
-        <label for="amount" class="block text-sm font-medium text-gray-700">Amount (Rp)</label>
+        <label for="amount" class="block text-sm font-medium text-gray-700">Amount before tax (Rp)</label>
         <input type="number" step="0.01" min="0.01" name="amount" id="amount"
-               value="{{ old('amount', $transaction->amount ?? '') }}" required
+               value="{{ old('amount', $transaction->subtotal ?? '') }}" required
                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
         @error('amount') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+
+    <div class="sm:col-span-2">
+        @php $taxes = \App\Models\Tax::where('is_active', true)->orderBy('type')->orderBy('name')->get(); @endphp
+        <label for="tax_id" class="block text-sm font-medium text-gray-700">Tax</label>
+        <select name="tax_id" id="tax_id"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+            <option value="" data-rate="0" data-type="">No tax</option>
+            @foreach ($taxes as $tax)
+                <option value="{{ $tax->id }}" data-rate="{{ $tax->rate }}" data-type="{{ $tax->type }}"
+                        @selected(old('tax_id', $transaction->tax_id ?? '') == $tax->id)>
+                    {{ $tax->name }} — {{ $tax->type === 'vat' ? '+' : '−' }}{{ rtrim(rtrim($tax->rate, '0'), '.') }}%
+                </option>
+            @endforeach
+        </select>
+        @error('tax_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        <p id="tax-preview" class="mt-2 text-sm text-gray-500"></p>
     </div>
 
     <div>
@@ -86,3 +103,24 @@
     </button>
     <a href="{{ route('finance.income') }}" class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>
 </div>
+
+<script>
+    (function () {
+        const amount = document.getElementById('amount');
+        const tax = document.getElementById('tax_id');
+        const preview = document.getElementById('tax-preview');
+        const fmt = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        function update() {
+            const opt = tax.options[tax.selectedIndex];
+            const base = parseFloat(amount.value) || 0;
+            const rate = parseFloat(opt.dataset.rate) || 0;
+            if (!opt.value || !base) { preview.textContent = ''; return; }
+            const t = Math.round(base * rate) / 100;
+            const total = opt.dataset.type === 'vat' ? base + t : base - t;
+            preview.textContent = 'Tax: Rp ' + fmt.format(t) + ' — Total ' + (opt.dataset.type === 'vat' ? 'incl. tax' : 'after withholding') + ': Rp ' + fmt.format(total);
+        }
+        amount.addEventListener('input', update);
+        tax.addEventListener('change', update);
+        update();
+    })();
+</script>

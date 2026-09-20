@@ -6,6 +6,7 @@ use App\Http\Controllers\Finance\DashboardController;
 use App\Http\Controllers\Finance\IncomeTransactionController;
 use App\Http\Controllers\Finance\ExpenseTransactionController;
 use App\Http\Controllers\Finance\ReportController;
+use App\Http\Controllers\Finance\TaxController;
 use App\Http\Controllers\Finance\TransactionLedgerController;
 use App\Http\Controllers\Finance\TransferTransactionController;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +43,15 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'destroy' => 'categories.destroy',
         ]);
 
+        Route::resource('taxes', TaxController::class)->except(['show'])->names([
+            'index' => 'taxes',
+            'create' => 'taxes.create',
+            'store' => 'taxes.store',
+            'edit' => 'taxes.edit',
+            'update' => 'taxes.update',
+            'destroy' => 'taxes.destroy',
+        ]);
+
         Route::resource('income', IncomeTransactionController::class)->except(['show'])->names([
             'index' => 'income',
             'create' => 'income.create',
@@ -76,6 +86,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             Route::get('/income-by-category', [ReportController::class, 'incomeByCategory'])->name('income-by-category');
             Route::get('/expense-by-category', [ReportController::class, 'expenseByCategory'])->name('expense-by-category');
             Route::get('/monthly-flow', [ReportController::class, 'monthlyFlow'])->name('monthly-flow');
+            Route::get('/tax-summary', [ReportController::class, 'taxSummary'])->name('tax-summary');
             Route::get('/account-balances', [ReportController::class, 'accountBalances'])->name('account-balances');
         });
     });
