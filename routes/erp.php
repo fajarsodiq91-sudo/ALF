@@ -12,6 +12,9 @@ use App\Http\Controllers\Finance\TaxController;
 use App\Http\Controllers\Finance\TaxPaymentController;
 use App\Http\Controllers\Finance\TransactionLedgerController;
 use App\Http\Controllers\Finance\TransferTransactionController;
+use App\Http\Controllers\Settings\RoleController;
+use App\Http\Controllers\Settings\SystemSettingController;
+use App\Http\Controllers\Settings\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/erp', '/erp/dashboard');
@@ -124,21 +127,32 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::view('/assets', 'erp.coming-soon', ['title' => 'Assets'])->name('assets.index');
     });
 
-    // Settings — each item gated by its own permission.
+    // Settings — each area gated by its own permission.
     Route::prefix('settings')->name('settings.')->group(function () {
-        Route::view('/users', 'erp.coming-soon', [
-            'title' => 'Users',
-            'description' => 'Manage user accounts and role assignments.',
-        ])->middleware('permission:settings.manage-users')->name('users');
+        Route::middleware('permission:settings.manage-users')->group(function () {
+            Route::resource('users', UserController::class)->except(['show', 'destroy'])->names([
+                'index' => 'users',
+                'create' => 'users.create',
+                'store' => 'users.store',
+                'edit' => 'users.edit',
+                'update' => 'users.update',
+            ]);
+        });
 
-        Route::view('/roles', 'erp.coming-soon', [
-            'title' => 'Roles',
-            'description' => 'Manage roles and their permissions.',
-        ])->middleware('permission:settings.manage-roles')->name('roles');
+        Route::middleware('permission:settings.manage-roles')->group(function () {
+            Route::resource('roles', RoleController::class)->except(['show'])->names([
+                'index' => 'roles',
+                'create' => 'roles.create',
+                'store' => 'roles.store',
+                'edit' => 'roles.edit',
+                'update' => 'roles.update',
+                'destroy' => 'roles.destroy',
+            ]);
+        });
 
-        Route::view('/system', 'erp.coming-soon', [
-            'title' => 'System Settings',
-            'description' => 'General application configuration.',
-        ])->middleware('permission:settings.manage-system')->name('system');
+        Route::middleware('permission:settings.manage-system')->group(function () {
+            Route::get('/system', [SystemSettingController::class, 'edit'])->name('system');
+            Route::put('/system', [SystemSettingController::class, 'update'])->name('system.update');
+        });
     });
 });

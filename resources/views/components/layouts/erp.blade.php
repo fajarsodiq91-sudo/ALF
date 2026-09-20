@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ $title ?? 'ERP' }} | PT Alfajar Logic Futura</title>
+        <title>{{ $title ?? 'ERP' }} | {{ \App\Models\Setting::get('company_name', 'PT Alfajar Logic Futura') }}</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
@@ -58,13 +58,13 @@
                     @canany(['settings.manage-users', 'settings.manage-roles', 'settings.manage-system'])
                         <x-erp.nav-group label="Settings" :active="request()->routeIs('settings.*')">
                             @can('settings.manage-users')
-                                <x-erp.nav-link :href="route('settings.users')" :active="request()->routeIs('settings.users')" nested soon>Users</x-erp.nav-link>
+                                <x-erp.nav-link :href="route('settings.users')" :active="request()->routeIs('settings.users*')" nested>Users</x-erp.nav-link>
                             @endcan
                             @can('settings.manage-roles')
-                                <x-erp.nav-link :href="route('settings.roles')" :active="request()->routeIs('settings.roles')" nested soon>Roles</x-erp.nav-link>
+                                <x-erp.nav-link :href="route('settings.roles')" :active="request()->routeIs('settings.roles*')" nested>Roles</x-erp.nav-link>
                             @endcan
                             @can('settings.manage-system')
-                                <x-erp.nav-link :href="route('settings.system')" :active="request()->routeIs('settings.system')" nested soon>System Settings</x-erp.nav-link>
+                                <x-erp.nav-link :href="route('settings.system')" :active="request()->routeIs('settings.system*')" nested>System Settings</x-erp.nav-link>
                             @endcan
                         </x-erp.nav-group>
                     @endcanany

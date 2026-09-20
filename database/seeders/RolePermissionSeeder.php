@@ -32,23 +32,20 @@ class RolePermissionSeeder extends Seeder
         $superAdmin = Role::firstOrCreate(['name' => 'Super Admin', 'guard_name' => 'web']);
         $superAdmin->syncPermissions(self::PERMISSIONS);
 
-        $finance = Role::firstOrCreate(['name' => 'Finance', 'guard_name' => 'web']);
-        $finance->syncPermissions([
-            'access-erp',
-            'finance.view',
-            'finance.manage',
-            'finance.reports',
-        ]);
+        // Default permissions only apply when a role is first created, so
+        // customisations made in Settings > Roles survive re-seeding on deploy.
+        $defaults = [
+            'Finance' => ['access-erp', 'finance.view', 'finance.manage', 'finance.reports'],
+            'Staff' => ['access-erp'],
+            'Viewer' => ['access-erp', 'finance.view'],
+        ];
 
-        $staff = Role::firstOrCreate(['name' => 'Staff', 'guard_name' => 'web']);
-        $staff->syncPermissions([
-            'access-erp',
-        ]);
+        foreach ($defaults as $name => $permissions) {
+            $role = Role::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
 
-        $viewer = Role::firstOrCreate(['name' => 'Viewer', 'guard_name' => 'web']);
-        $viewer->syncPermissions([
-            'access-erp',
-            'finance.view',
-        ]);
+            if ($role->wasRecentlyCreated) {
+                $role->syncPermissions($permissions);
+            }
+        }
     }
 }

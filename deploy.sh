@@ -59,6 +59,9 @@ if $RUN_MIGRATE; then
   $SSH "cd $REMOTE_APP_DIR && $REMOTE_PHP artisan migrate --force"
 fi
 
+echo "==> Ensuring roles and permissions exist (idempotent)"
+$SSH "cd $REMOTE_APP_DIR && $REMOTE_PHP artisan db:seed --class=RolePermissionSeeder --force"
+
 echo "==> Clearing and rebuilding caches"
 $SSH "cd $REMOTE_APP_DIR && $REMOTE_PHP artisan config:clear && $REMOTE_PHP artisan route:clear && $REMOTE_PHP artisan view:clear && $REMOTE_PHP artisan config:cache && $REMOTE_PHP artisan route:cache && $REMOTE_PHP artisan view:cache"
 
