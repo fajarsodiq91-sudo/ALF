@@ -17,7 +17,7 @@
         <div class="min-h-screen flex">
             {{-- Sidebar --}}
             <aside
-                class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 text-gray-300 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-auto"
+                class="fixed inset-y-0 left-0 z-40 w-64 bg-steel-800 text-steel-300 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-auto"
                 :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             >
                 <div class="h-16 flex items-center gap-2 px-5 border-b border-white/10">

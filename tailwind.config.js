@@ -20,6 +20,20 @@ export default {
                     dark: '#8a0000',
                     50: '#fdecec',
                 },
+                // Steel gray, lifted from the silver wing of the Alfajar mark —
+                // used anywhere the site previously reached for generic Tailwind gray.
+                steel: {
+                    50: '#f4f5f6',
+                    100: '#e8eaec',
+                    200: '#d3d7db',
+                    300: '#b0b6bd',
+                    400: '#8c949e',
+                    500: '#6b7280',
+                    600: '#565d68',
+                    700: '#3a3f47',
+                    800: '#292d33',
+                    900: '#1c1f24',
+                },
             },
         },
     },

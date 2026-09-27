@@ -6,7 +6,10 @@
   --color-border: #e7e9ec;
   --color-primary: #b00000;
   --color-primary-dark: #8a0000;
-  --color-dark: #14161a;
+  --color-primary-tint: #fdecec;
+  --color-steel: #6b7280;
+  --color-steel-dark: #3a3f47;
+  --color-dark: #292d33;
   --font-heading: "Poppins", Arial, sans-serif;
   --font-body: "Inter", Arial, sans-serif;
   --container-width: 1200px;
@@ -232,6 +235,11 @@ h1, h2, h3 {
 
 .site-nav a:hover {
   color: var(--color-primary);
+}
+
+.site-nav a.btn--primary,
+.site-nav a.btn--primary:hover {
+  color: #fff;
 }
 
 .site-nav a.is-current {

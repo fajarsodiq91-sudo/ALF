@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 
+const codespaceName = process.env.CODESPACE_NAME;
+const forwardingDomain = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN;
+
 export default defineConfig({
     plugins: [
         laravel({
@@ -8,4 +11,18 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        strictPort: true,
+        ...(codespaceName && forwardingDomain
+            ? {
+                  hmr: {
+                      protocol: 'wss',
+                      host: `${codespaceName}-5173.${forwardingDomain}`,
+                      clientPort: 443,
+                  },
+              }
+            : {}),
+    },
 });

@@ -6,6 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ \App\Models\Setting::get('company_name', 'PT Alfajar Logic Futura') }}</title>
+        <link rel="icon" type="image/png" href="{{ asset('assets/icons/alf.png') }}" />
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
