@@ -17,24 +17,24 @@
         <div class="min-h-screen flex">
             {{-- Sidebar --}}
             <aside
-                class="fixed inset-y-0 left-0 z-40 w-64 bg-steel-800 text-steel-300 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-auto"
+                class="fixed inset-y-0 left-0 z-40 w-64 h-screen bg-steel-800 text-steel-300 transform transition-transform duration-200 ease-in-out lg:translate-x-0"
                 :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             >
-                <div class="h-16 flex items-center gap-2 px-5 border-b border-white/10">
-                    <img src="{{ asset('assets/icons/alf.png') }}" alt="" class="h-8 w-8 rounded" />
+                <div class="h-14 flex items-center gap-2 px-4 border-b border-white/10">
+                    <img src="{{ asset('assets/icons/alf.png') }}" alt="" class="h-7 w-7 rounded" />
                     <span class="font-semibold text-white leading-tight text-sm">
                         Alfajar Logic<br class="hidden" />
                         <span class="text-brand-50/70 font-normal text-xs">ERP</span>
                     </span>
                 </div>
 
-                <nav class="py-4 px-3 space-y-1 overflow-y-auto" style="height: calc(100% - 4rem);">
-                    <x-erp.nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                <nav class="sidebar-scroll py-3 px-2.5 space-y-0.5 overflow-y-auto" style="height: calc(100% - 3.5rem);">
+                    <x-erp.nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="dashboard">
                         Dashboard
                     </x-erp.nav-link>
 
                     @canany(['finance.view', 'finance.manage', 'finance.reports'])
-                        <x-erp.nav-group label="Finance" :active="request()->routeIs('finance.*')">
+                        <x-erp.nav-group label="Finance" :active="request()->routeIs('finance.*')" icon="finance">
                             <x-erp.nav-link :href="route('finance.dashboard')" :active="request()->routeIs('finance.dashboard')" nested>Dashboard</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.accounts')" :active="request()->routeIs('finance.accounts')" nested>Accounts</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.categories')" :active="request()->routeIs('finance.categories')" nested>Categories</x-erp.nav-link>
@@ -49,14 +49,14 @@
                         </x-erp.nav-group>
                     @endcanany
 
-                    <x-erp.nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')" soon>Sales</x-erp.nav-link>
-                    <x-erp.nav-link :href="route('training.index')" :active="request()->routeIs('training.*')" soon>Training</x-erp.nav-link>
-                    <x-erp.nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')" soon>Projects</x-erp.nav-link>
-                    <x-erp.nav-link :href="route('hr.index')" :active="request()->routeIs('hr.*')" soon>HR</x-erp.nav-link>
-                    <x-erp.nav-link :href="route('assets.index')" :active="request()->routeIs('assets.*')" soon>Assets</x-erp.nav-link>
+                    <x-erp.nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')" icon="sales" soon>Sales</x-erp.nav-link>
+                    <x-erp.nav-link :href="route('training.index')" :active="request()->routeIs('training.*')" icon="training" soon>Training</x-erp.nav-link>
+                    <x-erp.nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')" icon="projects" soon>Projects</x-erp.nav-link>
+                    <x-erp.nav-link :href="route('hr.index')" :active="request()->routeIs('hr.*')" icon="hr" soon>HR</x-erp.nav-link>
+                    <x-erp.nav-link :href="route('assets.index')" :active="request()->routeIs('assets.*')" icon="assets" soon>Assets</x-erp.nav-link>
 
                     @canany(['settings.manage-users', 'settings.manage-roles', 'settings.manage-system'])
-                        <x-erp.nav-group label="Settings" :active="request()->routeIs('settings.*')">
+                        <x-erp.nav-group label="Settings" :active="request()->routeIs('settings.*')" icon="settings">
                             @can('settings.manage-users')
                                 <x-erp.nav-link :href="route('settings.users')" :active="request()->routeIs('settings.users*')" nested>Users</x-erp.nav-link>
                             @endcan
@@ -80,8 +80,8 @@
             ></div>
 
             {{-- Main column --}}
-            <div class="flex-1 flex flex-col min-w-0">
-                <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20">
+            <div class="flex-1 flex flex-col min-w-0 lg:ml-64">
+                <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20">
                     <div class="flex items-center gap-3">
                         <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-gray-500 hover:text-gray-700" aria-label="Toggle sidebar">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
