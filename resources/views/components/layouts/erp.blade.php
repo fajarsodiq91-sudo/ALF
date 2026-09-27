@@ -21,10 +21,9 @@
                 :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             >
                 <div class="h-14 flex items-center gap-2 px-4 border-b border-white/10">
-                    <img src="{{ asset('assets/icons/alf.png') }}" alt="" class="h-7 w-7 rounded" />
-                    <span class="font-semibold text-white leading-tight text-sm">
-                        Alfajar Logic<br class="hidden" />
-                        <span class="text-brand-50/70 font-normal text-xs">ERP</span>
+                    <img src="{{ asset('assets/icons/alf.png') }}" alt="" class="h-7 w-7 rounded shrink-0" />
+                    <span class="font-semibold text-white leading-tight text-[13px]">
+                        PT. Alfajar Logic Futura
                     </span>
                 </div>
 
