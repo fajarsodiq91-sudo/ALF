@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'account_type', 'account_number', 'opening_balance', 'is_active', 'description'])]
+#[Fillable(['name', 'account_type', 'account_number', 'opening_balance', 'monthly_admin_fee', 'is_active', 'description'])]
 class Account extends Model
 {
     /** @use HasFactory<\Database\Factories\AccountFactory> */
@@ -17,6 +17,7 @@ class Account extends Model
     {
         return [
             'opening_balance' => 'decimal:2',
+            'monthly_admin_fee' => 'decimal:2',
             'is_active' => 'boolean',
         ];
     }

@@ -18,6 +18,7 @@ class UpdateAccountRequest extends FormRequest
             'account_type' => ['required', 'string', 'in:cash,bank,e-wallet,other'],
             'account_number' => ['nullable', 'string', 'max:100'],
             'opening_balance' => ['required', 'numeric', 'min:0'],
+            'monthly_admin_fee' => ['nullable', 'numeric', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
             'description' => ['nullable', 'string', 'max:1000'],
         ];

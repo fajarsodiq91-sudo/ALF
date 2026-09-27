@@ -34,6 +34,15 @@
         @error('opening_balance') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
 
+    <div>
+        <label for="monthly_admin_fee" class="block text-sm font-medium text-gray-700">Monthly Bank Admin Fee (Rp)</label>
+        <input type="number" step="0.01" min="0" name="monthly_admin_fee" id="monthly_admin_fee"
+               value="{{ old('monthly_admin_fee', $account->monthly_admin_fee ?? '') }}"
+               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+        <p class="mt-1 text-xs text-gray-500">Leave blank for no automatic monthly fee. Charged automatically on the 1st of each month for Bank accounts.</p>
+        @error('monthly_admin_fee') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+
     <div class="flex items-center gap-2 mt-6">
         <input type="hidden" name="is_active" value="0">
         <input type="checkbox" name="is_active" id="is_active" value="1"
