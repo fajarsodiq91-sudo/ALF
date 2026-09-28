@@ -7,11 +7,11 @@
         </div>
 
         @if ($transactions->isEmpty())
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-6 py-12 text-center">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg px-6 py-12 text-center">
                 <p class="text-gray-500">No transactions yet</p>
             </div>
         @else
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
                         <tr>

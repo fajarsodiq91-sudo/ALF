@@ -2,7 +2,7 @@
     <div class="max-w-5xl space-y-6">
         <x-erp.flash />
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
             <div class="flex items-start justify-between gap-4">
                 <div>
                     <p class="text-xs text-gray-500">{{ $project->code }}</p>
@@ -40,7 +40,7 @@
             </dl>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-x-auto">
             <div class="px-4 py-3 border-b border-gray-200 text-sm font-semibold text-gray-800">Tasks</div>
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
@@ -106,7 +106,7 @@
                         @endforeach
                     </select>
                     <input type="date" name="due_date" value="{{ old('due_date') }}" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-                    <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Add Task</button>
+                    <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">Add Task</button>
                 </form>
             @endcan
         </div>

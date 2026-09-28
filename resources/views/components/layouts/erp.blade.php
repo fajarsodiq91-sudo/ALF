@@ -102,7 +102,7 @@
 
             {{-- Main column --}}
             <div class="flex-1 flex flex-col min-w-0 lg:ml-64">
-                <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20">
+                <header class="h-14 bg-white border-b border-gray-200 shadow-sm flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20">
                     <div class="flex items-center gap-3">
                         <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-gray-500 hover:text-gray-700" aria-label="Toggle sidebar">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

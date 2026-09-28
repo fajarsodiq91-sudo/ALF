@@ -28,3 +28,12 @@
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
     background-color: theme('colors.steel.500');
 }
+
+/* Subtle row highlight so long tables are easier to scan */
+table tbody tr {
+    transition: background-color 150ms ease-in-out;
+}
+
+table tbody tr:hover {
+    background-color: theme('colors.steel.50');
+}

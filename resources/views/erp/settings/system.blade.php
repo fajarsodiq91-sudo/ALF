@@ -2,7 +2,7 @@
     <div class="max-w-2xl">
         <x-erp.flash />
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
             <h2 class="text-sm font-semibold text-gray-800 mb-4">Company profile</h2>
             <form action="{{ route('settings.system.update') }}" method="POST" class="grid grid-cols-1 gap-5">
                 @csrf
@@ -24,7 +24,7 @@
                 @endforeach
 
                 <div>
-                    <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Save Settings</button>
+                    <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">Save Settings</button>
                 </div>
             </form>
         </div>

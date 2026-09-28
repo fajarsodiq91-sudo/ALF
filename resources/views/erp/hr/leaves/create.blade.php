@@ -1,6 +1,6 @@
 <x-layouts.erp title="New Leave Request">
     <div class="max-w-2xl">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
             <form action="{{ route('hr.leaves.store') }}" method="POST">
                 @csrf
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -44,7 +44,7 @@
 <p class="mt-3 text-xs text-gray-500">Days are counted Monday–Friday. Annual leave is checked against the employee's remaining balance for the year.</p>
 
 <div class="mt-6 flex items-center gap-3">
-    <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Submit Request</button>
+    <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">Submit Request</button>
     <a href="{{ route('hr.leaves.index') }}" class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>
 </div>
 

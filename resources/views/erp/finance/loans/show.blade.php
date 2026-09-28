@@ -16,7 +16,7 @@
             @endcan
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6 mb-6">
             <dl class="grid grid-cols-2 gap-4 text-sm">
                 <div><dt class="text-gray-500">Direction</dt><dd class="font-medium text-gray-900">{{ \App\Models\Loan::DIRECTIONS[$loan->direction] }}</dd></div>
                 <div><dt class="text-gray-500">Party</dt><dd class="font-medium text-gray-900">{{ $loan->party_name }}</dd></div>
@@ -31,7 +31,7 @@
             </dl>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto mb-6">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-x-auto mb-6">
             <div class="px-4 py-3 border-b border-gray-100"><h3 class="text-sm font-semibold text-gray-800">Repayments</h3></div>
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
@@ -71,7 +71,7 @@
 
         @can('finance.manage')
             @unless ($loan->isSettled())
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                     <h3 class="text-sm font-semibold text-gray-800 mb-4">Record Repayment</h3>
                     <form action="{{ route('finance.loans.repayments.store', $loan) }}" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         @csrf
@@ -103,7 +103,7 @@
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                         </div>
                         <div class="sm:col-span-3">
-                            <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Record Repayment</button>
+                            <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">Record Repayment</button>
                         </div>
                     </form>
                 </div>

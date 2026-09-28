@@ -1,6 +1,6 @@
 <x-layouts.erp title="Payslip">
     <div class="max-w-2xl">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-8">
             <div class="flex items-start justify-between border-b border-gray-200 pb-4 mb-4">
                 <div>
                     <h2 class="text-lg font-semibold text-gray-800">Payslip</h2>
@@ -30,7 +30,7 @@
             @endif
 
             <div class="mt-6 flex items-center gap-3 print:hidden">
-                <button type="button" onclick="window.print()" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Print</button>
+                <button type="button" onclick="window.print()" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">Print</button>
                 <a href="{{ route('hr.payroll.index', ['period' => $payroll->period]) }}" class="text-sm text-gray-500 hover:text-gray-700">Back</a>
             </div>
         </div>

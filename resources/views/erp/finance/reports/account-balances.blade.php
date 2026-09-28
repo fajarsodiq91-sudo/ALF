@@ -12,13 +12,13 @@
         </div>
 
         @if ($balances->isEmpty())
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 px-6 py-12 text-center text-gray-500">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg px-6 py-12 text-center text-gray-500">
                 No accounts
             </div>
         @else
             <div class="space-y-4">
                 @foreach ($balances as $account)
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-hidden">
                         <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                             <h3 class="text-lg font-semibold text-gray-900">{{ $account['account'] }}</h3>
                             <p class="text-2xl font-bold text-blue-600">
@@ -72,7 +72,7 @@
                     </div>
                 @endforeach
 
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-gray-900">Total All Accounts</h3>
                         <p class="text-2xl font-bold text-blue-600">

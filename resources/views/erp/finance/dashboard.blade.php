@@ -6,21 +6,21 @@
         <div class="mb-8">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">This Month ({{ now()->format('F Y') }})</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                     <p class="text-sm font-medium text-gray-600">Income</p>
                     <p class="mt-2 text-2xl font-bold text-gray-900">
                         Rp {{ number_format($monthlyIncome, 2, ',', '.') }}
                     </p>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                     <p class="text-sm font-medium text-gray-600">Expense</p>
                     <p class="mt-2 text-2xl font-bold text-gray-900">
                         Rp {{ number_format($monthlyExpense, 2, ',', '.') }}
                     </p>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                     <p class="text-sm font-medium text-gray-600">Net</p>
                     <p class="mt-2 text-2xl font-bold text-gray-900">
                         Rp {{ number_format($monthlyNet, 2, ',', '.') }}
@@ -35,7 +35,7 @@
                 <!-- Year-to-Date -->
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Year to Date</h3>
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
+                    <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-4 space-y-3">
                         <div class="flex justify-between items-center py-2">
                             <span class="text-sm text-gray-600">Income</span>
                             <span class="font-semibold text-green-600">Rp {{ number_format($yearIncome, 2, ',', '.') }}</span>
@@ -54,7 +54,7 @@
                 <!-- All Time -->
                 <div>
                     <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">All Time</h3>
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-3">
+                    <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-4 space-y-3">
                         <div class="flex justify-between items-center py-2">
                             <span class="text-sm text-gray-600">Total Income</span>
                             <span class="font-semibold text-green-600">Rp {{ number_format($totalIncome, 2, ',', '.') }}</span>
@@ -71,7 +71,7 @@
                 </div>
 
                 <!-- Total Balance -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                     <p class="text-sm font-medium text-gray-600 uppercase tracking-wide">Total Balance</p>
                     <p class="mt-2 text-3xl font-bold text-gray-900">
                         Rp {{ number_format($totalBalance, 2, ',', '.') }}
@@ -82,7 +82,7 @@
             <!-- Right Column: Recent Transactions & Account Balances -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Recent Transactions -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-hidden">
                     <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                         <h3 class="font-semibold text-gray-900">Recent Transactions</h3>
                         <a href="{{ route('finance.transactions') }}" class="text-sm text-blue-600 hover:text-blue-700">View all →</a>
@@ -125,7 +125,7 @@
                 </div>
 
                 <!-- Account Summary -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-hidden">
                     <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                         <h3 class="font-semibold text-gray-900">Account Balances</h3>
                         <a href="{{ route('finance.reports.account-balances') }}" class="text-sm text-blue-600 hover:text-blue-700">View report →</a>

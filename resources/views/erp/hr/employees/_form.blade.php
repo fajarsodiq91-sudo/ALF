@@ -72,7 +72,7 @@
 </div>
 
 <div class="mt-6 flex items-center gap-3">
-    <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">
+    <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">
         {{ $employee ? 'Update Employee' : 'Create Employee' }}
     </button>
     <a href="{{ route('hr.index') }}" class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>

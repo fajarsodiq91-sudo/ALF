@@ -9,7 +9,7 @@
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <!-- Total Income -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Total Income</p>
@@ -22,7 +22,7 @@
             </div>
 
             <!-- Total Expense -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Total Expense</p>
@@ -35,7 +35,7 @@
             </div>
 
             <!-- Net Income -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Net Income</p>
@@ -48,7 +48,7 @@
             </div>
 
             <!-- Total Balance -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Total Balance</p>
@@ -64,7 +64,7 @@
         <!-- Reports Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Account Balances -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-hidden">
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-900">Account Balances</h3>
                 </div>
@@ -93,7 +93,7 @@
             </div>
 
             <!-- Quick Links -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Reports</h3>
                 <div class="space-y-3">
                     <a href="{{ route('finance.reports.income-by-category') }}" class="block p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition">

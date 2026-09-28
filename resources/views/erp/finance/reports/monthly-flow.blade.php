@@ -11,7 +11,7 @@
             </a>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-hidden">
             @if ($data->isEmpty())
                 <div class="px-6 py-12 text-center text-gray-500">
                     No transactions

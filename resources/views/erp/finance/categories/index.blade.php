@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between mb-4">
             <p class="text-sm text-gray-500">Income and expense categories used when recording transactions.</p>
             @can('finance.manage')
-                <a href="{{ route('finance.categories.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">
+                <a href="{{ route('finance.categories.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">
                     Add Category
                 </a>
             @endcan
@@ -13,7 +13,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @foreach (['income' => 'Income Categories', 'expense' => 'Expense Categories'] as $type => $heading)
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg">
                     <div class="px-4 py-3 border-b border-gray-100">
                         <h3 class="text-sm font-semibold text-gray-800">{{ $heading }}</h3>
                     </div>

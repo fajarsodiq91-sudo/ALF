@@ -12,7 +12,7 @@
 
         @php $rp = fn ($v) => 'Rp ' . number_format($v, 2, ',', '.'); @endphp
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-x-auto">
             @if ($data->isEmpty())
                 <div class="px-6 py-12 text-center text-gray-500">No taxed transactions</div>
             @else
