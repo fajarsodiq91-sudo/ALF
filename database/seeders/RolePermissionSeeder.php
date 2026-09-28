@@ -22,6 +22,9 @@ class RolePermissionSeeder extends Seeder
         'assets.manage',
         'sales.view',
         'sales.manage',
+        'hr.view',
+        'hr.manage',
+        'hr.payroll',
         'settings.manage-users',
         'settings.manage-roles',
         'settings.manage-system',
@@ -39,7 +42,7 @@ class RolePermissionSeeder extends Seeder
         // Default permissions only apply when a role is first created, so
         // customisations made in Settings > Roles survive re-seeding on deploy.
         $defaults = [
-            'Finance' => ['access-erp', 'finance.view', 'finance.manage', 'finance.reports', 'assets.view', 'assets.manage', 'sales.view', 'sales.manage'],
+            'Finance' => ['access-erp', 'finance.view', 'finance.manage', 'finance.reports', 'assets.view', 'assets.manage', 'sales.view', 'sales.manage', 'hr.view', 'hr.manage', 'hr.payroll'],
             'Staff' => ['access-erp'],
             'Viewer' => ['access-erp', 'finance.view'],
         ];

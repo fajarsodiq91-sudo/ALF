@@ -13,6 +13,10 @@ use App\Http\Controllers\Finance\TaxController;
 use App\Http\Controllers\Finance\TaxPaymentController;
 use App\Http\Controllers\Finance\TransactionLedgerController;
 use App\Http\Controllers\Finance\TransferTransactionController;
+use App\Http\Controllers\Hr\AttendanceController;
+use App\Http\Controllers\Hr\EmployeeController;
+use App\Http\Controllers\Hr\LeaveRequestController;
+use App\Http\Controllers\Hr\PayrollController;
 use App\Http\Controllers\Sales\CustomerController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\SystemSettingController;
@@ -124,7 +128,6 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     Route::middleware('permission:access-erp')->group(function () {
         Route::view('/training', 'erp.coming-soon', ['title' => 'Training'])->name('training.index');
         Route::view('/projects', 'erp.coming-soon', ['title' => 'Projects'])->name('projects.index');
-        Route::view('/hr', 'erp.coming-soon', ['title' => 'HR'])->name('hr.index');
     });
 
     Route::middleware('permission:assets.view')->group(function () {
@@ -146,6 +149,32 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'edit' => 'sales.edit',
             'update' => 'sales.update',
             'destroy' => 'sales.destroy',
+        ]);
+    });
+
+    Route::middleware('permission:hr.view')->prefix('hr')->group(function () {
+        Route::resource('leaves', LeaveRequestController::class)->only(['index', 'create', 'store', 'destroy'])
+            ->parameters(['leaves' => 'leave'])->names('hr.leaves');
+        Route::post('leaves/{leave}/approve', [LeaveRequestController::class, 'approve'])->name('hr.leaves.approve');
+        Route::post('leaves/{leave}/reject', [LeaveRequestController::class, 'reject'])->name('hr.leaves.reject');
+
+        Route::resource('attendance', AttendanceController::class)->except(['show'])->names('hr.attendance');
+    });
+
+    Route::middleware('permission:hr.payroll')->prefix('hr')->group(function () {
+        Route::resource('payroll', PayrollController::class)->names('hr.payroll');
+        Route::post('payroll/{payroll}/pay', [PayrollController::class, 'pay'])->name('hr.payroll.pay');
+        Route::post('payroll/{payroll}/cancel-payment', [PayrollController::class, 'cancelPayment'])->name('hr.payroll.cancel-payment');
+    });
+
+    Route::middleware('permission:hr.view')->group(function () {
+        Route::resource('hr', EmployeeController::class)->except(['show'])->parameters(['hr' => 'employee'])->names([
+            'index' => 'hr.index',
+            'create' => 'hr.create',
+            'store' => 'hr.store',
+            'edit' => 'hr.edit',
+            'update' => 'hr.update',
+            'destroy' => 'hr.destroy',
         ]);
     });
 

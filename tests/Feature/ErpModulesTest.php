@@ -105,7 +105,6 @@ class ErpModulesTest extends TestCase
         return [
             ['training.index'],
             ['projects.index'],
-            ['hr.index'],
         ];
     }
 
