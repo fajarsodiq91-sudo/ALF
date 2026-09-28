@@ -18,7 +18,7 @@ class PortalProjectController extends Controller
         $customer = $request->user('customer');
 
         $data = $request->validate([
-            'training_session_id' => ['required', Rule::exists('training_sessions', 'id')->where('customer_id', $customer->id)],
+            'training_session_id' => ['required', Rule::in($customer->portalSessions()->pluck('id')->all())],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
             'external_url' => ['nullable', 'url', 'max:2048'],

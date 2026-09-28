@@ -33,6 +33,7 @@ class CustomerController extends Controller
     public function index(Request $request): View
     {
         $customers = Customer::query()
+            ->whereNull('company_customer_id')
             ->when($request->input('status') === 'awaiting', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_AWAITING))
             ->when($request->input('status') === 'pending_approval', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_PENDING_APPROVAL))
             ->when($request->input('status') === 'rejected', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_REJECTED))

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CustomerRegistrationController;
+use App\Http\Controllers\ParticipantJoinController;
 use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Controllers\Portal\PortalLoginController;
 use App\Http\Controllers\Portal\PortalPasswordController;
@@ -21,6 +22,12 @@ Route::middleware('throttle:30,1')->prefix('customer-registration')->name('custo
     Route::get('/status/{token}', [CustomerRegistrationController::class, 'status'])->name('status');
     Route::get('/{token}', [CustomerRegistrationController::class, 'show'])->name('show');
     Route::post('/{token}', [CustomerRegistrationController::class, 'store'])->name('store');
+});
+
+Route::middleware('throttle:30,1')->prefix('join')->name('participant.')->group(function () {
+    Route::get('/done', [ParticipantJoinController::class, 'done'])->name('done');
+    Route::get('/{token}', [ParticipantJoinController::class, 'show'])->name('show');
+    Route::post('/{token}', [ParticipantJoinController::class, 'store'])->name('store');
 });
 
 Route::prefix('portal')->name('portal.')->group(function () {

@@ -9,6 +9,8 @@ use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +19,7 @@ use Illuminate\Support\Str;
 
 #[Fillable([
     'name', 'customer_type', 'email', 'phone',
-    'city', 'address', 'is_active', 'notes', 'photo_path', 'requested_programs',
+    'city', 'address', 'is_active', 'notes', 'photo_path', 'requested_programs', 'company_customer_id',
 ])]
 class Customer extends Authenticatable
 {
@@ -84,6 +86,31 @@ class Customer extends Authenticatable
     public function isRejected(): bool
     {
         return $this->registration_status === self::REGISTRATION_REJECTED;
+    }
+
+    /** The company this person belongs to, when they joined a corporate session as a participant. */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'company_customer_id');
+    }
+
+    public function isParticipant(): bool
+    {
+        return $this->company_customer_id !== null;
+    }
+
+    /** Sessions of a company the person joined as a participant. */
+    public function participatingSessions(): BelongsToMany
+    {
+        return $this->belongsToMany(TrainingSession::class, 'training_session_participants')->withTimestamps();
+    }
+
+    /** Every session the person can see in the portal: their own and the ones they participate in. */
+    public function portalSessions(): Builder
+    {
+        return TrainingSession::query()->where(fn ($query) => $query
+            ->where('customer_id', $this->id)
+            ->orWhereIn('id', $this->participatingSessions()->select('training_sessions.id')));
     }
 
     public function sessions(): HasMany

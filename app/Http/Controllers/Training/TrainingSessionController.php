@@ -44,6 +44,7 @@ class TrainingSessionController extends Controller
     {
         $session = TrainingSession::create([...$request->validated(), 'payment_plan' => $request->validated('payment_plan') ?? SessionPaymentPlan::FULL]);
         SessionPaymentPlan::generate($session);
+        $session->syncParticipantToken();
 
         return redirect()->route('training.index')->with('status', 'Training session created successfully.');
     }
@@ -52,7 +53,7 @@ class TrainingSessionController extends Controller
     {
         $this->authorize('training.manage');
 
-        return view('erp.training.sessions.edit', [...$this->formData(), 'session' => $session->load(['meetings', 'payments.incomeTransaction']), 'accounts' => Account::where('is_active', true)->orderBy('name')->get(), 'booked' => BookedSlots::keys()]);
+        return view('erp.training.sessions.edit', [...$this->formData(), 'session' => $session->load(['meetings', 'payments.incomeTransaction', 'participants']), 'accounts' => Account::where('is_active', true)->orderBy('name')->get(), 'booked' => BookedSlots::keys()]);
     }
 
     public function update(SaveTrainingSessionRequest $request, TrainingSession $session): RedirectResponse
@@ -64,7 +65,14 @@ class TrainingSessionController extends Controller
             return back()->withInput()->withErrors(['fee' => 'A payment for this session is already recorded in Finance. Cancel it before changing the fee or payment plan.']);
         }
 
+        $joined = $session->participants()->count();
+
+        if (($data['participant_limit'] ?? null) !== null && $data['participant_limit'] < $joined) {
+            return back()->withInput()->withErrors(['participant_limit' => "{$joined} participant(s) already joined; the limit cannot be lower."]);
+        }
+
         $session->update($data);
+        $session->syncParticipantToken();
 
         // Sessions created before payment plans existed get their schedule the first time they are saved.
         if ($changesMoney || $session->payments()->doesntExist()) {

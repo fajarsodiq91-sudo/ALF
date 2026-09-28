@@ -43,6 +43,7 @@ class CustomerApproval
                     'delivery_mode' => $entry['delivery_mode'],
                     'location' => $entry['location'] ?? null,
                     'participants_count' => 1,
+                    'participant_limit' => $entry['participant_limit'] ?? null,
                     'fee' => $entry['fee'] ?? 0,
                     'payment_plan' => $entry['payment_plan'] ?? SessionPaymentPlan::FULL, // generate() below applies the single-meeting rule
                     'status' => 'planned',
@@ -59,6 +60,7 @@ class CustomerApproval
                 }
 
                 SessionPaymentPlan::generate($session);
+                $session->syncParticipantToken();
             }
 
             return $customer;

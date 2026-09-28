@@ -65,6 +65,12 @@
         @error('status') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
     <div class="">
+        <label for="participant_limit" class="block text-sm font-medium text-gray-700">Max participants (portal link)</label>
+        <input type="number" name="participant_limit" id="participant_limit" value="{{ old('participant_limit', $session->participant_limit ?? '') }}" min="1" max="1000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+        <p class="mt-1 text-xs text-gray-500">For corporate sessions. Filling this in creates a link the company shares with its employees, up to this many people. Leave empty for none.</p>
+        @error('participant_limit') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+    <div class="">
         <label for="participants_count" class="block text-sm font-medium text-gray-700">Participants</label>
         <input type="number" name="participants_count" id="participants_count" value="{{ old('participants_count', $session->participants_count ?? 0) }}" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
         @error('participants_count') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror

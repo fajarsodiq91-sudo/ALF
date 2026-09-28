@@ -102,7 +102,7 @@
                     </table>
                 </div>
 
-                @if ($session->payments->isNotEmpty())
+                @if ($session->customer_id === $customer->id && $session->payments->isNotEmpty())
                     <div class="border-t border-gray-200 p-6">
                         <h3 class="text-sm font-semibold text-gray-800">Payments <span class="font-normal text-gray-500">&middot; total {{ \App\Services\SessionPaymentPlan::rupiah($session->fee) }}</span></h3>
                         <ul class="mt-3 divide-y divide-gray-100 rounded-md border border-gray-200 text-sm">
@@ -125,6 +125,28 @@
                                 </li>
                             @endforeach
                         </ul>
+                    </div>
+                @endif
+
+                @if ($session->customer_id === $customer->id && $session->acceptsParticipants())
+                    <div class="border-t border-gray-200 p-6">
+                        <h3 class="text-sm font-semibold text-gray-800">Participants <span class="font-normal text-gray-500">&middot; {{ $session->participants->count() }} of {{ $session->participant_limit }}</span></h3>
+                        <p class="text-xs text-gray-500">Share this link with your employees. Each one fills in their name and email and gets their own portal login.</p>
+                        @if ($session->participantLinkOpen())
+                            <input type="text" readonly value="{{ route('participant.show', $session->participant_token) }}" onclick="this.select()" class="mt-2 {{ $inputClass }}">
+                        @else
+                            <p class="mt-2 rounded-md bg-gray-50 px-3 py-2 text-xs text-gray-500">The link is closed: the session is full or no longer open.</p>
+                        @endif
+                        @if ($session->participants->isNotEmpty())
+                            <ul class="mt-3 divide-y divide-gray-100 rounded-md border border-gray-200 text-sm">
+                                @foreach ($session->participants as $participant)
+                                    <li class="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+                                        <span class="font-medium text-gray-800">{{ $participant->name }}</span>
+                                        <span class="text-xs text-gray-400">{{ $participant->email }} · {{ $participant->customer_code }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </div>
                 @endif
 

@@ -184,6 +184,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     });
 
     Route::middleware('permission:training.view')->prefix('training')->group(function () {
+        Route::delete('{session}/participants/{participant}', [TrainingSessionMeetingController::class, 'removeParticipant'])->name('training.participants.destroy');
         Route::post('{session}/meetings', [TrainingSessionMeetingController::class, 'store'])->name('training.meetings.store');
         Route::patch('meetings/{meeting}/toggle', [TrainingSessionMeetingController::class, 'toggle'])->name('training.meetings.toggle');
         Route::delete('meetings/{meeting}', [TrainingSessionMeetingController::class, 'destroy'])->name('training.meetings.destroy');

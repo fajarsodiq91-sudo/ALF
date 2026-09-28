@@ -29,6 +29,7 @@ class SaveTrainingSessionRequest extends FormRequest
             'delivery_mode' => ['required', Rule::in(MasterData::codes('delivery_mode'))],
             'location' => ['nullable', 'string', 'max:255'],
             'participants_count' => ['required', 'integer', 'min:0'],
+            'participant_limit' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'fee' => ['required', 'numeric', 'min:0'],
             'payment_plan' => ['nullable', Rule::in(array_keys(SessionPaymentPlan::PLANS))],
             'status' => ['required', Rule::in(array_keys(TrainingSession::STATUSES))],

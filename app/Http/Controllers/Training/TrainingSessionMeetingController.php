@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Training;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
 use App\Services\BookedSlots;
@@ -39,6 +40,16 @@ class TrainingSessionMeetingController extends Controller
         SessionPaymentPlan::syncDueMeeting($session);
 
         return redirect()->route('training.edit', $session)->with('status', 'Meeting added.');
+    }
+
+    public function removeParticipant(TrainingSession $session, Customer $participant): RedirectResponse
+    {
+        $this->authorize('training.manage');
+
+        $session->participants()->detach($participant->id);
+        $session->update(['participants_count' => $session->participants()->count()]);
+
+        return redirect()->route('training.edit', $session)->with('status', 'Participant removed.');
     }
 
     /** Marks a meeting as done (realised) or back to upcoming. */

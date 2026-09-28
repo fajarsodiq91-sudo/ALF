@@ -13,6 +13,38 @@
             </form>
         </div>
 
+        @if ($session->acceptsParticipants())
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-semibold text-gray-800">Participants</span>
+                    <span class="text-xs text-gray-500">{{ $session->participants->count() }} of {{ $session->participant_limit }} joined</span>
+                </div>
+                @if ($session->participantLinkOpen())
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600">Participant link (the company also sees it in its portal)</label>
+                        <input type="text" readonly value="{{ route('participant.show', $session->participant_token) }}" onclick="this.select()" class="mt-1 {{ $inputClass }}">
+                    </div>
+                @else
+                    <p class="rounded-md bg-gray-50 px-3 py-2 text-xs text-gray-500">The link is closed: the session is full, completed or cancelled.</p>
+                @endif
+                @if ($session->participants->isNotEmpty())
+                    <ul class="divide-y divide-gray-100 rounded-md border border-gray-200 text-sm">
+                        @foreach ($session->participants as $participant)
+                            <li class="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+                                <span><span class="font-medium text-gray-800">{{ $participant->name }}</span> <span class="text-xs text-gray-400">{{ $participant->email }} · {{ $participant->customer_code }}</span></span>
+                                @can('training.manage')
+                                    <form action="{{ route('training.participants.destroy', [$session, $participant]) }}" method="POST" onsubmit="return confirm('Remove this participant from the session?');">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-sm text-red-600 hover:text-red-800">Remove</button>
+                                    </form>
+                                @endcan
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        @endif
+
         <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-x-auto">
             <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
                 <span class="text-sm font-semibold text-gray-800">Payments</span>

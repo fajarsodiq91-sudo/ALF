@@ -28,6 +28,7 @@ class ApproveCustomerRequest extends FormRequest
             'programs.*.training_program_id' => ['required', Rule::exists(TrainingProgram::class, 'id')->where('is_active', true)],
             'programs.*.delivery_mode' => ['required', Rule::in(MasterData::codes('delivery_mode'))],
             'programs.*.instructor_id' => ['nullable', Rule::exists('employees', 'id')->where(fn ($query) => $query->where('status', '!=', 'resigned'))],
+            'programs.*.participant_limit' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'programs.*.location' => ['nullable', 'string', 'max:255'],
             'programs.*.payment_plan' => ['nullable', Rule::in(array_keys(SessionPaymentPlan::PLANS))],
             'programs.*.fee' => ['nullable', 'numeric', 'min:0'],

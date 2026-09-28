@@ -1,6 +1,6 @@
 <x-layouts.erp title="Review Registration">
     @php
-        $emptyProgram = ['program_type' => '', 'payment_plan' => 'full', 'instructor_id' => '', 'training_program_id' => '', 'delivery_mode' => 'onsite', 'location' => '', 'fee' => '', 'meetings' => [['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => '']]];
+        $emptyProgram = ['program_type' => '', 'payment_plan' => 'full', 'instructor_id' => '', 'training_program_id' => '', 'delivery_mode' => 'onsite', 'location' => '', 'fee' => '', 'participant_limit' => '', 'meetings' => [['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => '']]];
         $emptyMeeting = ['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => ''];
         $modes = \App\Services\MasterData::options('delivery_mode');
         $prefill = collect($requested)->map(fn ($entry) => [
@@ -167,6 +167,11 @@
                                     <option value="{{ $value }}">{{ $label }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Max participants (optional)</label>
+                            <input type="number" min="1" max="1000" :name="`programs[${i}][participant_limit]`" x-model="program.participant_limit" class="{{ $inputClass }}">
+                            <p class="mt-1 text-xs text-gray-500">For corporate training: the company gets a link to let up to this many employees join and log in to the portal. Leave empty for none.</p>
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Instructor (optional)</label>
