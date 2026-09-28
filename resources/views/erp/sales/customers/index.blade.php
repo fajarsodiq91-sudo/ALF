@@ -27,6 +27,7 @@
                 <option value="">All statuses</option>
                 <option value="active" @selected(request('status') === 'active')>Active</option>
                 <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
+                <option value="awaiting" @selected(request('status') === 'awaiting')>Awaiting customer</option>
             </select>
             <button type="submit" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 hover:shadow-md hover:-translate-y-px">Filter</button>
         </form>
@@ -51,15 +52,30 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($customers as $customer)
                         <tr>
-                            <td class="px-4 py-3 font-mono text-gray-500">{{ $customer->customer_code }}</td>
-                            <td class="px-4 py-3 font-medium text-gray-800">{{ $customer->name }}</td>
+                            <td class="px-4 py-3 font-mono text-gray-500">{{ $customer->customer_code ?? '—' }}</td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-3">
+                                    @if ($customer->photoUrl())
+                                        <img src="{{ $customer->photoUrl() }}" alt="" class="h-8 w-8 rounded-full object-cover ring-1 ring-gray-200">
+                                    @else
+                                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand">{{ $customer->name ? strtoupper(mb_substr($customer->name, 0, 1)) : '?' }}</span>
+                                    @endif
+                                    @if ($customer->isAwaitingCustomer())
+                                        <span class="italic text-gray-400">Waiting for customer to fill in</span>
+                                    @else
+                                        <span class="font-medium text-gray-800">{{ $customer->name }}</span>
+                                    @endif
+                                </div>
+                            </td>
                             <td class="px-4 py-3 text-gray-500">{{ \App\Models\Customer::TYPES[$customer->customer_type] ?? $customer->customer_type }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $customer->contact_person ?: '—' }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $customer->email ?: '—' }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $customer->phone ?: '—' }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $customer->city ?: '—' }}</td>
                             <td class="px-4 py-3">
-                                @if ($customer->is_active)
+                                @if ($customer->isAwaitingCustomer())
+                                    <span class="inline-flex rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 text-xs font-medium">Awaiting customer</span>
+                                @elseif ($customer->is_active)
                                     <span class="inline-flex rounded-full bg-green-50 text-green-700 px-2 py-0.5 text-xs font-medium">Active</span>
                                 @else
                                     <span class="inline-flex rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-xs font-medium">Inactive</span>
@@ -67,6 +83,9 @@
                             </td>
                             @can('sales.manage')
                                 <td class="px-4 py-3 text-right">
+                                    @if ($customer->isAwaitingCustomer())
+                                        <a href="{{ route('sales.invite.show', $customer) }}" class="mr-3 text-brand hover:text-brand-dark font-medium">QR Code</a>
+                                    @endif
                                     <a href="{{ route('sales.edit', $customer) }}" class="text-brand hover:text-brand-dark font-medium">Edit</a>
                                     <form action="{{ route('sales.destroy', $customer) }}" method="POST" class="inline" onsubmit="return confirm('Delete this customer?');">
                                         @csrf

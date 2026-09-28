@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CustomerRegistrationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicSiteController;
 use Illuminate\Support\Facades\Route;
@@ -10,6 +11,12 @@ Route::get('/services', [PublicSiteController::class, 'services'])->name('servic
 Route::get('/portfolio', [PublicSiteController::class, 'portfolio'])->name('portfolio');
 Route::get('/contact', [PublicSiteController::class, 'contact'])->name('contact');
 Route::get('/thank-you', [PublicSiteController::class, 'thankYou'])->name('thank-you');
+
+Route::middleware('throttle:30,1')->prefix('customer-registration')->name('customer-registration.')->group(function () {
+    Route::get('/done', [CustomerRegistrationController::class, 'done'])->name('done');
+    Route::get('/{token}', [CustomerRegistrationController::class, 'show'])->name('show');
+    Route::post('/{token}', [CustomerRegistrationController::class, 'store'])->name('store');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

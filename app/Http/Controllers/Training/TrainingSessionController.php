@@ -74,7 +74,7 @@ class TrainingSessionController extends Controller
     {
         return [
             'programs' => TrainingProgram::orderBy('name')->get(),
-            'customers' => Customer::orderBy('name')->get(),
+            'customers' => Customer::registered()->orderBy('name')->get(),
             'instructors' => Employee::where('status', '!=', 'resigned')->orderBy('name')->get(),
         ];
     }

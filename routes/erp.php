@@ -147,6 +147,9 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     });
 
     Route::middleware('permission:sales.view')->group(function () {
+        Route::post('sales/invite', [CustomerController::class, 'invite'])->name('sales.invite.store');
+        Route::get('sales/{customer}/invite', [CustomerController::class, 'showInvite'])->name('sales.invite.show');
+        Route::post('sales/{customer}/invite/regenerate', [CustomerController::class, 'regenerateInvite'])->name('sales.invite.regenerate');
         Route::resource('sales', CustomerController::class)->except(['show'])->parameters(['sales' => 'customer'])->names([
             'index' => 'sales.index',
             'create' => 'sales.create',

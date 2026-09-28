@@ -86,7 +86,7 @@ class ProjectController extends Controller
     private function formData(): array
     {
         return [
-            'customers' => Customer::orderBy('name')->get(),
+            'customers' => Customer::registered()->orderBy('name')->get(),
             'managers' => Employee::where('status', '!=', 'resigned')->orderBy('name')->get(),
         ];
     }

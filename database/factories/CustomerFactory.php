@@ -24,4 +24,19 @@ class CustomerFactory extends Factory
             'notes' => fake()->optional()->sentence(),
         ];
     }
+
+    /** A customer created by an admin who still has to fill in their own details. */
+    public function awaitingCustomer(): static
+    {
+        return $this->state(fn () => [
+            'name' => null,
+            'contact_person' => null,
+            'email' => null,
+            'phone' => null,
+            'city' => null,
+            'address' => null,
+            'notes' => null,
+            'registration_status' => Customer::REGISTRATION_AWAITING,
+        ]);
+    }
 }

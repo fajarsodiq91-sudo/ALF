@@ -59,6 +59,9 @@ if $RUN_MIGRATE; then
   $SSH "cd $REMOTE_APP_DIR && $REMOTE_PHP artisan migrate --force"
 fi
 
+echo "==> Linking public storage (customer photos)"
+$SSH "cd $REMOTE_APP_DIR && $REMOTE_PHP artisan storage:link || true"
+
 echo "==> Ensuring roles and permissions exist (idempotent)"
 $SSH "cd $REMOTE_APP_DIR && $REMOTE_PHP artisan db:seed --class=RolePermissionSeeder --force"
 
