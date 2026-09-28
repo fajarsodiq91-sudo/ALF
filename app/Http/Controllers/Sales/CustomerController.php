@@ -8,6 +8,7 @@ use App\Http\Requests\Sales\InviteCustomerRequest;
 use App\Http\Requests\Sales\StoreCustomerRequest;
 use App\Http\Requests\Sales\UpdateCustomerRequest;
 use App\Mail\CustomerRegistrationApproved;
+use App\Mail\CustomerRegistrationRejected;
 use App\Models\Customer;
 use App\Models\Project;
 use App\Models\TrainingProgram;
@@ -180,7 +181,16 @@ class CustomerController extends Controller
 
         CustomerApproval::reject($customer, $data['rejection_reason'] ?? null);
 
-        return redirect()->route('sales.index')->with('status', 'Registration rejected.');
+        try {
+            Mail::to($customer->email)->send(new CustomerRegistrationRejected($customer));
+        } catch (Throwable $exception) {
+            Log::error('Could not send the rejection email.', ['customer_id' => $customer->id, 'error' => $exception->getMessage()]);
+
+            return redirect()->route('sales.index')
+                ->with('error', 'Registration rejected, but the email to the customer could NOT be sent. Please contact them manually (check the mail settings).');
+        }
+
+        return redirect()->route('sales.index')->with('status', "Registration rejected. An email was sent to {$customer->email}.");
     }
 
     public function edit(Customer $customer): View

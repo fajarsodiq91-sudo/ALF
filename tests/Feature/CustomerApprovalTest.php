@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\CustomerRegistrationApproved;
+use App\Mail\CustomerRegistrationRejected;
 use App\Models\Customer;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
@@ -187,12 +188,13 @@ class CustomerApprovalTest extends TestCase
         Mail::assertNothingSent();
     }
 
-    public function test_rejecting_keeps_the_record_without_an_id(): void
+    public function test_rejecting_keeps_the_record_without_an_id_and_emails_the_customer(): void
     {
-        $customer = Customer::factory()->pendingApproval()->create();
+        Mail::fake();
+        $customer = Customer::factory()->pendingApproval()->create(['name' => 'PT Ditolak', 'email' => 'tolak@pt.test']);
 
         $this->actingAs($this->financeUser())->post(route('sales.reject', $customer), ['rejection_reason' => 'Data tidak lengkap'])
-            ->assertRedirect(route('sales.index'));
+            ->assertRedirect(route('sales.index'))->assertSessionHas('status');
 
         $customer->refresh();
         $this->assertTrue($customer->isRejected());
@@ -200,6 +202,40 @@ class CustomerApprovalTest extends TestCase
         $this->assertNull($customer->customer_code);
         $this->assertNull($customer->password);
         $this->actingAs($this->financeUser())->get(route('sales.index', ['status' => 'rejected']))->assertSee('Rejected');
+
+        Mail::assertSent(CustomerRegistrationRejected::class, function (CustomerRegistrationRejected $mail) {
+            $mail->assertTo('tolak@pt.test');
+            $mail->assertSeeInHtml('PT Ditolak');
+            $mail->assertSeeInHtml('unable to approve');
+            $mail->assertSeeInHtml('Data tidak lengkap');
+
+            return true;
+        });
+    }
+
+    public function test_rejection_email_works_without_a_reason(): void
+    {
+        Mail::fake();
+        $customer = Customer::factory()->pendingApproval()->create();
+
+        $this->actingAs($this->financeUser())->post(route('sales.reject', $customer));
+
+        Mail::assertSent(CustomerRegistrationRejected::class, function (CustomerRegistrationRejected $mail) {
+            $mail->assertDontSeeInHtml('Reason:');
+
+            return true;
+        });
+    }
+
+    public function test_rejection_stands_even_if_the_email_cannot_be_sent(): void
+    {
+        Mail::shouldReceive('to')->andThrow(new \RuntimeException('smtp down'));
+        $customer = Customer::factory()->pendingApproval()->create();
+
+        $this->actingAs($this->financeUser())->post(route('sales.reject', $customer))
+            ->assertRedirect(route('sales.index'))->assertSessionHas('error');
+
+        $this->assertTrue($customer->fresh()->isRejected());
     }
 
     public function test_view_only_users_cannot_review_or_approve(): void

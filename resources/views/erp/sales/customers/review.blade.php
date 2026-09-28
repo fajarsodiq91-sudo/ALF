@@ -127,7 +127,8 @@
         <form action="{{ route('sales.reject', $customer) }}" method="POST" class="bg-white rounded-lg shadow-md border border-gray-200 p-6" onsubmit="return confirm('Reject this registration?');">
             @csrf
             <h3 class="text-sm font-semibold text-gray-800">Reject instead</h3>
-            <textarea name="rejection_reason" rows="2" placeholder="Reason (optional, for your own records)" class="{{ $inputClass }}"></textarea>
+            <p class="text-xs text-gray-500 mb-2">The customer will be told by email that the registration was not approved.</p>
+            <textarea name="rejection_reason" rows="2" placeholder="Reason (optional). It is included in the email sent to the customer." class="{{ $inputClass }}"></textarea>
             <button type="submit" class="mt-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-red-600 shadow-sm hover:bg-red-50">Reject Registration</button>
         </form>
     </div>
