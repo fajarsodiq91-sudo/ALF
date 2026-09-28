@@ -99,6 +99,32 @@
                     </table>
                 </div>
 
+                @if ($session->payments->isNotEmpty())
+                    <div class="border-t border-gray-200 p-6">
+                        <h3 class="text-sm font-semibold text-gray-800">Payments <span class="font-normal text-gray-500">&middot; total {{ \App\Services\SessionPaymentPlan::rupiah($session->fee) }}</span></h3>
+                        <ul class="mt-3 divide-y divide-gray-100 rounded-md border border-gray-200 text-sm">
+                            @foreach ($session->payments as $payment)
+                                <li class="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
+                                    <div>
+                                        <span class="font-medium text-gray-800">{{ $payment->label }}</span>
+                                        <span class="text-xs text-gray-400">&middot; {{ $payment->dueLabel() }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-gray-800">{{ \App\Services\SessionPaymentPlan::rupiah($payment->amount) }}</span>
+                                        @if ($payment->isPaid())
+                                            <span class="rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">Paid</span>
+                                        @elseif ($payment->isDue())
+                                            <span class="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">Due</span>
+                                        @else
+                                            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">Upcoming</span>
+                                        @endif
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="border-t border-gray-200 p-6">
                     <h3 class="text-sm font-semibold text-gray-800">Your project</h3>
                     <p class="text-xs text-gray-500">Upload the project you built in this program. We may add it to our portfolio.</p>

@@ -44,6 +44,7 @@ class CustomerApproval
                     'location' => $entry['location'] ?? null,
                     'participants_count' => 1,
                     'fee' => $entry['fee'] ?? 0,
+                    'payment_plan' => $entry['payment_plan'] ?? SessionPaymentPlan::FULL,
                     'status' => 'planned',
                 ]);
 
@@ -56,6 +57,8 @@ class CustomerApproval
                         'topic' => $meeting['topic'] ?? null,
                     ]);
                 }
+
+                SessionPaymentPlan::generate($session);
             }
 
             return $customer;

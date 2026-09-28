@@ -12,12 +12,18 @@
     <body class="font-sans antialiased text-gray-900 min-h-screen bg-gradient-to-br from-steel-100 via-white to-brand-50">
         @include('erp.partials.operating-hours')
         <script>
-            function registrationForm(initial) {
+            function registrationForm(initial, prices) {
                 return {
-                    programs: initial,
+                    programs: initial.map(p => ({ payment_plan: 'full', ...p })),
+                    prices,
+                    priceOf(program) { return parseFloat(this.prices[program.training_program_id]) || 0; },
+                    rupiah(amount) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount); },
+                    half(program) { return Math.round(this.priceOf(program) / 2 * 100) / 100; },
+                    totalFee() { return this.programs.reduce((sum, p) => sum + this.priceOf(p), 0); },
+                    dueNow() { return this.programs.reduce((sum, p) => sum + (p.payment_plan === 'installment' ? this.half(p) : this.priceOf(p)), 0); },
                     hours: window.operatingHours,
                     today: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
-                    addProgram() { this.programs.push({ training_program_id: '', meetings: [{ meeting_date: '', start_time: '', end_time: '' }] }); },
+                    addProgram() { this.programs.push({ training_program_id: '', payment_plan: 'full', meetings: [{ meeting_date: '', start_time: '', end_time: '' }] }); },
                     addMeeting(program) { program.meetings.push({ meeting_date: '', start_time: '', end_time: '' }); },
                 };
             }
@@ -31,7 +37,7 @@
                 <h1 class="text-lg font-semibold text-gray-800">Customer Registration</h1>
                 <p class="mt-1 text-sm text-gray-500">Please fill in your details. Registration type: <span class="font-medium text-gray-700">{{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }}</span>.</p>
 
-                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" x-data='registrationForm(@json(old("programs", [])))'>
+                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" x-data='registrationForm(@json(old("programs", [])), @json($prices))'>
                     @csrf
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Name / Company Name <span class="text-red-600">*</span></label>
@@ -89,6 +95,25 @@
                                 @endforeach
                             </select>
 
+                            <div x-show="priceOf(program) > 0" x-cloak class="mt-3 rounded-md bg-brand-50 px-3 py-3 text-sm">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-600">Program fee</span>
+                                    <span class="font-semibold text-gray-900" x-text="rupiah(priceOf(program))"></span>
+                                </div>
+                                <p class="mt-3 text-xs font-medium text-gray-600">How would you like to pay?</p>
+                                <label class="mt-1 flex items-start gap-2 text-gray-700">
+                                    <input type="radio" :name="`programs[${i}][payment_plan]`" value="full" x-model="program.payment_plan" class="mt-1 text-brand focus:ring-brand">
+                                    <span><span class="font-medium">Pay in full upfront</span><span class="block text-xs text-gray-500" x-text="rupiah(priceOf(program)) + ' when you register'"></span></span>
+                                </label>
+                                <label class="mt-2 flex items-start gap-2 text-gray-700">
+                                    <input type="radio" :name="`programs[${i}][payment_plan]`" value="installment" x-model="program.payment_plan" class="mt-1 text-brand focus:ring-brand">
+                                    <span><span class="font-medium">50% upfront, 50% at the middle meeting</span><span class="block text-xs text-gray-500" x-text="rupiah(half(program)) + ' when you register, then ' + rupiah(priceOf(program) - half(program)) + ' at the middle meeting of your program'"></span></span>
+                                </label>
+                            </div>
+                            <template x-if="priceOf(program) <= 0">
+                                <input type="hidden" :name="`programs[${i}][payment_plan]`" value="full">
+                            </template>
+
                             <div class="mt-3 space-y-2">
                                 <template x-for="(meeting, j) in program.meetings" :key="j">
                                     <div class="grid grid-cols-2 gap-2 items-start">
@@ -129,6 +154,12 @@
                             <button type="button" @click="addMeeting(program)" class="mt-2 text-sm font-medium text-brand hover:text-brand-dark">+ Add another date</button>
                         </div>
                     </template>
+
+                    <div x-show="programs.length && totalFee() > 0" x-cloak class="mt-3 rounded-md border border-brand/30 bg-white px-3 py-2 text-sm">
+                        <div class="flex justify-between"><span class="text-gray-600">Total program fee</span><span class="font-semibold" x-text="rupiah(totalFee())"></span></div>
+                        <div class="flex justify-between"><span class="text-gray-600">To pay when you register</span><span class="font-semibold text-brand" x-text="rupiah(dueNow())"></span></div>
+                        <p class="mt-1 text-xs text-gray-400">These are standard prices. Our team confirms the final fee and payment details when approving your registration.</p>
+                    </div>
 
                     <button type="button" @click="addProgram()" class="mt-3 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">+ Choose a program</button>
                     <p class="mt-3 text-xs text-gray-500">

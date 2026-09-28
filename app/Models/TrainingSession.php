@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'training_program_id', 'customer_id', 'instructor_id', 'start_date', 'end_date',
-    'delivery_mode', 'location', 'participants_count', 'fee', 'status', 'notes',
+    'delivery_mode', 'location', 'participants_count', 'fee', 'payment_plan', 'status', 'notes',
     'materials_url', 'certificate_url',
 ])]
 class TrainingSession extends Model
@@ -48,6 +48,16 @@ class TrainingSession extends Model
     public function instructor(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'instructor_id');
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(TrainingSessionPayment::class)->orderBy('id');
+    }
+
+    public function paidAmount(): float
+    {
+        return (float) $this->payments->filter->isPaid()->sum('amount');
     }
 
     public function meetings(): HasMany

@@ -75,6 +75,16 @@
         @error('fee') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
     <div class="sm:col-span-2">
+        <label for="payment_plan" class="block text-sm font-medium text-gray-700">Payment Plan</label>
+        <select name="payment_plan" id="payment_plan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+            @foreach (\App\Services\SessionPaymentPlan::PLANS as $value => $label)
+                <option value="{{ $value }}" @selected(old('payment_plan', $session->payment_plan ?? 'full') === $value)>{{ $label }}</option>
+            @endforeach
+        </select>
+        <p class="mt-1 text-xs text-gray-500">The fee above is split accordingly. Payments are recorded as income in Finance on the session's edit page.</p>
+        @error('payment_plan') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+    <div class="sm:col-span-2">
         <label for="materials_url" class="block text-sm font-medium text-gray-700">Learning Materials Link</label>
         <input type="url" name="materials_url" id="materials_url" value="{{ old('materials_url', $session->materials_url ?? '') }}" placeholder="https://" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
         <p class="mt-1 text-xs text-gray-500">Shown to the customer in their portal once filled in.</p>

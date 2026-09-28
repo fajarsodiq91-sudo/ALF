@@ -14,6 +14,92 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-x-auto">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                <span class="text-sm font-semibold text-gray-800">Payments</span>
+                <span class="text-xs text-gray-500">
+                    {{ \App\Services\SessionPaymentPlan::rupiah($session->paidAmount()) }} received of {{ \App\Services\SessionPaymentPlan::rupiah($session->fee) }}
+                </span>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500">Payment</th>
+                        <th class="px-4 py-3 text-right font-medium text-gray-500">Amount</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500">Due</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500">Status</th>
+                        @can('finance.manage')
+                            <th class="px-4 py-3 text-right font-medium text-gray-500">Actions</th>
+                        @endcan
+                    </tr>
+                </thead>
+                @forelse ($session->payments as $payment)
+                    <tbody x-data="{ paying: false }" class="divide-y divide-gray-100 border-t border-gray-100">
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-gray-800">{{ $payment->label }}</td>
+                            <td class="px-4 py-3 text-right text-gray-800">{{ \App\Services\SessionPaymentPlan::rupiah($payment->amount) }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ $payment->dueLabel() }}</td>
+                            <td class="px-4 py-3">
+                                @if ($payment->isPaid())
+                                    <span class="inline-flex rounded-full bg-green-50 text-green-700 px-2 py-0.5 text-xs font-medium">Paid {{ $payment->paid_date?->format('d M Y') }}</span>
+                                @elseif ($payment->isDue())
+                                    <span class="inline-flex rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 text-xs font-medium">Due now</span>
+                                @else
+                                    <span class="inline-flex rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-xs font-medium">Not yet due</span>
+                                @endif
+                            </td>
+                            @can('finance.manage')
+                                <td class="px-4 py-3 text-right whitespace-nowrap">
+                                    @if ($payment->isPaid())
+                                        <form action="{{ route('training.payments.cancel', $payment) }}" method="POST" class="inline" onsubmit="return confirm('Cancel this payment? The Finance income will be removed.');">
+                                            @csrf
+                                            <button type="submit" class="text-amber-600 hover:text-amber-800 font-medium">Cancel payment</button>
+                                        </form>
+                                    @else
+                                        <button type="button" @click="paying = !paying" class="text-green-600 hover:text-green-800 font-medium">Record payment</button>
+                                    @endif
+                                </td>
+                            @endcan
+                        </tr>
+                        @if (! $payment->isPaid())
+                            @can('finance.manage')
+                                <tr x-show="paying" x-cloak class="bg-gray-50">
+                                    <td colspan="5" class="px-4 py-3">
+                                        <form action="{{ route('training.payments.pay', $payment) }}" method="POST" class="flex flex-wrap items-end gap-3">
+                                            @csrf
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600">Received in account</label>
+                                                <select name="account_id" required class="mt-1 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                                    @foreach ($accounts as $account)
+                                                        <option value="{{ $account->id }}">{{ $account->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600">Date received</label>
+                                                <input type="date" name="paid_date" value="{{ now()->format('Y-m-d') }}" required class="mt-1 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-600">Method</label>
+                                                <select name="payment_method" class="mt-1 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                                    @foreach (\App\Models\Payroll::PAYMENT_METHODS as $method)
+                                                        <option value="{{ $method }}">{{ $method }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-brand-dark hover:to-brand-dark">Confirm &amp; add to Finance income</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endcan
+                        @endif
+                    </tbody>
+                @empty
+                    <tbody><tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">No payments. Set a fee above to create the payment schedule.</td></tr></tbody>
+                @endforelse
+            </table>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-x-auto">
             <div class="px-4 py-3 border-b border-gray-200 text-sm font-semibold text-gray-800">Meeting schedule</div>
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">

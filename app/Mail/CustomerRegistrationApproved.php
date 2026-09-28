@@ -21,7 +21,7 @@ class CustomerRegistrationApproved extends Mailable
         return new Content(
             markdown: 'emails.customer-registration-approved',
             with: [
-                'sessions' => $this->customer->sessions()->with(['program', 'meetings', 'instructor'])->orderBy('start_date')->get(),
+                'sessions' => $this->customer->sessions()->with(['program', 'meetings', 'instructor', 'payments'])->orderBy('start_date')->get(),
                 'loginUrl' => route('portal.login'),
             ],
         );

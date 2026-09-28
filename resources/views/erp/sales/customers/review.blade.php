@@ -1,12 +1,13 @@
 <x-layouts.erp title="Review Registration">
     @php
-        $emptyProgram = ['program_type' => '', 'instructor_id' => '', 'training_program_id' => '', 'delivery_mode' => 'onsite', 'location' => '', 'fee' => '', 'meetings' => [['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => '']]];
+        $emptyProgram = ['program_type' => '', 'payment_plan' => 'full', 'instructor_id' => '', 'training_program_id' => '', 'delivery_mode' => 'onsite', 'location' => '', 'fee' => '', 'meetings' => [['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => '']]];
         $emptyMeeting = ['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => ''];
         $modes = \App\Services\MasterData::options('delivery_mode');
         $prefill = collect($requested)->map(fn ($entry) => [
             'program_type' => $entry['program']->program_type,
             'training_program_id' => (string) $entry['program']->id,
             'instructor_id' => '',
+            'payment_plan' => $entry['plan'],
             'delivery_mode' => array_key_first($modes) ?? 'onsite',
             'location' => '',
             'fee' => (string) (float) $entry['program']->standard_price,
@@ -25,7 +26,24 @@
     @include('erp.partials.operating-hours')
     <script>
         function reviewForm(programs, emptyProgram, emptyMeeting, catalog) {
-            return { programs, emptyProgram, emptyMeeting, catalog, hours: window.operatingHours };
+            return {
+                programs, emptyProgram, emptyMeeting, catalog, hours: window.operatingHours,
+                rupiah(amount) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount); },
+                /** Mirrors the server's payment plan so the split is visible before approving. */
+                paymentPreview(program) {
+                    const fee = parseFloat(program.fee) || 0;
+                    if (fee <= 0) { return []; }
+                    if (program.payment_plan === 'installment') {
+                        const first = Math.round(fee / 2 * 100) / 100;
+                        const middle = Math.max(1, Math.ceil(program.meetings.length / 2));
+                        return [
+                            { label: 'Down payment (50%)', amount: first, when: 'Upon registration' },
+                            { label: 'Final payment (50%)', amount: Math.round((fee - first) * 100) / 100, when: 'At meeting ' + middle },
+                        ];
+                    }
+                    return [{ label: 'Full payment', amount: fee, when: 'Upon registration' }];
+                },
+            };
         }
     </script>
 
@@ -68,7 +86,7 @@
                 <p class="text-xs text-blue-700">These are pre-filled below. Adjust the dates, mode, place, and fee, or remove anything you cannot offer.</p>
                 <ul class="mt-2 space-y-1">
                     @foreach ($requested as $entry)
-                        <li><span class="font-medium">{{ $entry['program']->name }}</span>: {{ collect($entry['meetings'])->pluck('label')->implode(' · ') }}</li>
+                        <li><span class="font-medium">{{ $entry['program']->name }}</span> ({{ \App\Services\SessionPaymentPlan::rupiah($entry['price']) }}, {{ \App\Services\SessionPaymentPlan::PLANS[$entry['plan']] ?? $entry['plan'] }}): {{ collect($entry['meetings'])->pluck('label')->implode(' · ') }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -141,6 +159,19 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Fee (Rp)</label>
                             <input type="number" min="0" step="0.01" :name="`programs[${i}][fee]`" x-model="program.fee" class="{{ $inputClass }}">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Payment plan</label>
+                            <select :name="`programs[${i}][payment_plan]`" x-model="program.payment_plan" class="{{ $inputClass }}">
+                                @foreach (\App\Services\SessionPaymentPlan::PLANS as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <ul x-show="paymentPreview(program).length" x-cloak class="mt-2 rounded-md bg-brand-50 px-3 py-2 text-xs text-gray-600">
+                                <template x-for="payment in paymentPreview(program)" :key="payment.label">
+                                    <li><span class="font-medium text-gray-700" x-text="payment.label"></span>: <span x-text="rupiah(payment.amount)"></span> &mdash; <span x-text="payment.when"></span></li>
+                                </template>
+                            </ul>
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Default location</label>

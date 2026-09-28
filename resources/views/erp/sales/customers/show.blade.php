@@ -45,7 +45,7 @@
                 <h3 class="text-sm font-semibold text-gray-800">Requested by the customer</h3>
                 <ul class="mt-2 space-y-1 text-sm text-gray-600">
                     @foreach ($customer->requestedProgramSummaries() as $entry)
-                        <li><span class="font-medium text-gray-800">{{ $entry['program']->name }}</span>: {{ collect($entry['meetings'])->pluck('label')->implode(' · ') }}</li>
+                        <li><span class="font-medium text-gray-800">{{ $entry['program']->name }}</span> ({{ \App\Services\SessionPaymentPlan::rupiah($entry['price']) }}, {{ \App\Services\SessionPaymentPlan::PLANS[$entry['plan']] ?? $entry['plan'] }}): {{ collect($entry['meetings'])->pluck('label')->implode(' · ') }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -59,6 +59,7 @@
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Program</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Dates</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Meetings done</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500">Paid</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Status</th>
                         @can('training.view')
                             <th class="px-4 py-3 text-right font-medium text-gray-500"></th>
@@ -71,13 +72,14 @@
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $session->program->name }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $session->start_date->format('d M Y') }} – {{ $session->end_date->format('d M Y') }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $session->meetings->where('is_completed', true)->count() }} / {{ $session->meetings->count() }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ \App\Services\SessionPaymentPlan::rupiah($session->paidAmount()) }} / {{ \App\Services\SessionPaymentPlan::rupiah($session->fee) }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ \App\Models\TrainingSession::STATUSES[$session->status] ?? $session->status }}</td>
                             @can('training.view')
                                 <td class="px-4 py-3 text-right"><a href="{{ route('training.edit', $session) }}" class="text-brand hover:text-brand-dark font-medium">Manage</a></td>
                             @endcan
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">No programs yet.</td></tr>
+                        <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">No programs yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>

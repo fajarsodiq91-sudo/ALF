@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
 use App\Services\OperatingHours;
+use App\Services\SessionPaymentPlan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -28,6 +29,7 @@ class TrainingSessionMeetingController extends Controller
         }
 
         $session->meetings()->create($data);
+        SessionPaymentPlan::syncDueMeeting($session);
 
         return redirect()->route('training.edit', $session)->with('status', 'Meeting added.');
     }
@@ -49,6 +51,7 @@ class TrainingSessionMeetingController extends Controller
         $this->authorize('training.manage');
 
         $meeting->delete();
+        SessionPaymentPlan::syncDueMeeting($meeting->session);
 
         return redirect()->route('training.edit', $meeting->training_session_id)->with('status', 'Meeting deleted.');
     }

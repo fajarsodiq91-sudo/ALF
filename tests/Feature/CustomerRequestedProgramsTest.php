@@ -98,11 +98,11 @@ class CustomerRequestedProgramsTest extends TestCase
         $customer = Customer::firstOrFail();
         $this->assertTrue($customer->isPendingApproval());
         $this->assertSame([
-            ['training_program_id' => $program->id, 'meetings' => [
+            ['training_program_id' => $program->id, 'payment_plan' => 'full', 'meetings' => [
                 ['meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30'],
                 ['meeting_date' => '2026-10-10', 'start_time' => '09:00', 'end_time' => '10:30'],
             ]],
-            ['training_program_id' => $second->id, 'meetings' => [['meeting_date' => '2026-10-11', 'start_time' => '14:40', 'end_time' => '16:00']]],
+            ['training_program_id' => $second->id, 'payment_plan' => 'full', 'meetings' => [['meeting_date' => '2026-10-11', 'start_time' => '14:40', 'end_time' => '16:00']]],
         ], $customer->requested_programs);
         $this->assertSame(0, TrainingSession::count()); // nothing is scheduled until the company approves
 
@@ -216,7 +216,7 @@ class CustomerRequestedProgramsTest extends TestCase
         $session = TrainingSession::firstOrFail();
         $this->assertSame($program->id, $session->training_program_id);
         $this->assertSame('2026-10-10', $session->meetings->first()->meeting_date->toDateString());
-        $this->assertSame([['training_program_id' => $program->id, 'meetings' => [$this->slot('2026-10-10', '09:00', '10:30')]]], $customer->fresh()->requested_programs);
+        $this->assertSame([['training_program_id' => $program->id, 'payment_plan' => 'full', 'meetings' => [$this->slot('2026-10-10', '09:00', '10:30')]]], $customer->fresh()->requested_programs);
     }
 
     public function test_programs_that_disappear_are_left_out_of_the_summary(): void

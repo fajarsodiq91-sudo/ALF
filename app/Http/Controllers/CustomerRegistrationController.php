@@ -25,10 +25,13 @@ class CustomerRegistrationController extends Controller
             return response()->view('customer-registration.invalid', [], 410);
         }
 
+        $programs = TrainingProgram::where('is_active', true)->orderBy('name')->get();
+
         return view('customer-registration.form', [
             'customer' => $customer,
             'token' => $token,
-            'programs' => TrainingProgram::where('is_active', true)->orderBy('name')->get()->groupBy('program_type'),
+            'programs' => $programs->groupBy('program_type'),
+            'prices' => $programs->mapWithKeys(fn ($program) => [$program->id => (float) $program->standard_price]),
         ]);
     }
 
@@ -71,6 +74,8 @@ class CustomerRegistrationController extends Controller
                 'programs' => collect($customer->requestedProgramSummaries())->map(fn ($entry) => [
                     'name' => $entry['program']->name,
                     'meetings' => collect($entry['meetings'])->pluck('label')->all(),
+                    'price' => $entry['price'],
+                    'payments' => $entry['payments'],
                 ])->all(),
             ]);
     }

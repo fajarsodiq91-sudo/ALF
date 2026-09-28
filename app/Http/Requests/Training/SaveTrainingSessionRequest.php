@@ -4,6 +4,7 @@ namespace App\Http\Requests\Training;
 
 use App\Models\TrainingSession;
 use App\Services\MasterData;
+use App\Services\SessionPaymentPlan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -29,6 +30,7 @@ class SaveTrainingSessionRequest extends FormRequest
             'location' => ['nullable', 'string', 'max:255'],
             'participants_count' => ['required', 'integer', 'min:0'],
             'fee' => ['required', 'numeric', 'min:0'],
+            'payment_plan' => ['nullable', Rule::in(array_keys(SessionPaymentPlan::PLANS))],
             'status' => ['required', Rule::in(array_keys(TrainingSession::STATUSES))],
             'materials_url' => ['nullable', 'url', 'max:2048'],
             'certificate_url' => ['nullable', 'url', 'max:2048'],

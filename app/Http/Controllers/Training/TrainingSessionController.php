@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Training;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Training\SaveTrainingSessionRequest;
+use App\Models\Account;
 use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
+use App\Services\SessionPaymentPlan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -39,7 +41,8 @@ class TrainingSessionController extends Controller
 
     public function store(SaveTrainingSessionRequest $request): RedirectResponse
     {
-        TrainingSession::create($request->validated());
+        $session = TrainingSession::create([...$request->validated(), 'payment_plan' => $request->validated('payment_plan') ?? SessionPaymentPlan::FULL]);
+        SessionPaymentPlan::generate($session);
 
         return redirect()->route('training.index')->with('status', 'Training session created successfully.');
     }
@@ -48,12 +51,24 @@ class TrainingSessionController extends Controller
     {
         $this->authorize('training.manage');
 
-        return view('erp.training.sessions.edit', [...$this->formData(), 'session' => $session->load('meetings')]);
+        return view('erp.training.sessions.edit', [...$this->formData(), 'session' => $session->load(['meetings', 'payments.incomeTransaction']), 'accounts' => Account::where('is_active', true)->orderBy('name')->get()]);
     }
 
     public function update(SaveTrainingSessionRequest $request, TrainingSession $session): RedirectResponse
     {
-        $session->update($request->validated());
+        $data = [...$request->validated(), 'payment_plan' => $request->validated('payment_plan') ?? $session->payment_plan];
+        $changesMoney = (float) $data['fee'] !== (float) $session->fee || $data['payment_plan'] !== $session->payment_plan;
+
+        if ($changesMoney && $session->payments()->whereNotNull('income_transaction_id')->exists()) {
+            return back()->withInput()->withErrors(['fee' => 'A payment for this session is already recorded in Finance. Cancel it before changing the fee or payment plan.']);
+        }
+
+        $session->update($data);
+
+        // Sessions created before payment plans existed get their schedule the first time they are saved.
+        if ($changesMoney || $session->payments()->doesntExist()) {
+            SessionPaymentPlan::generate($session);
+        }
 
         return redirect()->route('training.index')->with('status', 'Training session updated successfully.');
     }

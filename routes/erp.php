@@ -28,6 +28,7 @@ use App\Http\Controllers\Settings\UserController;
 use App\Http\Controllers\Training\TrainingProgramController;
 use App\Http\Controllers\Training\TrainingSessionController;
 use App\Http\Controllers\Training\TrainingSessionMeetingController;
+use App\Http\Controllers\Training\TrainingSessionPaymentController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/erp', '/erp/dashboard');
@@ -178,6 +179,8 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::post('{session}/meetings', [TrainingSessionMeetingController::class, 'store'])->name('training.meetings.store');
         Route::patch('meetings/{meeting}/toggle', [TrainingSessionMeetingController::class, 'toggle'])->name('training.meetings.toggle');
         Route::delete('meetings/{meeting}', [TrainingSessionMeetingController::class, 'destroy'])->name('training.meetings.destroy');
+        Route::post('payments/{payment}/pay', [TrainingSessionPaymentController::class, 'pay'])->name('training.payments.pay');
+        Route::post('payments/{payment}/cancel', [TrainingSessionPaymentController::class, 'cancel'])->name('training.payments.cancel');
     });
 
     Route::middleware('permission:training.view')->group(function () {

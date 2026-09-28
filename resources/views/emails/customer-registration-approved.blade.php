@@ -32,6 +32,14 @@ Instructor: {{ $session->instructor->name }}
 - {{ $meeting->meeting_date->format('l, d M Y') }}@if ($meeting->timeRange()), {{ $meeting->timeRange() }}@endif @if ($meeting->location ?? $session->location) at {{ $meeting->location ?? $session->location }}@endif @if ($meeting->topic) ({{ $meeting->topic }})@endif
 
 @endforeach
+@if ($session->payments->isNotEmpty())
+**Fee {{ \App\Services\SessionPaymentPlan::rupiah($session->fee) }}**
+
+@foreach ($session->payments as $payment)
+- {{ $payment->label }}: {{ \App\Services\SessionPaymentPlan::rupiah($payment->amount) }} ({{ $payment->dueLabel() }})
+@endforeach
+
+@endif
 @empty
 Your program schedule will be shared soon.
 @endforelse

@@ -5,6 +5,7 @@ namespace App\Http\Requests\Sales;
 use App\Models\TrainingProgram;
 use App\Services\MasterData;
 use App\Services\OperatingHours;
+use App\Services\SessionPaymentPlan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -27,6 +28,7 @@ class ApproveCustomerRequest extends FormRequest
             'programs.*.delivery_mode' => ['required', Rule::in(MasterData::codes('delivery_mode'))],
             'programs.*.instructor_id' => ['nullable', Rule::exists('employees', 'id')->where(fn ($query) => $query->where('status', '!=', 'resigned'))],
             'programs.*.location' => ['nullable', 'string', 'max:255'],
+            'programs.*.payment_plan' => ['nullable', Rule::in(array_keys(SessionPaymentPlan::PLANS))],
             'programs.*.fee' => ['nullable', 'numeric', 'min:0'],
             'programs.*.meetings' => ['required', 'array', 'min:1'],
             'programs.*.meetings.*.meeting_date' => ['required', 'date'],

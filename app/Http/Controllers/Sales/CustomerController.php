@@ -124,7 +124,7 @@ class CustomerController extends Controller
 
     public function show(Customer $customer): View
     {
-        $customer->load(['sessions.program', 'sessions.meetings', 'projects.session.program']);
+        $customer->load(['sessions.program', 'sessions.meetings', 'sessions.payments', 'projects.session.program']);
 
         return view('erp.sales.customers.show', ['customer' => $customer]);
     }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\CustomerCodeGenerator;
+use App\Services\SessionPaymentPlan;
 use Carbon\Carbon;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -168,7 +169,7 @@ class Customer extends Authenticatable
      * The programs and preferred dates the customer picked while registering, with the
      * program records resolved. Programs that no longer exist are dropped.
      *
-     * @return list<array{program: TrainingProgram, meetings: list<array{date: Carbon, start: ?string, end: ?string, label: string}>}>
+     * @return list<array{program: TrainingProgram, plan: string, price: float, payments: list<array{label: string, amount: float, when: string}>, meetings: list<array{date: Carbon, start: ?string, end: ?string, label: string}>}>
      */
     public function requestedProgramSummaries(): array
     {
@@ -179,6 +180,9 @@ class Customer extends Authenticatable
             ->filter(fn ($entry) => $programs->has($entry['training_program_id']))
             ->map(fn ($entry) => [
                 'program' => $programs[$entry['training_program_id']],
+                'plan' => $entry['payment_plan'] ?? SessionPaymentPlan::FULL,
+                'price' => (float) $programs[$entry['training_program_id']]->standard_price,
+                'payments' => SessionPaymentPlan::preview($programs[$entry['training_program_id']]->standard_price, $entry['payment_plan'] ?? SessionPaymentPlan::FULL, count($entry['meetings'] ?? []) ?: null),
                 'meetings' => collect($entry['meetings'] ?? [])->map(function ($meeting) {
                     $date = Carbon::parse($meeting['meeting_date']);
                     $time = ! empty($meeting['start_time']) ? ', '.substr($meeting['start_time'], 0, 5).(! empty($meeting['end_time']) ? ' – '.substr($meeting['end_time'], 0, 5) : '') : '';

@@ -80,6 +80,14 @@
                                         <ul class="mt-0.5 list-disc pl-5 text-gray-500">
                                             @foreach ($entry['meetings'] as $label)<li>{{ $label }}</li>@endforeach
                                         </ul>
+                                        @if (! empty($entry['payments']))
+                                            <div class="mt-1 rounded-md bg-brand-50 px-3 py-2 text-xs text-gray-600">
+                                                <div class="font-medium text-gray-700">Fee {{ \App\Services\SessionPaymentPlan::rupiah($entry['price']) }}</div>
+                                                @foreach ($entry['payments'] as $payment)
+                                                    <div>{{ $payment['label'] }}: {{ \App\Services\SessionPaymentPlan::rupiah($payment['amount']) }} — {{ $payment['when'] }}</div>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </li>
                                 @endforeach
                             </ul>

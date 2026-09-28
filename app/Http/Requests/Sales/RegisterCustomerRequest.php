@@ -4,6 +4,7 @@ namespace App\Http\Requests\Sales;
 
 use App\Models\TrainingProgram;
 use App\Services\OperatingHours;
+use App\Services\SessionPaymentPlan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -29,6 +30,7 @@ class RegisterCustomerRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:1000'],
             'programs' => ['nullable', 'array', 'max:5'],
             'programs.*.training_program_id' => ['required', Rule::exists(TrainingProgram::class, 'id')->where('is_active', true)],
+            'programs.*.payment_plan' => ['nullable', Rule::in(array_keys(SessionPaymentPlan::PLANS))],
             'programs.*.meetings' => ['required', 'array', 'min:1', 'max:20'],
             'programs.*.meetings.*.meeting_date' => ['required', 'date', 'after_or_equal:today'],
             'programs.*.meetings.*.start_time' => ['nullable', 'date_format:H:i'],
@@ -83,6 +85,7 @@ class RegisterCustomerRequest extends FormRequest
     {
         return collect($this->validated('programs', []))->map(fn ($program) => [
             'training_program_id' => (int) $program['training_program_id'],
+            'payment_plan' => $program['payment_plan'] ?? SessionPaymentPlan::FULL,
             'meetings' => collect($program['meetings'])->map(fn ($meeting) => [
                 'meeting_date' => $meeting['meeting_date'],
                 'start_time' => $meeting['start_time'] ?? null,
