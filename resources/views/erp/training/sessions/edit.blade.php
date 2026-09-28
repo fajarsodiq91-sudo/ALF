@@ -65,7 +65,7 @@
                     </tr>
                 </thead>
                 @forelse ($session->payments as $payment)
-                    <tbody x-data="{ paying: false }" class="divide-y divide-gray-100 border-t border-gray-100">
+                    <tbody x-data="{ paying: false, method: 'Bank Transfer' }" class="divide-y divide-gray-100 border-t border-gray-100">
                         <tr>
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $payment->label }}</td>
                             <td class="px-4 py-3 text-right text-gray-800">{{ \App\Services\SessionPaymentPlan::rupiah($payment->amount) }}</td>
@@ -82,10 +82,19 @@
                             @can('finance.manage')
                                 <td class="px-4 py-3 text-right whitespace-nowrap">
                                     @if ($payment->isPaid())
-                                        <form action="{{ route('training.payments.cancel', $payment) }}" method="POST" class="inline" onsubmit="return confirm('Cancel this payment? The Finance income will be removed.');">
-                                            @csrf
-                                            <button type="submit" class="text-amber-600 hover:text-amber-800 font-medium">Cancel payment</button>
-                                        </form>
+                                        <div class="inline-flex items-center gap-3">
+                                            @if ($payment->hasProof())
+                                                @if ($payment->proof_path)
+                                                    <a href="{{ route('training.payments.proof', $payment) }}" class="text-brand hover:text-brand-dark font-medium">View proof</a>
+                                                @else
+                                                    <a href="{{ $payment->proof_url }}" target="_blank" rel="noopener" class="text-brand hover:text-brand-dark font-medium">View proof</a>
+                                                @endif
+                                            @endif
+                                            <form action="{{ route('training.payments.cancel', $payment) }}" method="POST" class="inline" onsubmit="return confirm('Cancel this payment? The Finance income will be removed.');">
+                                                @csrf
+                                                <button type="submit" class="text-amber-600 hover:text-amber-800 font-medium">Cancel payment</button>
+                                            </form>
+                                        </div>
                                     @else
                                         <button type="button" @click="paying = !paying" class="text-green-600 hover:text-green-800 font-medium">Record payment</button>
                                     @endif
@@ -96,11 +105,19 @@
                             @can('finance.manage')
                                 <tr x-show="paying" x-cloak class="bg-gray-50">
                                     <td colspan="5" class="px-4 py-3">
-                                        <form action="{{ route('training.payments.pay', $payment) }}" method="POST" class="flex flex-wrap items-end gap-3">
+                                        <form action="{{ route('training.payments.pay', $payment) }}" method="POST" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3">
                                             @csrf
                                             <div>
+                                                <label class="block text-xs font-medium text-gray-600">Method</label>
+                                                <select name="payment_method" x-model="method" class="mt-1 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                                    @foreach (\App\Models\Payroll::PAYMENT_METHODS as $paymentMethod)
+                                                        <option value="{{ $paymentMethod }}">{{ $paymentMethod }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div x-show="method === 'Bank Transfer'">
                                                 <label class="block text-xs font-medium text-gray-600">Received in account</label>
-                                                <select name="account_id" required class="mt-1 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                                <select name="account_id" :required="method === 'Bank Transfer'" class="mt-1 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                                                     @foreach ($accounts as $account)
                                                         <option value="{{ $account->id }}">{{ $account->name }}</option>
                                                     @endforeach
@@ -110,13 +127,13 @@
                                                 <label class="block text-xs font-medium text-gray-600">Date received</label>
                                                 <input type="date" name="paid_date" value="{{ now()->format('Y-m-d') }}" required class="mt-1 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                                             </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-600">Method</label>
-                                                <select name="payment_method" class="mt-1 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-                                                    @foreach (\App\Models\Payroll::PAYMENT_METHODS as $method)
-                                                        <option value="{{ $method }}">{{ $method }}</option>
-                                                    @endforeach
-                                                </select>
+                                            <div x-show="method === 'Bank Transfer'">
+                                                <label class="block text-xs font-medium text-gray-600">Proof of transfer (file)</label>
+                                                <input type="file" name="proof" accept=".pdf,.png,.jpg,.jpeg,.webp" class="mt-1 block text-xs text-gray-600 file:mr-2 file:rounded-md file:border-0 file:bg-gray-100 file:px-2 file:py-1.5 file:text-xs file:font-medium file:text-gray-700 hover:file:bg-gray-200">
+                                            </div>
+                                            <div x-show="method === 'Bank Transfer'">
+                                                <label class="block text-xs font-medium text-gray-600">...or a link to the proof</label>
+                                                <input type="url" name="proof_url" placeholder="https://" class="mt-1 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                                             </div>
                                             <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-brand-dark hover:to-brand-dark">Confirm &amp; add to Finance income</button>
                                         </form>

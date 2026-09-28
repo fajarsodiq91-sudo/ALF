@@ -1,0 +1,30 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('training_session_payments', function (Blueprint $table) {
+            $table->string('proof_path')->nullable()->after('income_transaction_id');
+            $table->string('proof_original_name')->nullable()->after('proof_path');
+            $table->string('proof_url')->nullable()->after('proof_original_name');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('training_session_payments', function (Blueprint $table) {
+            $table->dropColumn(['proof_path', 'proof_original_name', 'proof_url']);
+        });
+    }
+};

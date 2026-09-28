@@ -14,8 +14,10 @@ use App\Models\User;
 use App\Services\SessionPaymentPlan;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -200,6 +202,73 @@ class TrainingPaymentsTest extends TestCase
         IncomeTransaction::firstOrFail()->delete();
 
         $this->assertFalse($payment->fresh()->isPaid());
+    }
+
+    public function test_cash_payment_does_not_need_an_account_and_is_recorded_into_a_cash_account(): void
+    {
+        $payment = $this->sessionWithMeetings(2, 'full')->payments()->first();
+
+        $this->actingAs($this->finance())->post(route('training.payments.pay', $payment), [
+            'paid_date' => '2026-09-16', 'payment_method' => 'Cash',
+        ])->assertSessionHas('status');
+
+        $income = IncomeTransaction::findOrFail($payment->fresh()->income_transaction_id);
+        $this->assertSame('Cash', $income->account->name);
+    }
+
+    public function test_bank_transfer_requires_an_account_but_cash_does_not(): void
+    {
+        $payment = $this->sessionWithMeetings(2, 'full')->payments()->first();
+
+        $this->actingAs($this->finance())->post(route('training.payments.pay', $payment), [
+            'paid_date' => '2026-09-16', 'payment_method' => 'Bank Transfer',
+        ])->assertSessionHasErrors('account_id');
+    }
+
+    public function test_bank_transfer_payment_can_attach_a_proof_file_or_a_link(): void
+    {
+        Storage::fake('local');
+        $account = Account::factory()->create(['is_active' => true]);
+        [$first, $second] = $this->sessionWithMeetings(4, 'installment')->payments()->get()->all();
+
+        $this->actingAs($this->finance())->post(route('training.payments.pay', $first), [
+            'account_id' => $account->id, 'paid_date' => '2026-09-16', 'payment_method' => 'Bank Transfer',
+            'proof' => UploadedFile::fake()->create('bukti-transfer.pdf', 200, 'application/pdf'),
+        ])->assertSessionHas('status');
+
+        $first->refresh();
+        $this->assertNotNull($first->proof_path);
+        Storage::disk('local')->assertExists($first->proof_path);
+        $this->assertTrue($first->hasProof());
+        $this->actingAs($this->finance())->get(route('training.payments.proof', $first))->assertOk();
+
+        $this->actingAs($this->finance())->post(route('training.payments.pay', $second), [
+            'account_id' => $account->id, 'paid_date' => '2026-09-16', 'payment_method' => 'Bank Transfer',
+            'proof_url' => 'https://example.com/bukti.png',
+        ])->assertSessionHas('status');
+
+        $second->refresh();
+        $this->assertNull($second->proof_path);
+        $this->assertSame('https://example.com/bukti.png', $second->proof_url);
+        $this->assertTrue($second->hasProof());
+    }
+
+    public function test_cancelling_a_payment_removes_its_proof(): void
+    {
+        Storage::fake('local');
+        $account = Account::factory()->create(['is_active' => true]);
+        $payment = $this->sessionWithMeetings(2, 'full')->payments()->first();
+
+        $this->actingAs($this->finance())->post(route('training.payments.pay', $payment), [
+            'account_id' => $account->id, 'paid_date' => '2026-09-16', 'payment_method' => 'Bank Transfer',
+            'proof' => UploadedFile::fake()->create('bukti.pdf', 100, 'application/pdf'),
+        ]);
+        $proofPath = $payment->fresh()->proof_path;
+
+        $this->actingAs($this->finance())->post(route('training.payments.cancel', $payment));
+
+        Storage::disk('local')->assertMissing($proofPath);
+        $this->assertNull($payment->fresh()->proof_path);
     }
 
     public function test_recording_needs_finance_permission_and_valid_input(): void

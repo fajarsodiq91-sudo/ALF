@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['training_session_id', 'label', 'percentage', 'amount', 'due_meeting_number', 'due_after_completion', 'invoice_sent_at', 'paid_date', 'income_transaction_id'])]
+#[Fillable(['training_session_id', 'label', 'percentage', 'amount', 'due_meeting_number', 'due_after_completion', 'invoice_sent_at', 'paid_date', 'income_transaction_id', 'proof_path', 'proof_original_name', 'proof_url'])]
 class TrainingSessionPayment extends Model
 {
     /** @use HasFactory<TrainingSessionPaymentFactory> */
@@ -39,6 +39,11 @@ class TrainingSessionPayment extends Model
     public function isPaid(): bool
     {
         return $this->income_transaction_id !== null;
+    }
+
+    public function hasProof(): bool
+    {
+        return $this->proof_path !== null || $this->proof_url !== null;
     }
 
     public function invoiceNumber(): string

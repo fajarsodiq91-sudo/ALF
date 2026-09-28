@@ -19,9 +19,11 @@ class PayTrainingSessionPaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'account_id' => ['required', Rule::exists('accounts', 'id')->where('is_active', true)],
+            'account_id' => ['required_if:payment_method,Bank Transfer', 'nullable', Rule::exists('accounts', 'id')->where('is_active', true)],
             'paid_date' => ['required', 'date'],
             'payment_method' => ['required', Rule::in(Payroll::PAYMENT_METHODS)],
+            'proof' => ['nullable', 'file', 'mimes:pdf,png,jpg,jpeg,webp', 'max:5120'],
+            'proof_url' => ['nullable', 'url', 'max:2048'],
         ];
     }
 }

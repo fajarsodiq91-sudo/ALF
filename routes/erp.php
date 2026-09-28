@@ -190,6 +190,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::delete('meetings/{meeting}', [TrainingSessionMeetingController::class, 'destroy'])->name('training.meetings.destroy');
         Route::post('payments/{payment}/pay', [TrainingSessionPaymentController::class, 'pay'])->name('training.payments.pay');
         Route::post('payments/{payment}/cancel', [TrainingSessionPaymentController::class, 'cancel'])->name('training.payments.cancel');
+        Route::get('payments/{payment}/proof', [TrainingSessionPaymentController::class, 'proof'])->name('training.payments.proof');
     });
 
     Route::middleware('permission:training.view')->group(function () {
