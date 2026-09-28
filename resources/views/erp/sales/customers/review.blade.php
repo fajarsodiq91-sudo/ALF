@@ -44,10 +44,10 @@
                 },
                 /** Mirrors the server's payment plan so the split is visible before approving. */
                 paymentPreview(program) {
-                    if (program.meetings.length === 1) { program.payment_plan = 'full'; }
+                    if (program.meetings.length === 1 && this.minutesOf(program) !== 420) { program.payment_plan = 'full'; }
                     const fee = parseFloat(program.fee) || 0;
                     if (fee <= 0) { return []; }
-                    if (program.payment_plan === 'installment' && program.meetings.length !== 1) {
+                    if (program.payment_plan === 'installment' && (program.meetings.length !== 1 || this.minutesOf(program) === 420)) {
                         const first = Math.round(fee / 2 * 100) / 100;
                         const middle = program.meetings.length < 2 ? 1 : Math.floor(program.meetings.length / 2) + 1;
                         return [
@@ -185,10 +185,10 @@
                             <label class="block text-sm font-medium text-gray-700">Payment plan</label>
                             <select :name="`programs[${i}][payment_plan]`" x-model="program.payment_plan" class="{{ $inputClass }}">
                                 @foreach (\App\Services\SessionPaymentPlan::PLANS as $value => $label)
-                                    <option value="{{ $value }}" @if ($value === 'installment') :disabled="program.meetings.length === 1" @endif>{{ $label }}</option>
+                                    <option value="{{ $value }}" @if ($value === 'installment') :disabled="program.meetings.length === 1 && minutesOf(program) !== 420" @endif>{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <p x-show="program.meetings.length === 1" x-cloak class="mt-1 text-xs text-gray-500">A single-meeting program must be paid 100% upfront.</p>
+                            <p x-show="program.meetings.length === 1 && minutesOf(program) !== 420" x-cloak class="mt-1 text-xs text-gray-500">A single-meeting program must be paid 100% upfront (full-day programs of 420 minutes may pay 50:50).</p>
                             <ul x-show="paymentPreview(program).length" x-cloak class="mt-2 rounded-md bg-brand-50 px-3 py-2 text-xs text-gray-600">
                                 <template x-for="payment in paymentPreview(program)" :key="payment.label">
                                     <li><span class="font-medium text-gray-700" x-text="payment.label"></span>: <span x-text="rupiah(payment.amount)"></span> &mdash; <span x-text="payment.when"></span></li>

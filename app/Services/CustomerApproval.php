@@ -44,7 +44,7 @@ class CustomerApproval
                     'location' => $entry['location'] ?? null,
                     'participants_count' => 1,
                     'fee' => $entry['fee'] ?? 0,
-                    'payment_plan' => SessionPaymentPlan::effective($entry['payment_plan'] ?? SessionPaymentPlan::FULL, $meetings->count()),
+                    'payment_plan' => $entry['payment_plan'] ?? SessionPaymentPlan::FULL, // generate() below applies the single-meeting rule
                     'status' => 'planned',
                 ]);
 

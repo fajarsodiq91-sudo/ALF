@@ -20,13 +20,13 @@
                     minutesOf(program) { return parseInt(this.minutes[program.training_program_id]) || null; },
                     countOf(program) { return parseInt(this.counts[program.training_program_id]) || 0; },
                     middleOf(program) { const n = this.countOf(program); return n < 2 ? 1 : Math.floor(n / 2) + 1; },
-                    installmentAllowed(program) { return this.countOf(program) !== 1; },
+                    installmentAllowed(program) { return this.countOf(program) !== 1 || this.minutesOf(program) === 420; },
                     /** Shows exactly as many date rows as the chosen program has meetings. */
                     resize(program) {
                         const n = this.countOf(program);
                         while (program.meetings.length < n) { program.meetings.push({ meeting_date: '', start_time: '', end_time: '' }); }
                         program.meetings.splice(n);
-                        if (n === 1) { program.payment_plan = 'full'; }
+                        if (!this.installmentAllowed(program)) { program.payment_plan = 'full'; }
                     },
                     priceOf(program) { return parseFloat(this.prices[program.training_program_id]) || 0; },
                     rupiah(amount) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount); },
@@ -117,7 +117,7 @@
                                     <input type="radio" :name="`programs[${i}][payment_plan]`" value="full" x-model="program.payment_plan" class="mt-1 text-brand focus:ring-brand">
                                     <span><span class="font-medium">Pay in full upfront</span><span class="block text-xs text-gray-500" x-text="rupiah(priceOf(program)) + ' when you register'"></span></span>
                                 </label>
-                                <p x-show="!installmentAllowed(program)" x-cloak class="mt-1 text-xs text-gray-500">This program has a single meeting, so payment is 100% upfront.</p>
+                                <p x-show="!installmentAllowed(program)" x-cloak class="mt-1 text-xs text-gray-500">This program has a single short meeting, so payment is 100% upfront.</p>
                                 <label x-show="installmentAllowed(program)" class="mt-2 flex items-start gap-2 text-gray-700">
                                     <input type="radio" :name="`programs[${i}][payment_plan]`" value="installment" x-model="program.payment_plan" class="mt-1 text-brand focus:ring-brand">
                                     <span><span class="font-medium">50% upfront, 50% at the middle meeting (meeting 4 of 6, 7 of 12)</span><span class="block text-xs text-gray-500" x-text="rupiah(half(program)) + ' when you register, then ' + rupiah(priceOf(program) - half(program)) + (countOf(program) ? ' at meeting ' + middleOf(program) + ' (halfway through your ' + countOf(program) + ' meetings)' : ' at the middle meeting of your program')"></span></span>

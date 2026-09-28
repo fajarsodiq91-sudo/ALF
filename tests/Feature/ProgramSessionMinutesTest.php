@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Services\OperatingHours;
+use App\Services\SessionPaymentPlan;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -21,5 +22,13 @@ class ProgramSessionMinutesTest extends TestCase
         $this->assertNotNull(OperatingHours::violation($monday, '10:00', '10:45', 60)); // wrong length
         $this->assertNotNull(OperatingHours::violation($monday, '10:10', '11:10', 60)); // off the 30-minute grid
         $this->assertNotNull(OperatingHours::violation($monday, '10:00', '11:00')); // no session length: whole window only
+    }
+
+    public function test_a_420_minute_single_meeting_program_may_still_pay_50_50(): void
+    {
+        $this->assertSame('installment', SessionPaymentPlan::effective('installment', 1, 420));
+        $this->assertSame('full', SessionPaymentPlan::effective('installment', 1, 60));
+        $this->assertCount(2, SessionPaymentPlan::preview(1000000, 'installment', 1, 420));
+        $this->assertCount(1, SessionPaymentPlan::preview(1000000, 'installment', 1, 60));
     }
 }

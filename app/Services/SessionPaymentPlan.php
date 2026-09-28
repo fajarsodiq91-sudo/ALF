@@ -26,10 +26,13 @@ class SessionPaymentPlan
         return $meetingCount < 2 ? 1 : intdiv($meetingCount, 2) + 1;
     }
 
-    /** The plan that actually applies: with exactly one meeting, only paying in full upfront is allowed. */
-    public static function effective(string $plan, ?int $meetingCount): string
+    /** A full-day program (7 hours) is a single meeting that may still be paid 50:50. */
+    public const FULL_DAY_MINUTES = 420;
+
+    /** The plan that actually applies: with exactly one meeting, only paying in full upfront is allowed (except for a full-day program). */
+    public static function effective(string $plan, ?int $meetingCount, ?int $sessionMinutes = null): string
     {
-        return $meetingCount === 1 ? self::FULL : $plan;
+        return $meetingCount === 1 && $sessionMinutes !== self::FULL_DAY_MINUTES ? self::FULL : $plan;
     }
 
     /**
@@ -41,7 +44,7 @@ class SessionPaymentPlan
         $session->payments()->whereNull('income_transaction_id')->delete();
 
         $fee = round((float) $session->fee, 2);
-        $plan = self::effective($session->payment_plan, $session->meetings()->count());
+        $plan = self::effective($session->payment_plan, $session->meetings()->count(), $session->program?->session_minutes);
 
         if ($plan !== $session->payment_plan) {
             $session->update(['payment_plan' => $plan]);
@@ -73,7 +76,7 @@ class SessionPaymentPlan
         }
 
         // Down to a single meeting: the whole fee is due upfront, unless a payment is already recorded in Finance.
-        if ($session->meetings()->count() === 1) {
+        if ($session->meetings()->count() === 1 && $session->program?->session_minutes !== self::FULL_DAY_MINUTES) {
             if ($session->payments()->whereNotNull('income_transaction_id')->doesntExist()) {
                 self::generate($session);
             }
@@ -97,7 +100,7 @@ class SessionPaymentPlan
      *
      * @return list<array{label: string, amount: float, when: string}>
      */
-    public static function preview(float|string $fee, string $plan, ?int $meetingCount = null): array
+    public static function preview(float|string $fee, string $plan, ?int $meetingCount = null, ?int $sessionMinutes = null): array
     {
         $fee = round((float) $fee, 2);
 
@@ -105,7 +108,7 @@ class SessionPaymentPlan
             return [];
         }
 
-        if (self::effective($plan, $meetingCount) === self::INSTALLMENT) {
+        if (self::effective($plan, $meetingCount, $sessionMinutes) === self::INSTALLMENT) {
             $first = round($fee / 2, 2);
             $when = $meetingCount ? 'At meeting '.self::middleMeeting($meetingCount) : 'At the middle meeting';
 
