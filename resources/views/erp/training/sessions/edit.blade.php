@@ -1,5 +1,5 @@
 <x-layouts.erp title="Edit Training Session">
-    @include('erp.partials.operating-hours')
+    @include('erp.partials.slot-picker', ['booked' => $booked])
     @php $inputClass = 'block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm'; @endphp
 
     <div class="max-w-3xl space-y-6">
@@ -151,31 +151,29 @@
 
             @can('training.manage')
                 <form action="{{ route('training.meetings.store', $session) }}" method="POST"
-                      x-data="{ m: { meeting_date: @js(old('meeting_date', '')), start_time: @js(old('start_time', '')), end_time: @js(old('end_time', '')) }, hours: window.operatingHours }"
+                      x-data="{ m: { meeting_date: @js(old('meeting_date', '')), start_time: @js(old('start_time', '')), end_time: @js(old('end_time', '')) }, hours: window.operatingHours }" @submit="if (!meetingReady(m)) { $event.preventDefault(); alert('Choose a date and time on the calendar first.'); }"
                       class="grid grid-cols-2 sm:grid-cols-6 gap-2 items-start border-t border-gray-200 bg-gray-50 p-4">
                     @csrf
-                    <div class="col-span-2">
-                        <input type="date" name="meeting_date" x-model="m.meeting_date" @change="syncSlot(m)" required class="{{ $inputClass }}">
-                        <p x-show="hoursHint(m.meeting_date)" x-text="hoursHint(m.meeting_date)" x-cloak class="mt-1 text-xs text-red-600"></p>
-                        @error('meeting_date') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
-                    </div>
-                    <div class="col-span-2">
-                        <select @change="pickSlot(m, $event.target.value)" :required="hours.enforced" class="{{ $inputClass }}">
-                            <option value="">Select time slot</option>
-                            <template x-for="slot in slotsFor(m.meeting_date)" :key="slot.value">
-                                <option :value="slot.value" :selected="slot.start === m.start_time && slot.end === m.end_time" x-text="slot.label"></option>
-                            </template>
-                        </select>
-                    </div>
-                    <input type="time" name="start_time" x-model="m.start_time" x-show="!hours.enforced" class="{{ $inputClass }}">
-                    <div x-show="!hours.enforced">
-                        <input type="time" name="end_time" x-model="m.end_time" class="{{ $inputClass }}">
-                        @error('end_time') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    <div class="col-span-2 sm:col-span-6 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <p class="text-sm" :class="m.meeting_date ? 'font-medium text-gray-800' : 'text-gray-400'" x-text="meetingLabel(m)"></p>
+                            @error('meeting_date') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                            @error('end_time') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                        </div>
+                        <button type="button" @click="$dispatch('open-slot-picker', { meeting: m, siblings: [] })" class="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50 hover:shadow"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> Choose on calendar</button>
                     </div>
                     <template x-if="hours.enforced">
                         <div class="hidden">
+                            <input type="hidden" name="meeting_date" :value="m.meeting_date">
                             <input type="hidden" name="start_time" :value="m.start_time">
                             <input type="hidden" name="end_time" :value="m.end_time">
+                        </div>
+                    </template>
+                    <template x-if="!hours.enforced">
+                        <div class="col-span-2 sm:col-span-6 grid grid-cols-3 gap-2">
+                            <input type="date" name="meeting_date" x-model="m.meeting_date" required class="{{ $inputClass }}">
+                            <input type="time" name="start_time" x-model="m.start_time" class="{{ $inputClass }}">
+                            <input type="time" name="end_time" x-model="m.end_time" class="{{ $inputClass }}">
                         </div>
                     </template>
                     <input type="text" name="location" value="{{ old('location') }}" placeholder="Place" class="col-span-2 sm:col-span-3 {{ $inputClass }}">

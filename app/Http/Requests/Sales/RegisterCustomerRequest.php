@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Sales;
 
 use App\Models\TrainingProgram;
+use App\Services\BookedSlots;
 use App\Services\OperatingHours;
 use App\Services\SessionPaymentPlan;
 use Illuminate\Foundation\Http\FormRequest;
@@ -66,6 +67,8 @@ class RegisterCustomerRequest extends FormRequest
 
             $catalog = TrainingProgram::whereIn('id', collect($this->input('programs', []))->pluck('training_program_id'))->get()->keyBy('id');
 
+            $seen = [];
+
             foreach ($this->input('programs', []) as $i => $program) {
                 $expected = $catalog[$program['training_program_id']]->duration_days;
                 $chosen = count($program['meetings']);
@@ -85,11 +88,27 @@ class RegisterCustomerRequest extends FormRequest
                 }
 
                 foreach ($program['meetings'] as $j => $meeting) {
-                    $violation = OperatingHours::violation($meeting['meeting_date'], $meeting['start_time'] ?? null, $meeting['end_time'] ?? null);
+                    $start = $meeting['start_time'] ?? null;
+                    $end = $meeting['end_time'] ?? null;
+                    $violation = OperatingHours::violation($meeting['meeting_date'], $start, $end);
 
                     if ($violation) {
                         $validator->errors()->add("programs.{$i}.meetings.{$j}.meeting_date", 'Program '.($i + 1).', date '.($j + 1).': '.$violation);
+
+                        continue;
                     }
+
+                    if ($start && $end && BookedSlots::conflicts($meeting['meeting_date'], $start, $end)) {
+                        $validator->errors()->add("programs.{$i}.meetings.{$j}.meeting_date", BookedSlots::describe($meeting['meeting_date'], $start, $end).' has just been booked by someone else. Please choose another slot.');
+                    }
+
+                    $key = $meeting['meeting_date'].'|'.$start.'|'.$end;
+
+                    if (isset($seen[$key])) {
+                        $validator->errors()->add("programs.{$i}.meetings.{$j}.meeting_date", 'You chose the same date and time for two meetings. Please pick different slots.');
+                    }
+
+                    $seen[$key] = true;
                 }
             }
         }];

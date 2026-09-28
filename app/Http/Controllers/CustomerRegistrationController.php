@@ -6,6 +6,7 @@ use App\Http\Requests\Sales\RegisterCustomerRequest;
 use App\Mail\CustomerRegistrationReceived;
 use App\Models\Customer;
 use App\Models\TrainingProgram;
+use App\Services\BookedSlots;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -32,6 +33,7 @@ class CustomerRegistrationController extends Controller
             'token' => $token,
             'programs' => $programs->groupBy('program_type'),
             'prices' => $programs->mapWithKeys(fn ($program) => [$program->id => (float) $program->standard_price]),
+            'booked' => BookedSlots::keys(),
             'meetingCounts' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->duration_days]),
         ]);
     }

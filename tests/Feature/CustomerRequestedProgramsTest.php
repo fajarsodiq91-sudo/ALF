@@ -79,8 +79,8 @@ class CustomerRequestedProgramsTest extends TestCase
             ->assertSee('Power BI Dasar')->assertSee('Strategi Data')
             ->assertSee('Learning')->assertSee('Consulting')
             ->assertDontSee('Program Nonaktif')
-            ->assertSee('Available days')->assertSee('20:00 – 21:30')
-            ->assertSee('window.operatingHours', false);
+            ->assertSee('Our operating hours')->assertSee('"start":"20:00","end":"21:30"', false)
+            ->assertSee('window.operatingHours', false)->assertSee('window.bookedSlots', false);
     }
 
     public function test_customer_picks_programs_and_dates_and_they_are_saved(): void

@@ -7,6 +7,12 @@
             </p>
         </div>
 
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+            <h3 class="text-sm font-semibold text-gray-800">Calendar &amp; operating hours</h3>
+            <p class="mb-3 text-xs text-gray-500">Open slots and the ones already booked by customers or blocked by the company.</p>
+            @include('erp.partials.availability-calendar')
+        </div>
+
         @canany(['finance.view', 'finance.manage', 'finance.reports'])
             <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                 <h3 class="text-sm font-semibold text-gray-800 mb-1">Finance</h3>

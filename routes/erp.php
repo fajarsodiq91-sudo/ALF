@@ -22,7 +22,9 @@ use App\Http\Controllers\Projects\ProjectTaskController;
 use App\Http\Controllers\Sales\CustomerController;
 use App\Http\Controllers\Sales\CustomerPortalPreviewController;
 use App\Http\Controllers\Sales\CustomerProjectController;
+use App\Http\Controllers\Settings\BlockedSlotController;
 use App\Http\Controllers\Settings\MasterDataController;
+use App\Http\Controllers\Settings\OperatingHoursController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\SystemSettingController;
 use App\Http\Controllers\Settings\UserController;
@@ -221,6 +223,10 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     });
 
     Route::middleware('permission:masterdata.manage')->group(function () {
+        Route::get('master-data/operating-hours', [OperatingHoursController::class, 'edit'])->name('masterdata.hours.edit');
+        Route::put('master-data/operating-hours', [OperatingHoursController::class, 'update'])->name('masterdata.hours.update');
+        Route::post('master-data/blocked-slots', [BlockedSlotController::class, 'store'])->name('masterdata.blocked.store');
+        Route::delete('master-data/blocked-slots/{blockedSlot}', [BlockedSlotController::class, 'destroy'])->name('masterdata.blocked.destroy');
         Route::resource('master-data', MasterDataController::class)->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['master-data' => 'masterDataItem'])->names('masterdata');
     });
@@ -251,7 +257,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::middleware('permission:settings.manage-system')->group(function () {
             Route::get('/system', [SystemSettingController::class, 'edit'])->name('system');
             Route::put('/system', [SystemSettingController::class, 'update'])->name('system.update');
-            Route::put('/system/operating-hours', [SystemSettingController::class, 'updateOperatingHours'])->name('system.hours.update');
+
         });
     });
 });

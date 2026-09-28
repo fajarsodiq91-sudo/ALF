@@ -12,19 +12,15 @@
             </div>
         </div>
 
-        @php $hours = \App\Services\OperatingHours::formatted(); @endphp
-        @if ($hours)
+        @if (\App\Services\OperatingHours::schedule())
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                 <h2 class="text-sm font-semibold text-gray-800">Our operating hours</h2>
-                <p class="text-xs text-gray-500">Meetings take place on these days and times.</p>
-                <dl class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                    @foreach ($hours as $day => $slots)
-                        <div class="flex justify-between gap-4 border-b border-gray-100 pb-1">
-                            <dt class="font-medium text-gray-700">{{ $day }}</dt>
-                            <dd class="text-right text-gray-500">{{ $slots }}</dd>
-                        </div>
-                    @endforeach
-                </dl>
+                <p class="mb-3 text-xs text-gray-500">Meetings take place on these days and times. Green slots are still available.</p>
+                @include('erp.partials.availability-calendar', ['booked' => \App\Services\BookedSlots::keys($customer->id)])
+                <h3 class="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-gray-500">Weekly hours</h3>
+                <div x-data='{ days: @json(\App\Services\OperatingHours::forWeekCalendar()) }'>
+                    @include('erp.partials.week-calendar')
+                </div>
             </div>
         @endif
 

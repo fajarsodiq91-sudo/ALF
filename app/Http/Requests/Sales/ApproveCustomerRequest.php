@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Sales;
 
 use App\Models\TrainingProgram;
+use App\Services\BookedSlots;
 use App\Services\MasterData;
 use App\Services\OperatingHours;
 use App\Services\SessionPaymentPlan;
@@ -49,13 +50,33 @@ class ApproveCustomerRequest extends FormRequest
                 return;
             }
 
+            $seen = [];
+            $customerId = $this->route('customer')?->id;
+
             foreach ($this->input('programs', []) as $i => $program) {
                 foreach ($program['meetings'] ?? [] as $j => $meeting) {
-                    $violation = OperatingHours::violation($meeting['meeting_date'], $meeting['start_time'] ?? null, $meeting['end_time'] ?? null);
+                    $start = $meeting['start_time'] ?? null;
+                    $end = $meeting['end_time'] ?? null;
+                    $label = 'Meeting '.($j + 1).' of program '.($i + 1).': ';
+                    $violation = OperatingHours::violation($meeting['meeting_date'], $start, $end);
 
                     if ($violation) {
-                        $validator->errors()->add("programs.{$i}.meetings.{$j}.meeting_date", 'Meeting '.($j + 1).' of program '.($i + 1).': '.$violation);
+                        $validator->errors()->add("programs.{$i}.meetings.{$j}.meeting_date", $label.$violation);
+
+                        continue;
                     }
+
+                    if ($start && $end && BookedSlots::conflicts($meeting['meeting_date'], $start, $end, $customerId)) {
+                        $validator->errors()->add("programs.{$i}.meetings.{$j}.meeting_date", $label.BookedSlots::describe($meeting['meeting_date'], $start, $end).' is already booked by another customer.');
+                    }
+
+                    $key = $meeting['meeting_date'].'|'.$start.'|'.$end;
+
+                    if ($start && $end && isset($seen[$key])) {
+                        $validator->errors()->add("programs.{$i}.meetings.{$j}.meeting_date", $label.'the same date and time is used by another meeting in this request.');
+                    }
+
+                    $seen[$key] = true;
                 }
             }
         }];

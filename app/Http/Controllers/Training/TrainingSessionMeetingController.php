@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Training;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
+use App\Services\BookedSlots;
 use App\Services\OperatingHours;
 use App\Services\SessionPaymentPlan;
 use Illuminate\Http\RedirectResponse;
@@ -26,6 +27,12 @@ class TrainingSessionMeetingController extends Controller
 
         if ($violation = OperatingHours::violation($data['meeting_date'], $data['start_time'] ?? null, $data['end_time'] ?? null)) {
             return back()->withInput()->withErrors(['meeting_date' => $violation]);
+        }
+
+        if (BookedSlots::conflicts($data['meeting_date'], $data['start_time'] ?? null, $data['end_time'] ?? null)) {
+            return back()->withInput()->withErrors([
+                'meeting_date' => BookedSlots::describe($data['meeting_date'], $data['start_time'], $data['end_time']).' is already booked. Choose a green slot on the calendar.',
+            ]);
         }
 
         $session->meetings()->create($data);

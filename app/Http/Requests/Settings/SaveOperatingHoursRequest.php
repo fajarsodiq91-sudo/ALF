@@ -9,7 +9,7 @@ class SaveOperatingHoursRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('settings.manage-system');
+        return $this->user()->can('masterdata.manage');
     }
 
     /**

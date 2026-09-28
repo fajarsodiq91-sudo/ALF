@@ -7,18 +7,7 @@
         </p>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <nav class="lg:col-span-1 space-y-1">
-                @foreach ($groups as $key => $definition)
-                    <a href="{{ route('masterdata.index', ['group' => $key]) }}"
-                       @class([
-                           'block rounded-md px-3 py-2 text-sm transition',
-                           'bg-gradient-to-br from-brand-light to-brand-dark text-white shadow-sm' => $key === $group,
-                           'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:shadow-sm' => $key !== $group,
-                       ])>
-                        {{ $definition['label'] }}
-                    </a>
-                @endforeach
-            </nav>
+            @include('erp.master-data._nav', ['active' => $group])
 
             <div class="lg:col-span-3 space-y-4">
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">

@@ -14,6 +14,7 @@ use App\Models\Employee;
 use App\Models\Project;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
+use App\Services\BookedSlots;
 use App\Services\CustomerApproval;
 use App\Services\MasterData;
 use App\Services\QrCodeGenerator;
@@ -144,6 +145,7 @@ class CustomerController extends Controller
             'programTypes' => MasterData::options('program_type'),
             'instructors' => Employee::where('status', '!=', 'resigned')->orderBy('name')->get(),
             'requested' => $customer->requestedProgramSummaries(),
+            'booked' => BookedSlots::keys($customer->id),
         ]);
     }
 

@@ -123,6 +123,20 @@ class OperatingHours
     }
 
     /**
+     * The schedule for the weekly calendar: every ISO weekday 1-7 (closed days are empty) with start/end rows.
+     *
+     * @return array<int, list<array{start: string, end: string}>>
+     */
+    public static function forWeekCalendar(?array $schedule = null): array
+    {
+        $schedule ??= self::schedule();
+
+        return collect(range(1, 7))->mapWithKeys(fn (int $day) => [
+            $day => array_map(fn ($slot) => ['start' => $slot[0], 'end' => $slot[1]], $schedule[$day] ?? []),
+        ])->all();
+    }
+
+    /**
      * @param  list<array{0: string, 1: string}>  $slots
      */
     private static function describe(array $slots): string

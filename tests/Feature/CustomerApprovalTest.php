@@ -206,8 +206,12 @@ class CustomerApprovalTest extends TestCase
         $second = Customer::factory()->pendingApproval()->create();
         $finance = $this->financeUser();
 
+        $laterDates = $this->approvalPayload($program);
+        $laterDates['programs'][0]['meetings'][0]['meeting_date'] = '2026-10-20';
+        $laterDates['programs'][0]['meetings'][1]['meeting_date'] = '2026-10-17';
+
         $this->actingAs($finance)->post(route('sales.approve', $second), $this->approvalPayload($program));
-        $this->actingAs($finance)->post(route('sales.approve', $first), $this->approvalPayload($program));
+        $this->actingAs($finance)->post(route('sales.approve', $first), $laterDates);
 
         $this->assertSame('260901', $second->fresh()->customer_code);
         $this->assertSame('260902', $first->fresh()->customer_code);

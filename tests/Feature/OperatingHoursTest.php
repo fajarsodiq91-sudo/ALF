@@ -126,21 +126,23 @@ class OperatingHoursTest extends TestCase
     {
         $admin = $this->user('Super Admin');
 
-        $this->actingAs($admin)->get(route('settings.system'))->assertOk()->assertSee('Operating hours')->assertSee('Only allow meetings inside these hours');
+        $this->actingAs($admin)->get(route('masterdata.hours.edit'))->assertOk()->assertSee('Operating Hours')->assertSee('Weekly calendar')->assertSee('Only allow meetings inside these hours');
+        $this->actingAs($admin)->get(route('settings.system'))->assertOk()->assertDontSee('Only allow meetings inside these hours');
 
-        $this->actingAs($admin)->put(route('settings.system.hours.update'), [
+        $this->actingAs($admin)->put(route('masterdata.hours.update'), [
             'hours' => [
                 '3' => [['start' => '18:00', 'end' => '19:00'], ['start' => '13:00', 'end' => '14:00']],
                 '5' => [['start' => '09:00', 'end' => '10:00']],
             ],
             'enforced' => '1',
-        ])->assertRedirect(route('settings.system'));
+        ])->assertRedirect(route('masterdata.hours.edit'));
 
         $this->assertSame([3 => [['13:00', '14:00'], ['18:00', '19:00']], 5 => [['09:00', '10:00']]], OperatingHours::schedule());
+        $this->actingAs($admin)->get(route('masterdata.hours.edit'))->assertSee('"start":"13:00"', false)->assertSee('"start":"18:00"', false);
         $this->assertNull(OperatingHours::violation('2026-10-07', '13:00', '14:00')); // Wednesday is open now
         $this->assertNotNull(OperatingHours::violation('2026-10-06', '20:00', '21:30')); // Tuesday closed now
 
-        $this->actingAs($admin)->put(route('settings.system.hours.update'), ['hours' => [], 'enforced' => '0']);
+        $this->actingAs($admin)->put(route('masterdata.hours.update'), ['hours' => [], 'enforced' => '0']);
         $this->assertSame([], OperatingHours::schedule());
         $this->assertFalse(OperatingHours::enforced());
     }
@@ -149,24 +151,25 @@ class OperatingHoursTest extends TestCase
     {
         $admin = $this->user('Super Admin');
 
-        $this->actingAs($admin)->put(route('settings.system.hours.update'), ['hours' => ['2' => [['start' => '21:00', 'end' => '20:00']]]])
+        $this->actingAs($admin)->put(route('masterdata.hours.update'), ['hours' => ['2' => [['start' => '21:00', 'end' => '20:00']]]])
             ->assertSessionHasErrors('hours.2.0.end');
-        $this->actingAs($admin)->put(route('settings.system.hours.update'), ['hours' => ['2' => [['start' => '', 'end' => '20:00']]]])
+        $this->actingAs($admin)->put(route('masterdata.hours.update'), ['hours' => ['2' => [['start' => '', 'end' => '20:00']]]])
             ->assertSessionHasErrors('hours.2.0.start');
-        $this->actingAs($admin)->put(route('settings.system.hours.update'), ['hours' => ['2' => [['start' => 'abc', 'end' => '20:00']]]])
+        $this->actingAs($admin)->put(route('masterdata.hours.update'), ['hours' => ['2' => [['start' => 'abc', 'end' => '20:00']]]])
             ->assertSessionHasErrors('hours.2.0.start');
-        $this->actingAs($admin)->put(route('settings.system.hours.update'), ['hours' => ['2' => [
+        $this->actingAs($admin)->put(route('masterdata.hours.update'), ['hours' => ['2' => [
             ['start' => '09:00', 'end' => '10:30'], ['start' => '10:00', 'end' => '11:00'],
         ]]])->assertSessionHasErrors('hours.2');
-        $this->actingAs($admin)->put(route('settings.system.hours.update'), ['hours' => ['9' => [['start' => '09:00', 'end' => '10:00']]]])
+        $this->actingAs($admin)->put(route('masterdata.hours.update'), ['hours' => ['9' => [['start' => '09:00', 'end' => '10:00']]]])
             ->assertSessionHasErrors('hours');
 
         $this->assertSame(OperatingHours::defaults(), OperatingHours::schedule()); // nothing was saved
     }
 
-    public function test_only_system_admins_can_change_the_hours(): void
+    public function test_only_master_data_admins_can_change_the_hours(): void
     {
-        $this->actingAs($this->user('Finance'))->put(route('settings.system.hours.update'), ['hours' => []])->assertForbidden();
+        $this->actingAs($this->user('Finance'))->get(route('masterdata.hours.edit'))->assertForbidden();
+        $this->actingAs($this->user('Finance'))->put(route('masterdata.hours.update'), ['hours' => []])->assertForbidden();
         $this->assertSame(OperatingHours::defaults(), OperatingHours::schedule());
     }
 
@@ -188,7 +191,8 @@ class OperatingHoursTest extends TestCase
         $this->post(route('portal.login.store'), ['customer_code' => $customer->customer_code, 'password' => 'rahasia123']);
 
         $this->get(route('portal.dashboard'))->assertOk()
-            ->assertSee('Our operating hours')->assertSee('Tuesday')->assertSee('20:00 – 21:30')->assertSee('14:40 – 16:00');
+            ->assertSee('Our operating hours')->assertSee('weekDayNames', false)
+            ->assertSee('"1":[]', false)->assertSee('"start":"20:00","end":"21:30"', false)->assertSee('"start":"14:40","end":"16:00"', false);
 
         Mail::fake();
         $pending = Customer::factory()->pendingApproval()->create();
