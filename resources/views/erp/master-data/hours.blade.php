@@ -21,9 +21,14 @@
                     <p class="text-sm text-gray-500">The days and time slots in which meetings and classes can be scheduled. Customers see them in the booking calendar and in their portal.</p>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
-                    <h3 class="mb-3 text-sm font-semibold text-gray-800">Weekly calendar <span class="font-normal text-gray-400">(updates as you edit)</span></h3>
-                    @include('erp.partials.week-calendar')
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4" x-data="{ open: false }">
+                    <button type="button" @click="open = !open" :aria-expanded="open" class="flex w-full items-center justify-between text-left">
+                        <h3 class="text-sm font-semibold text-gray-800">Weekly schedule <span class="font-normal text-gray-400">(updates as you edit)</span></h3>
+                        <span class="text-sm font-medium text-brand" x-text="open ? 'Collapse ▲' : 'Expand ▼'"></span>
+                    </button>
+                    <div x-show="open" x-cloak class="mt-3">
+                        @include('erp.partials.week-calendar')
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
