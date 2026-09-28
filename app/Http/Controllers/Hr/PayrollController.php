@@ -19,10 +19,14 @@ class PayrollController extends Controller
 {
     public function index(Request $request): View
     {
-        $period = preg_match('/^\d{4}-\d{2}$/', (string) $request->input('period')) ? $request->input('period') : now()->format('Y-m');
+        $periodGiven = preg_match('/^\d{4}-\d{2}$/', (string) $request->input('period')) === 1;
+        $period = $periodGiven
+            ? $request->input('period')
+            : ($request->filled('status') ? null : now()->format('Y-m'));
 
         $payrolls = Payroll::with('employee')
-            ->where('period', $period)
+            ->when($period, fn ($query) => $query->where('period', $period))
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->get()
             ->sortBy('employee.name');
 

@@ -25,6 +25,7 @@ class TrainingSessionController extends Controller
             ->with(['program', 'customer', 'instructor'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when($request->filled('program_id'), fn ($query) => $query->where('training_program_id', $request->integer('program_id')))
+            ->when($request->input('payment') === 'awaiting', fn ($query) => $query->whereHas('payments', fn ($payment) => $payment->whereNull('income_transaction_id')))
             ->latest('start_date')
             ->get();
 

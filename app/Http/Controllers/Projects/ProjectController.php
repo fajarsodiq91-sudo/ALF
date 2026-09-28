@@ -19,6 +19,8 @@ class ProjectController extends Controller
             ->with(['customer', 'projectManager'])
             ->withCount(['tasks', 'tasks as done_tasks_count' => fn ($query) => $query->where('status', 'done')])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when($request->boolean('overdue'), fn ($query) => $query->where('end_date', '<', now())->whereNotIn('status', ['completed', 'cancelled']))
+            ->when($request->boolean('task_overdue'), fn ($query) => $query->whereHas('tasks', fn ($task) => $task->where('due_date', '<', now())->where('status', '!=', 'done')))
             ->when($request->filled('q'), function ($query) use ($request) {
                 $term = '%'.$request->string('q').'%';
                 $query->where(fn ($inner) => $inner->where('name', 'like', $term)->orWhere('code', 'like', $term));

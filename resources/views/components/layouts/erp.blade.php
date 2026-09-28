@@ -117,7 +117,15 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         </button>
-                        <h1 class="text-lg font-semibold text-gray-800">{{ $title ?? 'ERP' }}</h1>
+                        <div>
+                            <h1 class="text-lg font-semibold text-gray-800">{{ $title ?? 'ERP' }}</h1>
+                            @if (request()->routeIs('dashboard'))
+                                <p class="text-xs text-gray-500 leading-none mt-0.5">
+                                    Welcome, {{ auth()->user()->name }}
+                                    <span class="text-gray-400">&middot; {{ auth()->user()->getRoleNames()->join(', ') ?: 'No role assigned' }}</span>
+                                </p>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="flex items-center gap-4">

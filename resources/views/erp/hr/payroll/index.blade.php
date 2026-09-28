@@ -4,16 +4,24 @@
 
         <div class="flex items-center justify-between mb-4">
             <p class="text-sm text-gray-500">
-                Total gaji bersih periode ini:
+                Total gaji bersih {{ $period ? 'periode ini' : 'ditampilkan' }}:
                 <span class="font-medium text-gray-800">Rp {{ number_format($totalNet, 0, ',', '.') }}</span>
             </p>
-            <a href="{{ route('hr.payroll.create', ['period' => $period]) }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">New Payroll</a>
+            <a href="{{ route('hr.payroll.create', ['period' => $period ?? now()->format('Y-m')]) }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">New Payroll</a>
         </div>
 
-        <form method="GET" action="{{ route('hr.payroll.index') }}" class="mb-4 flex gap-3">
-            <input type="month" name="period" value="{{ $period }}" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+        <form method="GET" action="{{ route('hr.payroll.index') }}" class="mb-4 flex flex-wrap gap-3">
+            <input type="month" name="period" value="{{ $period }}" placeholder="All periods" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+            <select name="status" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                <option value="">All statuses</option>
+                <option value="{{ \App\Models\Payroll::DRAFT }}" @selected(request('status') === \App\Models\Payroll::DRAFT)>Draft</option>
+                <option value="{{ \App\Models\Payroll::PAID }}" @selected(request('status') === \App\Models\Payroll::PAID)>Paid</option>
+            </select>
             <button type="submit" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 hover:shadow-md hover:-translate-y-px">Filter</button>
         </form>
+        @if (! $period)
+            <p class="mb-4 text-xs text-gray-400">Showing all periods.</p>
+        @endif
 
         <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">

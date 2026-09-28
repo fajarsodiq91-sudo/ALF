@@ -25,6 +25,10 @@
                     <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
+            <select name="payment" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                <option value="">All payments</option>
+                <option value="awaiting" @selected(request('payment') === 'awaiting')>Awaiting confirmation</option>
+            </select>
             <button type="submit" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 hover:shadow-md hover:-translate-y-px">Filter</button>
         </form>
 

@@ -21,6 +21,14 @@
                     <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
+            <label class="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                <input type="checkbox" name="overdue" value="1" @checked(request()->boolean('overdue')) class="rounded border-gray-300 text-brand focus:ring-brand">
+                Overdue only
+            </label>
+            <label class="inline-flex items-center gap-1.5 text-sm text-gray-600">
+                <input type="checkbox" name="task_overdue" value="1" @checked(request()->boolean('task_overdue')) class="rounded border-gray-300 text-brand focus:ring-brand">
+                Has overdue tasks
+            </label>
             <button type="submit" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 hover:shadow-md hover:-translate-y-px">Filter</button>
         </form>
 
