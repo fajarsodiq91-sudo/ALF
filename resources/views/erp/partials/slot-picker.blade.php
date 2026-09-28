@@ -65,7 +65,7 @@
                         const iso = window.isoDate(day);
                         days.push({
                             iso, number: day.getDate(), inMonth: day.getMonth() === this.cursor.getMonth(), past: iso < this.today,
-                            slots: window.candidateSlots(iso, this.minutes).map(slot => ({ ...slot, state: this.stateOf(iso, slot) })),
+                            open: window.slotsFor(iso).length > 0, slots: window.candidateSlots(iso, this.minutes).map(slot => ({ ...slot, state: this.stateOf(iso, slot) })),
                         });
                     }
                     weeks.push(days);
@@ -121,7 +121,8 @@
                                  :class="[day.inMonth ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50', day.past ? 'opacity-50' : '']">
                                 <div class="flex items-center justify-between px-0.5 text-xs">
                                     <span :class="day.iso === today ? 'rounded-full bg-brand px-1.5 font-semibold text-white' : (day.inMonth ? 'font-medium text-gray-700' : 'text-gray-400')" x-text="day.number"></span>
-                                    <span x-show="!day.slots.length && day.inMonth && !day.past" class="text-[10px] uppercase text-gray-300">Closed</span>
+                                    <span x-show="!day.open && day.inMonth && !day.past" class="text-[10px] uppercase text-gray-300">Closed</span>
+                                    <span x-show="day.open && !day.slots.length && day.inMonth && !day.past" class="text-[10px] uppercase text-amber-500" title="The operating hours of this day are shorter than the program's session">Too short</span>
                                 </div>
                                 <div class="mt-1" x-show="minutes && day.slots.length">
                                     <button type="button" @click="focus = day.iso" :disabled="day.past"
@@ -156,7 +157,7 @@
             <template x-if="focused()">
                 <div>
                     <p class="mb-2 text-sm font-medium text-gray-700"><span x-text="focused().iso"></span> · start times for a <span x-text="minutes"></span>-minute session</p>
-                    <p x-show="!focused().slots.length" class="text-sm text-gray-400">Closed on this day.</p>
+                    <p x-show="!focused().slots.length" class="text-sm text-gray-400" x-text="focused().open ? 'The operating hours of this day are shorter than the session length. Extend them in Master Data → Operating Hours.' : 'Closed on this day.'"></p>
                     <div class="flex flex-wrap gap-1.5">
                         <template x-for="slot in focused().slots" :key="slot.value">
                             <button type="button" @click="choose(focused(), slot)" :disabled="focused().past || slot.state === 'booked' || slot.state === 'picked'"
