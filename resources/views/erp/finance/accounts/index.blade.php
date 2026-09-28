@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between mb-4">
             <p class="text-sm text-gray-500">Company funding sources used to record income, expenses, and transfers.</p>
             @can('finance.manage')
-                <a href="{{ route('finance.accounts.create') }}" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+                <a href="{{ route('finance.accounts.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">
                     Add Account
                 </a>
             @endcan

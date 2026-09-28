@@ -44,7 +44,7 @@
 <p class="mt-3 text-xs text-gray-500">Days are counted Monday–Friday. Annual leave is checked against the employee's remaining balance for the year.</p>
 
 <div class="mt-6 flex items-center gap-3">
-    <button type="submit" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Submit Request</button>
+    <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Submit Request</button>
     <a href="{{ route('hr.leaves.index') }}" class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>
 </div>
 

@@ -1,8 +1,8 @@
 <x-layouts.erp title="Dashboard">
     <div class="max-w-5xl space-y-6">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 class="text-lg font-semibold text-gray-800">Welcome, {{ auth()->user()->name }}.</h2>
-            <p class="mt-1 text-sm text-gray-500">
+        <div class="rounded-lg shadow-sm p-6 text-white bg-gradient-to-r from-steel-900 via-brand-dark to-brand-light">
+            <h2 class="text-lg font-semibold">Welcome, {{ auth()->user()->name }}.</h2>
+            <p class="mt-1 text-sm text-white/80">
                 Role: {{ auth()->user()->getRoleNames()->join(', ') ?: 'No role assigned' }}
             </p>
         </div>

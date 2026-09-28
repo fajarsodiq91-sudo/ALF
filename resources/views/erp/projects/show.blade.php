@@ -33,7 +33,7 @@
                 <div class="col-span-2">
                     <dt class="text-gray-500">Progress ({{ $project->done_tasks_count }}/{{ $project->tasks_count }} tasks done)</dt>
                     <dd class="mt-1 flex items-center gap-2">
-                        <div class="h-2 flex-1 rounded-full bg-gray-200"><div class="h-2 rounded-full bg-brand" style="width: {{ $project->progressPercent() }}%"></div></div>
+                        <div class="h-2 flex-1 rounded-full bg-gray-200"><div class="h-2 rounded-full bg-gradient-to-br from-brand-light to-brand-dark" style="width: {{ $project->progressPercent() }}%"></div></div>
                         <span class="text-xs text-gray-600">{{ $project->progressPercent() }}%</span>
                     </dd>
                 </div>
@@ -106,7 +106,7 @@
                         @endforeach
                     </select>
                     <input type="date" name="due_date" value="{{ old('due_date') }}" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-                    <button type="submit" class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add Task</button>
+                    <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Add Task</button>
                 </form>
             @endcan
         </div>

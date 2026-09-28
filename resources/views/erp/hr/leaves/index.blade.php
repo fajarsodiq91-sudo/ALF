@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between mb-4">
             <p class="text-sm text-gray-500">Pengajuan dan persetujuan cuti karyawan.</p>
             @can('hr.manage')
-                <a href="{{ route('hr.leaves.create') }}" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">New Leave Request</a>
+                <a href="{{ route('hr.leaves.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">New Leave Request</a>
             @endcan
         </div>
 

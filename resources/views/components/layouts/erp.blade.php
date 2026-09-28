@@ -13,14 +13,14 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased bg-gray-100 text-gray-900" x-data="{ sidebarOpen: false }">
+    <body class="font-sans antialiased bg-gradient-to-br from-steel-50 to-steel-100 text-gray-900 min-h-screen" x-data="{ sidebarOpen: false }">
         <div class="min-h-screen flex">
             {{-- Sidebar --}}
             <aside
-                class="fixed inset-y-0 left-0 z-40 w-64 h-screen bg-steel-800 text-steel-300 transform transition-transform duration-200 ease-in-out lg:translate-x-0"
+                class="fixed inset-y-0 left-0 z-40 w-64 h-screen bg-gradient-to-b from-steel-900 via-steel-800 to-brand-950 text-steel-300 transform transition-transform duration-200 ease-in-out lg:translate-x-0"
                 :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             >
-                <div class="h-14 flex items-center gap-2 px-4 border-b border-white/10">
+                <div class="h-14 flex items-center gap-2 px-4 border-b border-white/10 bg-gradient-to-r from-brand-dark/50 to-transparent">
                     <img src="{{ asset('assets/icons/alf.png') }}" alt="" class="h-7 w-7 rounded shrink-0" />
                     <span class="font-semibold text-white leading-tight text-[13px]">
                         PT. Alfajar Logic Futura
@@ -119,7 +119,7 @@
 
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" @click.outside="open = false" class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900">
-                                <span class="h-8 w-8 rounded-full bg-brand text-white flex items-center justify-center text-xs font-semibold">
+                                <span class="h-8 w-8 rounded-full bg-gradient-to-br from-brand-light to-brand-dark text-white flex items-center justify-center text-xs font-semibold">
                                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                 </span>
                                 <span class="hidden sm:block text-left leading-tight">

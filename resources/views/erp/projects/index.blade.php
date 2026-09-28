@@ -8,7 +8,7 @@
                 <span class="font-medium text-gray-800">{{ $projects->count() }}</span> proyek.
             </p>
             @can('projects.manage')
-                <a href="{{ route('projects.create') }}" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add Project</a>
+                <a href="{{ route('projects.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Add Project</a>
             @endcan
         </div>
 
@@ -49,7 +49,7 @@
                             <td class="px-4 py-3 text-right text-gray-800">Rp {{ number_format((float) $project->contract_value, 0, ',', '.') }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
-                                    <div class="h-1.5 w-20 rounded-full bg-gray-200"><div class="h-1.5 rounded-full bg-brand" style="width: {{ $project->progressPercent() }}%"></div></div>
+                                    <div class="h-1.5 w-20 rounded-full bg-gray-200"><div class="h-1.5 rounded-full bg-gradient-to-br from-brand-light to-brand-dark" style="width: {{ $project->progressPercent() }}%"></div></div>
                                     <span class="text-xs text-gray-500">{{ $project->progressPercent() }}%</span>
                                 </div>
                             </td>

@@ -16,7 +16,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-gray-900 antialiased h-screen overflow-hidden">
-        <div class="h-screen flex flex-col justify-center items-center px-4 bg-gray-100">
+        <div class="h-screen flex flex-col justify-center items-center px-4 bg-gradient-to-br from-steel-100 via-white to-brand-50">
             <div>
                 <a href="/">
                     <x-application-logo class="h-28 w-auto" />

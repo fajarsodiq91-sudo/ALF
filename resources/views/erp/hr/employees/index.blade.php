@@ -8,7 +8,7 @@
                 <span class="font-medium text-gray-800">{{ $employees->count() }}</span> karyawan.
             </p>
             @can('hr.manage')
-                <a href="{{ route('hr.create') }}" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+                <a href="{{ route('hr.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">
                     Add Employee
                 </a>
             @endcan

@@ -30,7 +30,7 @@
             @endif
 
             <div class="mt-6 flex items-center gap-3 print:hidden">
-                <button type="button" onclick="window.print()" class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Print</button>
+                <button type="button" onclick="window.print()" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Print</button>
                 <a href="{{ route('hr.payroll.index', ['period' => $payroll->period]) }}" class="text-sm text-gray-500 hover:text-gray-700">Back</a>
             </div>
         </div>

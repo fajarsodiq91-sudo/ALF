@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between mb-4">
             <p class="text-sm text-gray-500">Record expense transactions with auto-numbered invoices.</p>
             @can('finance.manage')
-                <a href="{{ route('finance.expenses.create') }}" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+                <a href="{{ route('finance.expenses.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">
                     Record Expense
                 </a>
             @endcan

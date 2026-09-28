@@ -4,7 +4,7 @@
 
         <div class="flex items-center justify-between mb-4">
             <p class="text-sm text-gray-500">Manage who can sign in and what they can do. Users are deactivated instead of deleted so their transaction history stays intact.</p>
-            <a href="{{ route('settings.users.create') }}" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Add User</a>
+            <a href="{{ route('settings.users.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Add User</a>
         </div>
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">

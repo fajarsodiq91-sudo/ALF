@@ -7,7 +7,7 @@
                 Total gaji bersih periode ini:
                 <span class="font-medium text-gray-800">Rp {{ number_format($totalNet, 0, ',', '.') }}</span>
             </p>
-            <a href="{{ route('hr.payroll.create', ['period' => $period]) }}" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">New Payroll</a>
+            <a href="{{ route('hr.payroll.create', ['period' => $period]) }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">New Payroll</a>
         </div>
 
         <form method="GET" action="{{ route('hr.payroll.index') }}" class="mb-4 flex gap-3">
@@ -91,7 +91,7 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <button type="submit" class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Confirm Payment</button>
+                                            <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Confirm Payment</button>
                                         </form>
                                     </td>
                                 </tr>

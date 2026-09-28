@@ -7,7 +7,7 @@
         'flex items-center gap-2.5 rounded-md text-sm transition-colors',
         'px-2.5 py-[7px]' => ! $nested,
         'px-2.5 py-1.5 ml-[9px] pl-[23px] text-[12.5px] border-l border-white/10' => $nested,
-        'bg-brand text-white' => $active && ! $soon,
+        'bg-gradient-to-br from-brand-light to-brand-dark text-white' => $active && ! $soon,
         'text-steel-300 hover:bg-white/5 hover:text-white' => ! $active && ! $soon,
         'text-steel-500 cursor-not-allowed hover:bg-transparent hover:text-steel-500' => $soon,
     ]) }}

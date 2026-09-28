@@ -8,7 +8,7 @@
                 <span class="font-medium text-gray-800">{{ $customers->count() }}</span> customer.
             </p>
             @can('sales.manage')
-                <a href="{{ route('sales.create') }}" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+                <a href="{{ route('sales.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">
                     Add Customer
                 </a>
             @endcan

@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between mb-4">
             <p class="text-sm text-gray-500">Tax remitted to the tax office. Each payment leaves the chosen account and is recorded as an expense under "Tax Payments".</p>
             @can('finance.manage')
-                <a href="{{ route('finance.tax-payments.create') }}" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">
+                <a href="{{ route('finance.tax-payments.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">
                     Record Tax Payment
                 </a>
             @endcan

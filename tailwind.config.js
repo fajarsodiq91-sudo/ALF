@@ -17,8 +17,10 @@ export default {
             colors: {
                 brand: {
                     DEFAULT: '#b00000',
+                    light: '#cf1f1f',
                     dark: '#8a0000',
                     50: '#fdecec',
+                    950: '#2a0808',
                 },
                 // Steel gray, lifted from the silver wing of the Alfajar mark —
                 // used anywhere the site previously reached for generic Tailwind gray.

@@ -24,7 +24,7 @@
                 @endforeach
 
                 <div>
-                    <button type="submit" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark">Save Settings</button>
+                    <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark">Save Settings</button>
                 </div>
             </form>
         </div>
