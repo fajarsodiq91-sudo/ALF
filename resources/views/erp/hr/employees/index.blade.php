@@ -19,7 +19,7 @@
                    class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
             <select name="type" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                 <option value="">All employment types</option>
-                @foreach (\App\Models\Employee::EMPLOYMENT_TYPES as $value => $label)
+                @foreach (\App\Services\MasterData::options('employment_type', request('type')) as $value => $label)
                     <option value="{{ $value }}" @selected(request('type') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
@@ -55,7 +55,7 @@
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $employee->name }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $employee->position }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $employee->department ?: '—' }}</td>
-                            <td class="px-4 py-3 text-gray-500">{{ \App\Models\Employee::EMPLOYMENT_TYPES[$employee->employment_type] ?? $employee->employment_type }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ \App\Services\MasterData::label('employment_type', $employee->employment_type) }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $employee->join_date?->format('d M Y') ?? '—' }}</td>
                             <td class="px-4 py-3">
                                 <span @class([

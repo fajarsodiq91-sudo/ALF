@@ -34,7 +34,7 @@
     <div class="">
         <label for="delivery_mode" class="block text-sm font-medium text-gray-700">Delivery Mode</label>
         <select name="delivery_mode" id="delivery_mode" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-            @foreach (\App\Models\TrainingSession::MODES as $value => $label)
+            @foreach (\App\Services\MasterData::options('delivery_mode', $session->delivery_mode ?? null) as $value => $label)
                 <option value="{{ $value }}" @selected(old('delivery_mode', $session->delivery_mode ?? 'onsite') === $value)>{{ $label }}</option>
             @endforeach
         </select>

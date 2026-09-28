@@ -20,14 +20,6 @@ class LeaveRequest extends Model
 
     public const ANNUAL = 'annual';
 
-    public const TYPES = [
-        self::ANNUAL => 'Annual Leave',
-        'sick' => 'Sick Leave',
-        'unpaid' => 'Unpaid Leave',
-        'maternity' => 'Maternity Leave',
-        'other' => 'Other',
-    ];
-
     public const STATUSES = [
         'pending' => 'Pending',
         'approved' => 'Approved',

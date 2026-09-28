@@ -19,7 +19,7 @@
                    class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
             <select name="category" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                 <option value="">All categories</option>
-                @foreach (\App\Models\Asset::CATEGORIES as $value => $label)
+                @foreach (\App\Services\MasterData::options('asset_category', request('category')) as $value => $label)
                     <option value="{{ $value }}" @selected(request('category') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
@@ -53,7 +53,7 @@
                         <tr>
                             <td class="px-4 py-3 text-gray-500">{{ $asset->asset_code }}</td>
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $asset->name }}</td>
-                            <td class="px-4 py-3 text-gray-500">{{ \App\Models\Asset::CATEGORIES[$asset->category] ?? $asset->category }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ \App\Services\MasterData::label('asset_category', $asset->category) }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $asset->location ?: '—' }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $asset->assigned_to ?: '—' }}</td>
                             <td class="px-4 py-3 text-right text-gray-800">Rp {{ number_format((float) $asset->purchase_cost, 0, ',', '.') }}</td>

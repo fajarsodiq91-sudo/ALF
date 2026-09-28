@@ -29,6 +29,7 @@ class RolePermissionSeeder extends Seeder
         'training.manage',
         'projects.view',
         'projects.manage',
+        'masterdata.manage',
         'settings.manage-users',
         'settings.manage-roles',
         'settings.manage-system',

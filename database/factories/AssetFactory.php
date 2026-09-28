@@ -15,7 +15,7 @@ class AssetFactory extends Factory
         return [
             'asset_code' => 'AST-'.fake()->unique()->numerify('#####'),
             'name' => fake()->randomElement(['Laptop', 'Monitor', 'Office Desk', 'Printer', 'Projector']).' '.fake()->numerify('##'),
-            'category' => fake()->randomElement(array_keys(Asset::CATEGORIES)),
+            'category' => fake()->randomElement(['electronics', 'furniture', 'vehicle', 'equipment', 'software', 'other']),
             'status' => 'active',
             'purchase_date' => fake()->dateTimeBetween('-3 years', 'now'),
             'purchase_cost' => fake()->randomFloat(2, 500_000, 30_000_000),

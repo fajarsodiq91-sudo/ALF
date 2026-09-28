@@ -18,7 +18,7 @@
         <label for="leave_type" class="block text-sm font-medium text-gray-700">Leave Type</label>
         <select name="leave_type" id="leave_type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
             <option value="">Select type</option>
-            @foreach (\App\Models\LeaveRequest::TYPES as $value => $label)
+            @foreach (\App\Services\MasterData::options('leave_type') as $value => $label)
                 <option value="{{ $value }}" @selected(old('leave_type', '') === $value)>{{ $label }}</option>
             @endforeach
         </select>

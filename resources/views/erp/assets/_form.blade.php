@@ -16,7 +16,7 @@
     <div>
         <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
         <select name="category" id="category" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-            @foreach (\App\Models\Asset::CATEGORIES as $value => $label)
+            @foreach (\App\Services\MasterData::options('asset_category', $asset->category ?? null) as $value => $label)
                 <option value="{{ $value }}" @selected(old('category', $asset->category ?? '') === $value)>{{ $label }}</option>
             @endforeach
         </select>

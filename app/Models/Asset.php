@@ -16,15 +16,6 @@ class Asset extends Model
     /** @use HasFactory<AssetFactory> */
     use HasFactory;
 
-    public const CATEGORIES = [
-        'electronics' => 'Electronics',
-        'furniture' => 'Furniture',
-        'vehicle' => 'Vehicle',
-        'equipment' => 'Equipment',
-        'software' => 'Software / License',
-        'other' => 'Other',
-    ];
-
     public const STATUSES = [
         'active' => 'Active',
         'in_repair' => 'In Repair',

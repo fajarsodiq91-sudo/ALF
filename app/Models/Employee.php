@@ -17,13 +17,6 @@ class Employee extends Model
     /** @use HasFactory<EmployeeFactory> */
     use HasFactory;
 
-    public const EMPLOYMENT_TYPES = [
-        'permanent' => 'Permanent',
-        'contract' => 'Contract',
-        'intern' => 'Intern',
-        'freelance' => 'Freelance',
-    ];
-
     public const STATUSES = [
         'active' => 'Active',
         'on_leave' => 'On Leave',

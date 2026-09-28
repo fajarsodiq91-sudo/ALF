@@ -18,7 +18,7 @@
     <div>
         <label for="customer_type" class="block text-sm font-medium text-gray-700">Type</label>
         <select name="customer_type" id="customer_type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-            @foreach (\App\Models\Customer::TYPES as $value => $label)
+            @foreach (\App\Services\MasterData::options('customer_type', $customer->customer_type ?? null) as $value => $label)
                 <option value="{{ $value }}" @selected(old('customer_type', $customer->customer_type ?? 'company') === $value)>{{ $label }}</option>
             @endforeach
         </select>

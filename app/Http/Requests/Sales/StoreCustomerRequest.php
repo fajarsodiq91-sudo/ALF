@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Sales;
 
-use App\Models\Customer;
+use App\Services\MasterData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,7 +20,7 @@ class StoreCustomerRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'customer_type' => ['required', Rule::in(array_keys(Customer::TYPES))],
+            'customer_type' => ['required', Rule::in(MasterData::codes('customer_type'))],
             'contact_person' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],

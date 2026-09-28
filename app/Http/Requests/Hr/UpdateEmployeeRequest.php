@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Hr;
 
 use App\Models\Employee;
+use App\Services\MasterData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,7 +26,7 @@ class UpdateEmployeeRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:50'],
             'position' => ['required', 'string', 'max:255'],
             'department' => ['nullable', 'string', 'max:255'],
-            'employment_type' => ['required', Rule::in(array_keys(Employee::EMPLOYMENT_TYPES))],
+            'employment_type' => ['required', Rule::in(MasterData::codes('employment_type'))],
             'status' => ['required', Rule::in(array_keys(Employee::STATUSES))],
             'join_date' => ['nullable', 'date'],
             'annual_leave_quota' => ['required', 'integer', 'min:0', 'max:365'],

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Assets;
 
 use App\Models\Asset;
+use App\Services\MasterData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,7 +22,7 @@ class StoreAssetRequest extends FormRequest
         return [
             'asset_code' => ['required', 'string', 'max:50', Rule::unique('assets', 'asset_code')],
             'name' => ['required', 'string', 'max:255'],
-            'category' => ['required', Rule::in(array_keys(Asset::CATEGORIES))],
+            'category' => ['required', Rule::in(MasterData::codes('asset_category'))],
             'status' => ['required', Rule::in(array_keys(Asset::STATUSES))],
             'purchase_date' => ['nullable', 'date'],
             'purchase_cost' => ['required', 'numeric', 'min:0'],

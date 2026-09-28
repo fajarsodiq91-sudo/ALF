@@ -21,12 +21,6 @@ class Customer extends Model
     /** @use HasFactory<CustomerFactory> */
     use HasFactory;
 
-    public const TYPES = [
-        'company' => 'Company',
-        'individual' => 'Individual',
-        'government' => 'Government / Institution',
-    ];
-
     public const REGISTRATION_COMPLETE = 'complete';
 
     public const REGISTRATION_AWAITING = 'awaiting_customer';

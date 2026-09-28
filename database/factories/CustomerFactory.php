@@ -14,7 +14,7 @@ class CustomerFactory extends Factory
     {
         return [
             'name' => fake()->company(),
-            'customer_type' => fake()->randomElement(array_keys(Customer::TYPES)),
+            'customer_type' => fake()->randomElement(['company', 'individual', 'government']),
             'contact_person' => fake()->optional()->name(),
             'email' => fake()->optional()->safeEmail(),
             'phone' => fake()->optional()->numerify('08##########'),

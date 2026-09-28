@@ -19,7 +19,7 @@
                    class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
             <select name="type" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                 <option value="">All types</option>
-                @foreach (\App\Models\Customer::TYPES as $value => $label)
+                @foreach (\App\Services\MasterData::options('customer_type', request('type')) as $value => $label)
                     <option value="{{ $value }}" @selected(request('type') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
@@ -67,7 +67,7 @@
                                     @endif
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-gray-500">{{ \App\Models\Customer::TYPES[$customer->customer_type] ?? $customer->customer_type }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $customer->contact_person ?: '—' }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $customer->email ?: '—' }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $customer->phone ?: '—' }}</td>

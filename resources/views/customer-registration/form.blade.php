@@ -17,7 +17,7 @@
             </div>
             <div class="bg-white rounded-lg shadow-lg border border-gray-200 p-6">
                 <h1 class="text-lg font-semibold text-gray-800">Customer Registration</h1>
-                <p class="mt-1 text-sm text-gray-500">Please fill in your details. Registration type: <span class="font-medium text-gray-700">{{ \App\Models\Customer::TYPES[$customer->customer_type] ?? $customer->customer_type }}</span>.</p>
+                <p class="mt-1 text-sm text-gray-500">Please fill in your details. Registration type: <span class="font-medium text-gray-700">{{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }}</span>.</p>
 
                 <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4">
                     @csrf

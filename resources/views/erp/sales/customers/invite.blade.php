@@ -3,7 +3,7 @@
         <x-erp.flash />
 
         <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6 text-center">
-            <h2 class="text-lg font-semibold text-gray-800">Registration for a new {{ \App\Models\Customer::TYPES[$customer->customer_type] ?? $customer->customer_type }} customer</h2>
+            <h2 class="text-lg font-semibold text-gray-800">Registration for a new {{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }} customer</h2>
 
             @if ($link)
                 <p class="mt-1 text-sm text-gray-500">Ask the customer to scan this QR code with their phone to fill in their own details.</p>

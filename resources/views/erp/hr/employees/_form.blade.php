@@ -24,7 +24,7 @@
     <div>
         <label for="employment_type" class="block text-sm font-medium text-gray-700">Employment Type</label>
         <select name="employment_type" id="employment_type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-            @foreach (\App\Models\Employee::EMPLOYMENT_TYPES as $value => $label)
+            @foreach (\App\Services\MasterData::options('employment_type', $employee->employment_type ?? null) as $value => $label)
                 <option value="{{ $value }}" @selected(old('employment_type', $employee->employment_type ?? 'permanent') === $value)>{{ $label }}</option>
             @endforeach
         </select>

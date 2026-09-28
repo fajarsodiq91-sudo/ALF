@@ -65,7 +65,7 @@
                     @forelse ($leaves as $leave)
                         <tr>
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $leave->employee->name }}</td>
-                            <td class="px-4 py-3 text-gray-500">{{ \App\Models\LeaveRequest::TYPES[$leave->leave_type] ?? $leave->leave_type }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ \App\Services\MasterData::label('leave_type', $leave->leave_type) }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $leave->start_date->format('d M Y') }} – {{ $leave->end_date->format('d M Y') }}</td>
                             <td class="px-4 py-3 text-right text-gray-500">{{ $leave->days }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $leave->reason ?: '—' }}</td>

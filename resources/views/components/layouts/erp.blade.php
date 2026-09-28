@@ -76,6 +76,10 @@
                         <x-erp.nav-link :href="route('assets.index')" :active="request()->routeIs('assets.*')" icon="assets">Assets</x-erp.nav-link>
                     @endcan
 
+                    @can('masterdata.manage')
+                        <x-erp.nav-link :href="route('masterdata.index')" :active="request()->routeIs('masterdata.*')" icon="masterdata">Master Data</x-erp.nav-link>
+                    @endcan
+
                     @canany(['settings.manage-users', 'settings.manage-roles', 'settings.manage-system'])
                         <x-erp.nav-group label="Settings" :active="request()->routeIs('settings.*')" icon="settings">
                             @can('settings.manage-users')

@@ -17,12 +17,6 @@ class TrainingSession extends Model
     /** @use HasFactory<TrainingSessionFactory> */
     use HasFactory;
 
-    public const MODES = [
-        'onsite' => 'On-site',
-        'online' => 'Online',
-        'hybrid' => 'Hybrid',
-    ];
-
     public const STATUSES = [
         'planned' => 'Planned',
         'ongoing' => 'Ongoing',

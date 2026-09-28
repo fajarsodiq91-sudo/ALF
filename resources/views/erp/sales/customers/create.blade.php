@@ -24,7 +24,7 @@
                 <input type="hidden" name="customer_type_invite" value="1">
                 <label for="invite_customer_type" class="block text-sm font-medium text-gray-700">Type</label>
                 <select name="customer_type" id="invite_customer_type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-                    @foreach (\App\Models\Customer::TYPES as $value => $label)
+                    @foreach (\App\Services\MasterData::options('customer_type') as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
                     @endforeach
                 </select>

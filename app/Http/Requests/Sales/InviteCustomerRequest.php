@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Sales;
 
-use App\Models\Customer;
+use App\Services\MasterData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -19,7 +19,7 @@ class InviteCustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_type' => ['required', Rule::in(array_keys(Customer::TYPES))],
+            'customer_type' => ['required', Rule::in(MasterData::codes('customer_type'))],
         ];
     }
 }

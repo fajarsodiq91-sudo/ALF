@@ -51,7 +51,7 @@
                             <td class="px-4 py-3 text-gray-500 whitespace-nowrap">{{ $session->start_date->format('d M Y') }}@if (! $session->start_date->isSameDay($session->end_date)) – {{ $session->end_date->format('d M Y') }}@endif</td>
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $session->program->name }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $session->customer ? $session->customer->customer_code.' — '.$session->customer->name : 'Public batch' }}</td>
-                            <td class="px-4 py-3 text-gray-500">{{ \App\Models\TrainingSession::MODES[$session->delivery_mode] ?? $session->delivery_mode }}@if ($session->location) · {{ $session->location }}@endif</td>
+                            <td class="px-4 py-3 text-gray-500">{{ \App\Services\MasterData::label('delivery_mode', $session->delivery_mode) }}@if ($session->location) · {{ $session->location }}@endif</td>
                             <td class="px-4 py-3 text-gray-500">{{ $session->instructor?->name ?? '—' }}</td>
                             <td class="px-4 py-3 text-right text-gray-500">{{ $session->participants_count }}</td>
                             <td class="px-4 py-3 text-right text-gray-800">Rp {{ number_format((float) $session->fee, 0, ',', '.') }}</td>

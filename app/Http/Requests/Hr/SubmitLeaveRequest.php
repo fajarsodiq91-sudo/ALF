@@ -4,6 +4,7 @@ namespace App\Http\Requests\Hr;
 
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Services\MasterData;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,7 +24,7 @@ class SubmitLeaveRequest extends FormRequest
     {
         return [
             'employee_id' => ['required', 'exists:employees,id'],
-            'leave_type' => ['required', Rule::in(array_keys(LeaveRequest::TYPES))],
+            'leave_type' => ['required', Rule::in(MasterData::codes('leave_type'))],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'reason' => ['nullable', 'string', 'max:1000'],

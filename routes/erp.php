@@ -20,6 +20,7 @@ use App\Http\Controllers\Hr\PayrollController;
 use App\Http\Controllers\Projects\ProjectController;
 use App\Http\Controllers\Projects\ProjectTaskController;
 use App\Http\Controllers\Sales\CustomerController;
+use App\Http\Controllers\Settings\MasterDataController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\SystemSettingController;
 use App\Http\Controllers\Settings\UserController;
@@ -194,6 +195,11 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'update' => 'hr.update',
             'destroy' => 'hr.destroy',
         ]);
+    });
+
+    Route::middleware('permission:masterdata.manage')->group(function () {
+        Route::resource('master-data', MasterDataController::class)->only(['index', 'store', 'update', 'destroy'])
+            ->parameters(['master-data' => 'masterDataItem'])->names('masterdata');
     });
 
     // Settings — each area gated by its own permission.
