@@ -34,6 +34,7 @@ class CustomerRegistrationController extends Controller
             'programs' => $programs->groupBy('program_type'),
             'prices' => $programs->mapWithKeys(fn ($program) => [$program->id => (float) $program->standard_price]),
             'booked' => BookedSlots::keys(),
+            'sessionMinutes' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->session_minutes]),
             'meetingCounts' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->duration_days]),
         ]);
     }

@@ -18,7 +18,7 @@
             <div class="lg:col-span-3 space-y-4" x-data='{ days: @json($initialDays) }'>
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
                     <h2 class="text-base font-semibold text-gray-800">Operating Hours</h2>
-                    <p class="text-sm text-gray-500">The days and time slots in which meetings and classes can be scheduled. Customers see them in the booking calendar and in their portal.</p>
+                    <p class="text-sm text-gray-500">The days and time windows in which meetings and classes can be scheduled. Programs with a session length let customers pick any start time inside a window. Customers see them in the booking calendar and in their portal.</p>
                 </div>
 
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4" x-data="{ open: false }">
@@ -33,7 +33,7 @@
 
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
                     <h3 class="text-sm font-semibold text-gray-800">Block slots</h3>
-                    <p class="mb-3 text-xs text-gray-500">Click an available (green) slot to block it when you have other plans; it will show as booked to customers. Click a blocked slot to free it again.</p>
+                    <p class="mb-3 text-xs text-gray-500">Click a day's operating window to block the time you are busy (from–until); it will show as booked to customers. Click a grey blocked time to free it again.</p>
                     @if ($errors->has('date'))
                         <p class="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ $errors->first('date') }}</p>
                     @endif

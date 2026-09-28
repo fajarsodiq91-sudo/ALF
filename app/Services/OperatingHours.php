@@ -65,8 +65,32 @@ class OperatingHours
         return self::schedule()[Carbon::parse($date)->dayOfWeekIso] ?? [];
     }
 
-    /** Null when the meeting is allowed; otherwise a message explaining what to change. */
-    public static function violation(string $date, ?string $start, ?string $end): ?string
+    /** Minutes between the start times a customer can pick inside an operating window. */
+    public const START_STEP_MINUTES = 30;
+
+    public static function toMinutes(string $time): int
+    {
+        return (int) substr($time, 0, 2) * 60 + (int) substr($time, 3, 2);
+    }
+
+    /** The operating window of that date that fully contains the time range, if any. */
+    public static function windowContaining(string $date, string $start, string $end): ?array
+    {
+        foreach (self::slotsForDate($date) as $slot) {
+            if (self::toMinutes($slot[0]) <= self::toMinutes($start) && self::toMinutes($end) <= self::toMinutes($slot[1])) {
+                return $slot;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Null when the meeting is allowed; otherwise a message explaining what to change.
+     * With $sessionMinutes (the program's session length) the times are free inside a window;
+     * without it the meeting must match a whole window.
+     */
+    public static function violation(string $date, ?string $start, ?string $end, ?int $sessionMinutes = null): ?string
     {
         if (! self::enforced()) {
             return null;
@@ -83,6 +107,26 @@ class OperatingHours
 
         if (! $start || ! $end) {
             return 'Choose a time slot for '.self::DAY_NAMES[$day].'.';
+        }
+
+        if ($sessionMinutes) {
+            $start = substr($start, 0, 5);
+            $end = substr($end, 0, 5);
+            $window = self::windowContaining($date, $start, $end);
+
+            if (! $window) {
+                return 'The time must be inside the '.self::DAY_NAMES[$day].' operating hours: '.self::describe($slots).'.';
+            }
+
+            if (self::toMinutes($end) - self::toMinutes($start) !== $sessionMinutes) {
+                return 'This program takes '.$sessionMinutes.' minutes per session.';
+            }
+
+            if ((self::toMinutes($start) - self::toMinutes($window[0])) % self::START_STEP_MINUTES !== 0) {
+                return 'Start times are every '.self::START_STEP_MINUTES.' minutes from the opening time ('.$window[0].').';
+            }
+
+            return null;
         }
 
         foreach ($slots as [$slotStart, $slotEnd]) {
@@ -119,7 +163,7 @@ class OperatingHours
             ], $slots);
         }
 
-        return ['enforced' => self::enforced(), 'days' => $days];
+        return ['enforced' => self::enforced(), 'step' => self::START_STEP_MINUTES, 'days' => $days];
     }
 
     /**

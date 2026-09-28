@@ -25,7 +25,7 @@ class TrainingSessionMeetingController extends Controller
             'topic' => ['nullable', 'string', 'max:255'],
         ]);
 
-        if ($violation = OperatingHours::violation($data['meeting_date'], $data['start_time'] ?? null, $data['end_time'] ?? null)) {
+        if ($violation = OperatingHours::violation($data['meeting_date'], $data['start_time'] ?? null, $data['end_time'] ?? null, $session->program?->session_minutes)) {
             return back()->withInput()->withErrors(['meeting_date' => $violation]);
         }
 

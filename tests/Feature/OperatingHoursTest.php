@@ -126,7 +126,7 @@ class OperatingHoursTest extends TestCase
     {
         $admin = $this->user('Super Admin');
 
-        $this->actingAs($admin)->get(route('masterdata.hours.edit'))->assertOk()->assertSee('Operating Hours')->assertSee('Weekly calendar')->assertSee('Only allow meetings inside these hours');
+        $this->actingAs($admin)->get(route('masterdata.hours.edit'))->assertOk()->assertSee('Operating Hours')->assertSee('Weekly schedule')->assertSee('Only allow meetings inside these hours');
         $this->actingAs($admin)->get(route('settings.system'))->assertOk()->assertDontSee('Only allow meetings inside these hours');
 
         $this->actingAs($admin)->put(route('masterdata.hours.update'), [

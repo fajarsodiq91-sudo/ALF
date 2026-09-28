@@ -12,11 +12,12 @@
     <body class="font-sans antialiased text-gray-900 min-h-screen bg-gradient-to-br from-steel-100 via-white to-brand-50">
         @include('erp.partials.slot-picker', ['booked' => $booked])
         <script>
-            function registrationForm(initial, prices, counts) {
+            function registrationForm(initial, prices, counts, minutes) {
                 return {
                     programs: initial.map(p => ({ payment_plan: 'full', ...p })),
                     prices,
-                    counts,
+                    counts, minutes,
+                    minutesOf(program) { return parseInt(this.minutes[program.training_program_id]) || null; },
                     countOf(program) { return parseInt(this.counts[program.training_program_id]) || 0; },
                     middleOf(program) { const n = this.countOf(program); return n < 2 ? 1 : Math.floor(n / 2) + 1; },
                     installmentAllowed(program) { return this.countOf(program) !== 1; },
@@ -48,7 +49,7 @@
                 <h1 class="text-lg font-semibold text-gray-800">Customer Registration</h1>
                 <p class="mt-1 text-sm text-gray-500">Please fill in your details. Registration type: <span class="font-medium text-gray-700">{{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }}</span>.</p>
 
-                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" @submit="if (!allReady()) { $event.preventDefault(); attempted = true; }" x-data='registrationForm(@json(old("programs", [])), @json($prices), @json($meetingCounts))'>
+                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" @submit="if (!allReady()) { $event.preventDefault(); attempted = true; }" x-data='registrationForm(@json(old("programs", [])), @json($prices), @json($meetingCounts), @json($sessionMinutes))'>
                     @csrf
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Name / Company Name <span class="text-red-600">*</span></label>
@@ -138,7 +139,7 @@
                                         <p class="text-sm" :class="meeting.meeting_date ? 'font-medium text-gray-800' : 'text-gray-400'" x-text="meetingLabel(meeting)"></p>
                                         <p x-show="hoursHint(meeting.meeting_date)" x-text="hoursHint(meeting.meeting_date)" x-cloak class="text-xs text-red-600"></p>
                                     </div>
-                                    <button type="button" @click="$dispatch('open-slot-picker', { meeting, siblings: program.meetings })" class="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50 hover:shadow"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> Choose on calendar</button>
+                                    <button type="button" @click="$dispatch('open-slot-picker', { meeting, siblings: program.meetings, minutes: minutesOf(program) })" class="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50 hover:shadow"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> Choose on calendar</button>
                                 </div>
                                 <template x-if="hours.enforced">
                                     <div class="hidden">

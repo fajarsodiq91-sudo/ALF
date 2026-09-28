@@ -9,6 +9,33 @@
         return window.operatingHours.days[new Date(date + 'T00:00:00').getDay()] || [];
     };
 
+    window.toMin = t => { const [h, m] = String(t).split(':'); return parseInt(h, 10) * 60 + parseInt(m || 0, 10); };
+    window.fmtMin = n => String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
+
+    /** Whether the range overlaps one of the booked "YYYY-MM-DD|HH:MM-HH:MM" keys. */
+    window.overlapsBooked = function (keys, date, start, end) {
+        return keys.some(key => {
+            const [d, range] = key.split('|');
+            if (d !== date) { return false; }
+            const [s, e] = range.split('-');
+            return window.toMin(s) < window.toMin(end) && window.toMin(e) > window.toMin(start);
+        });
+    };
+
+    /** What can be booked on a date: the whole windows, or (with a session length) start times inside them. */
+    window.candidateSlots = function (date, minutes) {
+        const windows = window.slotsFor(date);
+        if (!minutes) { return windows; }
+        const out = [];
+        windows.forEach(w => {
+            for (let s = window.toMin(w.start); s + minutes <= window.toMin(w.end); s += window.operatingHours.step) {
+                const start = window.fmtMin(s), end = window.fmtMin(s + minutes);
+                out.push({ value: start + '-' + end, start, end, label: start + ' – ' + end });
+            }
+        });
+        return out;
+    };
+
     /** A hint for the date, or '' when the date is fine (or unknown). */
     window.hoursHint = function (date) {
         if (!date || !window.operatingHours.enforced) { return ''; }

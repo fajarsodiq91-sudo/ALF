@@ -25,11 +25,13 @@
 
     function slotPicker() {
         return {
-            open: false, meeting: null, siblings: [], cursor: new Date(), today: window.isoDate(new Date()),
+            open: false, meeting: null, siblings: [], cursor: new Date(), today: window.isoDate(new Date()), minutes: null, focus: null,
 
             show(detail) {
                 this.meeting = detail.meeting;
                 this.siblings = detail.siblings || [];
+                this.minutes = detail.minutes ? parseInt(detail.minutes) : null;
+                this.focus = detail.meeting.meeting_date || null;
                 const start = detail.meeting.meeting_date ? new Date(detail.meeting.meeting_date + 'T00:00:00') : new Date();
                 this.cursor = new Date(start.getFullYear(), start.getMonth(), 1);
                 this.open = true;
@@ -46,8 +48,8 @@
             /** 'available' | 'booked' | 'yours' (this meeting) | 'picked' (another meeting of the same form). */
             stateOf(date, slot) {
                 if (this.meeting && this.meeting.meeting_date === date && this.meeting.start_time === slot.start && this.meeting.end_time === slot.end) { return 'yours'; }
-                if (this.siblings.some(m => m !== this.meeting && m.meeting_date === date && m.start_time === slot.start && m.end_time === slot.end)) { return 'picked'; }
-                return window.bookedSlots.includes(date + '|' + slot.value) ? 'booked' : 'available';
+                if (this.siblings.some(m => m !== this.meeting && m.meeting_date === date && m.start_time && window.toMin(m.start_time) < window.toMin(slot.end) && window.toMin(m.end_time) > window.toMin(slot.start))) { return 'picked'; }
+                return window.overlapsBooked(window.bookedSlots, date, slot.start, slot.end) ? 'booked' : 'available';
             },
 
             /** Six weeks starting on Monday, each day with its slots and their state. */
@@ -63,13 +65,17 @@
                         const iso = window.isoDate(day);
                         days.push({
                             iso, number: day.getDate(), inMonth: day.getMonth() === this.cursor.getMonth(), past: iso < this.today,
-                            slots: window.slotsFor(iso).map(slot => ({ ...slot, state: this.stateOf(iso, slot) })),
+                            slots: window.candidateSlots(iso, this.minutes).map(slot => ({ ...slot, state: this.stateOf(iso, slot) })),
                         });
                     }
                     weeks.push(days);
                 }
                 return weeks;
             },
+
+            /** Free start times of a day (only used when the program has a session length). */
+            free(day) { return day.past ? 0 : day.slots.filter(s => s.state === 'available' || s.state === 'yours').length; },
+            focused() { return this.weeks().flat().find(d => d.iso === this.focus) || null; },
 
             choose(day, slot) {
                 if (day.past || slot.state === 'booked' || slot.state === 'picked') { return; }
@@ -117,7 +123,13 @@
                                     <span :class="day.iso === today ? 'rounded-full bg-brand px-1.5 font-semibold text-white' : (day.inMonth ? 'font-medium text-gray-700' : 'text-gray-400')" x-text="day.number"></span>
                                     <span x-show="!day.slots.length && day.inMonth && !day.past" class="text-[10px] uppercase text-gray-300">Closed</span>
                                 </div>
-                                <div class="mt-1 space-y-0.5">
+                                <div class="mt-1" x-show="minutes && day.slots.length">
+                                    <button type="button" @click="focus = day.iso" :disabled="day.past"
+                                            class="block w-full rounded px-1 py-0.5 text-left text-[11px] leading-tight ring-1"
+                                            :class="[free(day) ? 'bg-green-100 text-green-800 ring-green-300 hover:bg-green-200' : 'bg-red-100 text-red-700 ring-red-300', focus === day.iso ? 'outline outline-2 outline-brand' : '']"
+                                            x-text="free(day) ? free(day) + ' times free' : 'Full'"></button>
+                                </div>
+                                <div class="mt-1 space-y-0.5" x-show="!minutes">
                                     <template x-for="slot in day.slots" :key="slot.value">
                                         <button type="button" @click="choose(day, slot)"
                                                 :disabled="day.past || slot.state === 'booked' || slot.state === 'picked'"
@@ -138,6 +150,28 @@
                     </div>
                 </template>
             </div>
+        </div>
+
+        <div x-show="minutes" x-cloak class="border-t border-gray-100 px-4 py-3">
+            <template x-if="focused()">
+                <div>
+                    <p class="mb-2 text-sm font-medium text-gray-700"><span x-text="focused().iso"></span> · start times for a <span x-text="minutes"></span>-minute session</p>
+                    <p x-show="!focused().slots.length" class="text-sm text-gray-400">Closed on this day.</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <template x-for="slot in focused().slots" :key="slot.value">
+                            <button type="button" @click="choose(focused(), slot)" :disabled="focused().past || slot.state === 'booked' || slot.state === 'picked'"
+                                    class="rounded px-2 py-1 text-xs ring-1"
+                                    :class="{
+                                        'bg-green-100 text-green-800 ring-green-300 hover:bg-green-200': slot.state === 'available',
+                                        'bg-red-100 text-red-700 ring-red-300 line-through cursor-not-allowed': slot.state === 'booked',
+                                        'bg-brand text-white ring-brand-dark': slot.state === 'yours',
+                                        'bg-amber-100 text-amber-800 ring-amber-300 cursor-not-allowed': slot.state === 'picked',
+                                    }" x-text="slot.label"></button>
+                        </template>
+                    </div>
+                </div>
+            </template>
+            <p x-show="!focus" class="text-sm text-gray-400">Click a day to see its available start times.</p>
         </div>
     </div>
 </div>

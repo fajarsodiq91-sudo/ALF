@@ -23,6 +23,7 @@ class SaveTrainingProgramRequest extends FormRequest
             'program_type' => ['required', Rule::in(MasterData::codes('program_type'))],
             'description' => ['nullable', 'string', 'max:1000'],
             'duration_days' => ['required', 'integer', 'min:1', 'max:100'],
+            'session_minutes' => ['nullable', 'integer', 'min:15', 'max:720'],
             'standard_price' => ['required', 'numeric', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
         ];

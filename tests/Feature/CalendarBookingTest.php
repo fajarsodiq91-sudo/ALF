@@ -255,7 +255,7 @@ class CalendarBookingTest extends TestCase
 
         $this->actingAs($admin)->get(route('masterdata.index'))->assertOk()->assertSee(route('masterdata.hours.edit'), false)->assertSee('Operating Hours');
         $this->actingAs($admin)->get(route('masterdata.hours.edit'))->assertOk()
-            ->assertSee('Weekly calendar')->assertSee('window.weekRange', false)
+            ->assertSee('Weekly schedule')->assertSee('window.weekRange', false)
             ->assertSee('"start":"09:00","end":"10:30"', false)->assertSee('Add slot')->assertSee('Save Operating Hours');
     }
 

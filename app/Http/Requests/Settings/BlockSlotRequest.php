@@ -22,7 +22,7 @@ class BlockSlotRequest extends FormRequest
         return [
             'date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required', 'date_format:H:i'],
-            'end_time' => ['required', 'date_format:H:i'],
+            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
             'reason' => ['nullable', 'string', 'max:255'],
         ];
     }
@@ -37,13 +37,10 @@ class BlockSlotRequest extends FormRequest
                 return;
             }
 
-            $isSlot = collect(OperatingHours::slotsForDate($this->input('date')))
-                ->contains(fn ($slot) => $slot[0] === $this->input('start_time') && $slot[1] === $this->input('end_time'));
-
-            if (! $isSlot) {
-                $validator->errors()->add('date', 'That is not an operating-hours slot.');
+            if (! OperatingHours::windowContaining($this->input('date'), $this->input('start_time'), $this->input('end_time'))) {
+                $validator->errors()->add('date', 'The time must be inside the operating hours of that day.');
             } elseif (BookedSlots::conflicts($this->input('date'), $this->input('start_time'), $this->input('end_time'))) {
-                $validator->errors()->add('date', 'That slot is already booked.');
+                $validator->errors()->add('date', 'That time overlaps something already booked.');
             }
         }];
     }

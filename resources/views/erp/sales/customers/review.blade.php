@@ -19,7 +19,7 @@
                 'topic' => '',
             ])->all(),
         ])->all();
-        $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type, 'meetings' => $program->duration_days])->values();
+        $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type, 'meetings' => $program->duration_days, 'minutes' => $program->session_minutes])->values();
         $inputClass = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm';
     @endphp
 
@@ -30,6 +30,10 @@
                 programs, emptyProgram, emptyMeeting, catalog, hours: window.operatingHours, attempted: false,
                 allReady() { return this.programs.every(p => p.meetings.length > 0 && p.meetings.every(m => window.meetingReady(m))); },
                 rupiah(amount) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount); },
+                minutesOf(program) {
+                    const item = this.catalog.find(c => String(c.id) === String(program.training_program_id));
+                    return item ? item.minutes : null;
+                },
                 expectedMeetings(program) {
                     const item = this.catalog.find(c => String(c.id) === String(program.training_program_id));
                     return item ? item.meetings : 0;
@@ -208,7 +212,7 @@
                                         <p class="text-sm" :class="meeting.meeting_date ? 'font-medium text-gray-800' : 'text-gray-400'" x-text="meetingLabel(meeting)"></p>
                                         <p x-show="hoursHint(meeting.meeting_date)" x-text="hoursHint(meeting.meeting_date)" x-cloak class="text-xs text-red-600"></p>
                                     </div>
-                                    <button type="button" @click="$dispatch('open-slot-picker', { meeting, siblings: program.meetings })" class="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50 hover:shadow"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> Choose on calendar</button>
+                                    <button type="button" @click="$dispatch('open-slot-picker', { meeting, siblings: program.meetings, minutes: minutesOf(program) })" class="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50 hover:shadow"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> Choose on calendar</button>
                                 </div>
                                 <template x-if="hours.enforced">
                                     <div class="hidden">

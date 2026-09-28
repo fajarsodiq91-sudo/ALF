@@ -78,8 +78,9 @@ class EmployeesTest extends TestCase
 
         $this->actingAs($user)->post(route('hr.store'), $this->payload())
             ->assertRedirect(route('hr.index'));
-        $employee = Employee::firstWhere('employee_number', 'EMP-001');
+        $employee = Employee::firstWhere('name', $this->payload()['name']);
         $this->assertNotNull($employee);
+        $this->assertSame(now()->format('ym').'01', $employee->employee_number);
 
         $this->actingAs($user)->put(route('hr.update', $employee), $this->payload(['name' => 'Siti Aminah', 'status' => 'on_leave']))
             ->assertRedirect(route('hr.index'));
@@ -103,13 +104,25 @@ class EmployeesTest extends TestCase
         $this->actingAs($user)->delete(route('hr.destroy', $employee))->assertForbidden();
     }
 
-    public function test_employee_number_must_be_unique_and_fields_validated(): void
+    public function test_fields_are_validated(): void
     {
-        Employee::factory()->create(['employee_number' => 'EMP-001']);
-
         $this->actingAs($this->userWithRole('Finance'))
             ->post(route('hr.store'), $this->payload(['employment_type' => 'bogus', 'email' => 'nope']))
-            ->assertSessionHasErrors(['employee_number', 'employment_type', 'email']);
+            ->assertSessionHasErrors(['employment_type', 'email']);
+    }
+
+    public function test_employee_numbers_are_generated_and_never_repeat(): void
+    {
+        $prefix = now()->format('ym');
+        Employee::factory()->create(['employee_number' => $prefix.'01']); // taken by hand: skipped
+
+        $first = Employee::factory()->create(['employee_number' => null]);
+        $second = Employee::factory()->create(['employee_number' => null]);
+        $this->assertSame($prefix.'02', $first->employee_number);
+        $this->assertSame($prefix.'03', $second->employee_number);
+
+        $second->delete();
+        $this->assertSame($prefix.'04', Employee::factory()->create(['employee_number' => null])->employee_number);
     }
 
     public function test_index_filters_by_status(): void
