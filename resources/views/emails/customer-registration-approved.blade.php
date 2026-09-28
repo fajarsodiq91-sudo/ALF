@@ -10,7 +10,6 @@ Your registration at PT Alfajar Logic Futura has been **approved**.
 |:--|:--|
 | Customer ID | **{{ $customer->customer_code }}** |
 | Type | {{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }} |
-| Contact person | {{ $customer->contact_person ?: '—' }} |
 | Email | {{ $customer->email ?: '—' }} |
 | Phone | {{ $customer->phone ?: '—' }} |
 | City | {{ $customer->city ?: '—' }} |
@@ -32,6 +31,19 @@ Delivery: {{ \App\Services\MasterData::label('delivery_mode', $session->delivery
 Your program schedule will be shared soon.
 @endforelse
 
+@php $hours = \App\Services\OperatingHours::formatted(); @endphp
+@if ($hours)
+## Our operating hours
+
+<x-mail::table>
+| Day | Time |
+|:--|:--|
+@foreach ($hours as $day => $slots)
+| {{ $day }} | {{ $slots }} |
+@endforeach
+</x-mail::table>
+
+@endif
 ## Log in to your customer portal
 
 There you can see your meeting schedule and progress, open your learning materials and certificate, and upload the project you build so we can add it to our portfolio.

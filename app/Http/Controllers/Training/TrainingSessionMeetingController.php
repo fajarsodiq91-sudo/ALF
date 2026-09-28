@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Training;
 use App\Http\Controllers\Controller;
 use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
+use App\Services\OperatingHours;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -21,6 +22,10 @@ class TrainingSessionMeetingController extends Controller
             'location' => ['nullable', 'string', 'max:255'],
             'topic' => ['nullable', 'string', 'max:255'],
         ]);
+
+        if ($violation = OperatingHours::violation($data['meeting_date'], $data['start_time'] ?? null, $data['end_time'] ?? null)) {
+            return back()->withInput()->withErrors(['meeting_date' => $violation]);
+        }
 
         $session->meetings()->create($data);
 

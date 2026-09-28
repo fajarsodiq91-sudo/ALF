@@ -126,6 +126,18 @@ class CustomerRegistrationTest extends TestCase
             ->assertSee('What happens next');
     }
 
+    public function test_phone_is_the_contact_field_and_is_required_everywhere(): void
+    {
+        $token = $this->invite()->registration_token;
+        $this->post(route('customer-registration.store', $token), ['name' => 'Tanpa Telepon', 'email' => 'a@b.test'])->assertSessionHasErrors('phone');
+
+        $finance = $this->financeUser();
+        $this->actingAs($finance)->post(route('sales.store'), ['name' => 'PT X', 'customer_type' => 'company'])->assertSessionHasErrors('phone');
+
+        $this->get(route('customer-registration.show', $token))->assertDontSee('Contact Person')->assertSee('Phone / WhatsApp');
+        $this->actingAs($finance)->get(route('sales.create'))->assertDontSee('Contact Person');
+    }
+
     public function test_email_is_required_on_the_public_form(): void
     {
         $token = $this->invite()->registration_token;
@@ -138,7 +150,7 @@ class CustomerRegistrationTest extends TestCase
         Mail::shouldReceive('to')->andThrow(new RuntimeException('smtp down'));
         $customer = $this->invite();
 
-        $this->post(route('customer-registration.store', $customer->registration_token), ['name' => 'Tetap Masuk', 'email' => 'x@y.test'])
+        $this->post(route('customer-registration.store', $customer->registration_token), ['name' => 'Tetap Masuk', 'email' => 'x@y.test', 'phone' => '0812'])
             ->assertRedirect(route('customer-registration.done'));
 
         $this->assertTrue($customer->fresh()->isPendingApproval());
@@ -149,10 +161,10 @@ class CustomerRegistrationTest extends TestCase
         $customer = $this->invite();
         $token = $customer->registration_token;
 
-        $this->post(route('customer-registration.store', $token), ['name' => 'Sekali', 'email' => 's@b.test'])->assertRedirect();
+        $this->post(route('customer-registration.store', $token), ['name' => 'Sekali', 'email' => 's@b.test', 'phone' => '0812'])->assertRedirect();
 
         $this->get(route('customer-registration.show', $token))->assertStatus(410);
-        $this->post(route('customer-registration.store', $token), ['name' => 'Dua Kali', 'email' => 'd@b.test'])->assertStatus(410);
+        $this->post(route('customer-registration.store', $token), ['name' => 'Dua Kali', 'email' => 'd@b.test', 'phone' => '0812'])->assertStatus(410);
         $this->assertSame('Sekali', $customer->fresh()->name);
     }
 
@@ -222,7 +234,7 @@ class CustomerRegistrationTest extends TestCase
 
         $this->actingAs($finance)->get(route('sales.edit', $customer))->assertOk()->assertSee('Save &amp; Complete', false);
         $this->actingAs($finance)->put(route('sales.update', $customer), [
-            'name' => 'Diisi Admin', 'customer_type' => 'company', 'is_active' => '1',
+            'name' => 'Diisi Admin', 'phone' => '0812', 'customer_type' => 'company', 'is_active' => '1',
         ])->assertRedirect(route('sales.index'));
 
         $customer->refresh();
@@ -235,14 +247,14 @@ class CustomerRegistrationTest extends TestCase
         $finance = $this->financeUser();
 
         $this->actingAs($finance)->post(route('sales.store'), [
-            'name' => 'PT Foto', 'customer_type' => 'company', 'is_active' => '1', 'photo' => $this->photo(),
+            'name' => 'PT Foto', 'phone' => '0812', 'customer_type' => 'company', 'is_active' => '1', 'photo' => $this->photo(),
         ])->assertRedirect(route('sales.index'));
         $customer = Customer::firstOrFail();
         $first = $customer->photo_path;
         Storage::disk('public')->assertExists($first);
 
         $this->actingAs($finance)->put(route('sales.update', $customer), [
-            'name' => 'PT Foto', 'customer_type' => 'company', 'is_active' => '1', 'photo' => $this->photo('new.png'),
+            'name' => 'PT Foto', 'phone' => '0812', 'customer_type' => 'company', 'is_active' => '1', 'photo' => $this->photo('new.png'),
         ]);
         $second = $customer->fresh()->photo_path;
         $this->assertNotSame($first, $second);
@@ -250,7 +262,7 @@ class CustomerRegistrationTest extends TestCase
         Storage::disk('public')->assertExists($second);
 
         $this->actingAs($finance)->put(route('sales.update', $customer), [
-            'name' => 'PT Foto', 'customer_type' => 'company', 'is_active' => '1', 'remove_photo' => '1',
+            'name' => 'PT Foto', 'phone' => '0812', 'customer_type' => 'company', 'is_active' => '1', 'remove_photo' => '1',
         ]);
         $this->assertNull($customer->fresh()->photo_path);
         Storage::disk('public')->assertMissing($second);
@@ -260,7 +272,7 @@ class CustomerRegistrationTest extends TestCase
     {
         $finance = $this->financeUser();
         $this->actingAs($finance)->post(route('sales.store'), [
-            'name' => 'PT Hapus', 'customer_type' => 'company', 'is_active' => '1', 'photo' => $this->photo(),
+            'name' => 'PT Hapus', 'phone' => '0812', 'customer_type' => 'company', 'is_active' => '1', 'photo' => $this->photo(),
         ]);
         $customer = Customer::firstOrFail();
         $path = $customer->photo_path;

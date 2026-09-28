@@ -30,7 +30,6 @@
             </div>
 
             <dl class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                <div><dt class="text-gray-500">Contact person</dt><dd class="text-gray-800">{{ $customer->contact_person ?: '—' }}</dd></div>
                 <div><dt class="text-gray-500">Email</dt><dd class="text-gray-800">{{ $customer->email ?: '—' }}</dd></div>
                 <div><dt class="text-gray-500">Phone</dt><dd class="text-gray-800">{{ $customer->phone ?: '—' }}</dd></div>
                 <div><dt class="text-gray-500">City</dt><dd class="text-gray-800">{{ $customer->city ?: '—' }}</dd></div>

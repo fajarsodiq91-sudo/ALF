@@ -40,7 +40,7 @@ class CustomerController extends Controller
                 $term = '%'.$request->string('q').'%';
                 $query->where(fn ($inner) => $inner->where('name', 'like', $term)
                     ->orWhere('customer_code', 'like', $term)
-                    ->orWhere('contact_person', 'like', $term)
+                    ->orWhere('phone', 'like', $term)
                     ->orWhere('email', 'like', $term));
             })
             ->orderByRaw('name is null desc')

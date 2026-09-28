@@ -37,7 +37,7 @@ class CustomersTest extends TestCase
         return [
             'name' => 'PT Maju Jaya',
             'customer_type' => 'company',
-            'contact_person' => 'Budi',
+            'phone' => '081234567890',
             'email' => 'budi@majujaya.test',
             'is_active' => '1',
             ...$overrides,

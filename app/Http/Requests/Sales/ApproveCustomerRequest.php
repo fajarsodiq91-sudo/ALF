@@ -4,8 +4,10 @@ namespace App\Http\Requests\Sales;
 
 use App\Models\TrainingProgram;
 use App\Services\MasterData;
+use App\Services\OperatingHours;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class ApproveCustomerRequest extends FormRequest
 {
@@ -32,6 +34,28 @@ class ApproveCustomerRequest extends FormRequest
             'programs.*.meetings.*.location' => ['nullable', 'string', 'max:255'],
             'programs.*.meetings.*.topic' => ['nullable', 'string', 'max:255'],
         ];
+    }
+
+    /**
+     * @return array<int, callable>
+     */
+    public function after(): array
+    {
+        return [function (Validator $validator): void {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
+            foreach ($this->input('programs', []) as $i => $program) {
+                foreach ($program['meetings'] ?? [] as $j => $meeting) {
+                    $violation = OperatingHours::violation($meeting['meeting_date'], $meeting['start_time'] ?? null, $meeting['end_time'] ?? null);
+
+                    if ($violation) {
+                        $validator->errors()->add("programs.{$i}.meetings.{$j}.meeting_date", 'Meeting '.($j + 1).' of program '.($i + 1).': '.$violation);
+                    }
+                }
+            }
+        }];
     }
 
     /**

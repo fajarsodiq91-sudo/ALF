@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 #[Fillable([
-    'name', 'customer_type', 'contact_person', 'email', 'phone',
+    'name', 'customer_type', 'email', 'phone',
     'city', 'address', 'is_active', 'notes', 'photo_path',
 ])]
 class Customer extends Authenticatable

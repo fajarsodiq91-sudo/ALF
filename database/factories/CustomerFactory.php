@@ -15,9 +15,8 @@ class CustomerFactory extends Factory
         return [
             'name' => fake()->company(),
             'customer_type' => fake()->randomElement(['company', 'individual', 'government']),
-            'contact_person' => fake()->optional()->name(),
             'email' => fake()->optional()->safeEmail(),
-            'phone' => fake()->optional()->numerify('08##########'),
+            'phone' => fake()->numerify('08##########'),
             'city' => fake()->optional()->city(),
             'address' => fake()->optional()->address(),
             'is_active' => true,
@@ -30,7 +29,6 @@ class CustomerFactory extends Factory
     {
         return $this->state(fn () => [
             'name' => null,
-            'contact_person' => null,
             'email' => null,
             'phone' => null,
             'city' => null,

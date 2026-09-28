@@ -242,6 +242,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::middleware('permission:settings.manage-system')->group(function () {
             Route::get('/system', [SystemSettingController::class, 'edit'])->name('system');
             Route::put('/system', [SystemSettingController::class, 'update'])->name('system.update');
+            Route::put('/system/operating-hours', [SystemSettingController::class, 'updateOperatingHours'])->name('system.hours.update');
         });
     });
 });

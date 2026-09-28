@@ -75,7 +75,7 @@ class MasterDataTest extends TestCase
         $this->actingAs($admin)->get(route('sales.create'))->assertSee('Startup Baru');
 
         $this->actingAs($admin)->post(route('sales.store'), [
-            'name' => 'PT Startup', 'customer_type' => 'startup_baru', 'is_active' => '1',
+            'name' => 'PT Startup', 'phone' => '0812', 'customer_type' => 'startup_baru', 'is_active' => '1',
         ])->assertRedirect(route('sales.index'));
         $this->assertSame('startup_baru', Customer::firstWhere('name', 'PT Startup')->customer_type);
         $this->actingAs($admin)->get(route('sales.index'))->assertSee('Startup Baru');

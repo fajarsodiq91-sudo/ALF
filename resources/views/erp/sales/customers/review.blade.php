@@ -7,7 +7,14 @@
         $inputClass = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm';
     @endphp
 
-    <div class="max-w-4xl space-y-6" x-data='{ programs: @json(old("programs", [$emptyProgram])), emptyProgram: @json($emptyProgram), emptyMeeting: @json($emptyMeeting), catalog: @json($catalog) }'>
+    @include('erp.partials.operating-hours')
+    <script>
+        function reviewForm(programs, emptyProgram, emptyMeeting, catalog) {
+            return { programs, emptyProgram, emptyMeeting, catalog, hours: window.operatingHours };
+        }
+    </script>
+
+    <div class="max-w-4xl space-y-6" x-data='reviewForm(@json(old("programs", [$emptyProgram])), @json($emptyProgram), @json($emptyMeeting), @json($catalog))'>
         <x-erp.flash />
 
         @if ($errors->any())
@@ -32,7 +39,6 @@
                 </div>
             </div>
             <dl class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                <div><dt class="text-gray-500">Contact person</dt><dd class="text-gray-800">{{ $customer->contact_person ?: '—' }}</dd></div>
                 <div><dt class="text-gray-500">Email</dt><dd class="text-gray-800">{{ $customer->email }}</dd></div>
                 <div><dt class="text-gray-500">Phone</dt><dd class="text-gray-800">{{ $customer->phone ?: '—' }}</dd></div>
                 <div><dt class="text-gray-500">City</dt><dd class="text-gray-800">{{ $customer->city ?: '—' }}</dd></div>
@@ -112,21 +118,37 @@
                             <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 items-end rounded-md bg-gray-50 p-3">
                                 <div class="col-span-2">
                                     <label class="block text-xs text-gray-500">Date</label>
-                                    <input type="date" required :name="`programs[${i}][meetings][${j}][meeting_date]`" x-model="meeting.meeting_date" class="{{ $inputClass }}">
+                                    <input type="date" required :name="`programs[${i}][meetings][${j}][meeting_date]`" x-model="meeting.meeting_date" @change="syncSlot(meeting)" class="{{ $inputClass }}">
+                                    <p x-show="hoursHint(meeting.meeting_date)" x-text="hoursHint(meeting.meeting_date)" x-cloak class="mt-1 text-xs text-red-600"></p>
                                 </div>
-                                <div>
+                                <div class="col-span-2">
+                                    <label class="block text-xs text-gray-500">Time slot</label>
+                                    <select @change="pickSlot(meeting, $event.target.value)" :required="hours.enforced" class="{{ $inputClass }}">
+                                        <option value="">Select slot</option>
+                                        <template x-for="slot in slotsFor(meeting.meeting_date)" :key="slot.value">
+                                            <option :value="slot.value" :selected="slot.start === meeting.start_time && slot.end === meeting.end_time" x-text="slot.label"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div x-show="!hours.enforced">
                                     <label class="block text-xs text-gray-500">Start</label>
                                     <input type="time" :name="`programs[${i}][meetings][${j}][start_time]`" x-model="meeting.start_time" class="{{ $inputClass }}">
                                 </div>
-                                <div>
+                                <div x-show="!hours.enforced">
                                     <label class="block text-xs text-gray-500">End</label>
                                     <input type="time" :name="`programs[${i}][meetings][${j}][end_time]`" x-model="meeting.end_time" class="{{ $inputClass }}">
                                 </div>
-                                <div class="col-span-2">
+                                <template x-if="hours.enforced">
+                                    <div class="hidden">
+                                        <input type="hidden" :name="`programs[${i}][meetings][${j}][start_time]`" :value="meeting.start_time">
+                                        <input type="hidden" :name="`programs[${i}][meetings][${j}][end_time]`" :value="meeting.end_time">
+                                    </div>
+                                </template>
+                                <div class="col-span-2 sm:col-span-3">
                                     <label class="block text-xs text-gray-500">Place (optional)</label>
                                     <input type="text" :name="`programs[${i}][meetings][${j}][location]`" x-model="meeting.location" class="{{ $inputClass }}">
                                 </div>
-                                <div class="col-span-2 sm:col-span-5">
+                                <div class="col-span-2 sm:col-span-2">
                                     <label class="block text-xs text-gray-500">Topic (optional)</label>
                                     <input type="text" :name="`programs[${i}][meetings][${j}][topic]`" x-model="meeting.topic" class="{{ $inputClass }}">
                                 </div>

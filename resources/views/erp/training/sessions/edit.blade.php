@@ -1,4 +1,5 @@
 <x-layouts.erp title="Edit Training Session">
+    @include('erp.partials.operating-hours')
     @php $inputClass = 'block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm'; @endphp
 
     <div class="max-w-3xl space-y-6">
@@ -63,19 +64,36 @@
             </table>
 
             @can('training.manage')
-                <form action="{{ route('training.meetings.store', $session) }}" method="POST" class="grid grid-cols-2 sm:grid-cols-6 gap-2 items-start border-t border-gray-200 bg-gray-50 p-4">
+                <form action="{{ route('training.meetings.store', $session) }}" method="POST"
+                      x-data="{ m: { meeting_date: @js(old('meeting_date', '')), start_time: @js(old('start_time', '')), end_time: @js(old('end_time', '')) }, hours: window.operatingHours }"
+                      class="grid grid-cols-2 sm:grid-cols-6 gap-2 items-start border-t border-gray-200 bg-gray-50 p-4">
                     @csrf
                     <div class="col-span-2">
-                        <input type="date" name="meeting_date" value="{{ old('meeting_date') }}" required class="{{ $inputClass }}">
+                        <input type="date" name="meeting_date" x-model="m.meeting_date" @change="syncSlot(m)" required class="{{ $inputClass }}">
+                        <p x-show="hoursHint(m.meeting_date)" x-text="hoursHint(m.meeting_date)" x-cloak class="mt-1 text-xs text-red-600"></p>
                         @error('meeting_date') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
-                    <input type="time" name="start_time" value="{{ old('start_time') }}" class="{{ $inputClass }}">
-                    <div>
-                        <input type="time" name="end_time" value="{{ old('end_time') }}" class="{{ $inputClass }}">
+                    <div class="col-span-2">
+                        <select @change="pickSlot(m, $event.target.value)" :required="hours.enforced" class="{{ $inputClass }}">
+                            <option value="">Select time slot</option>
+                            <template x-for="slot in slotsFor(m.meeting_date)" :key="slot.value">
+                                <option :value="slot.value" :selected="slot.start === m.start_time && slot.end === m.end_time" x-text="slot.label"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <input type="time" name="start_time" x-model="m.start_time" x-show="!hours.enforced" class="{{ $inputClass }}">
+                    <div x-show="!hours.enforced">
+                        <input type="time" name="end_time" x-model="m.end_time" class="{{ $inputClass }}">
                         @error('end_time') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
-                    <input type="text" name="location" value="{{ old('location') }}" placeholder="Place" class="{{ $inputClass }}">
-                    <input type="text" name="topic" value="{{ old('topic') }}" placeholder="Topic" class="{{ $inputClass }}">
+                    <template x-if="hours.enforced">
+                        <div class="hidden">
+                            <input type="hidden" name="start_time" :value="m.start_time">
+                            <input type="hidden" name="end_time" :value="m.end_time">
+                        </div>
+                    </template>
+                    <input type="text" name="location" value="{{ old('location') }}" placeholder="Place" class="col-span-2 sm:col-span-3 {{ $inputClass }}">
+                    <input type="text" name="topic" value="{{ old('topic') }}" placeholder="Topic" class="col-span-2 sm:col-span-3 {{ $inputClass }}">
                     <div class="col-span-2 sm:col-span-6">
                         <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-brand-dark hover:to-brand-dark">Add Meeting</button>
                     </div>

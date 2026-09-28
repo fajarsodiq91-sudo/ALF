@@ -55,8 +55,8 @@ class CustomerApprovalTest extends TestCase
                 'location' => 'Kantor ALF, Bandung',
                 'fee' => 5000000,
                 'meetings' => [
-                    ['meeting_date' => '2026-10-12', 'start_time' => '13:00', 'end_time' => '16:00', 'location' => '', 'topic' => 'Sesi lanjutan'],
-                    ['meeting_date' => '2026-10-05', 'start_time' => '09:00', 'end_time' => '12:00', 'location' => 'Ruang Meeting A', 'topic' => 'Pengenalan'],
+                    ['meeting_date' => '2026-10-13', 'start_time' => '20:00', 'end_time' => '21:30', 'location' => '', 'topic' => 'Sesi lanjutan'],
+                    ['meeting_date' => '2026-10-10', 'start_time' => '09:00', 'end_time' => '10:30', 'location' => 'Ruang Meeting A', 'topic' => 'Pengenalan'],
                 ],
             ]],
             ...$overrides,
@@ -132,9 +132,9 @@ class CustomerApprovalTest extends TestCase
         $session = TrainingSession::where('customer_id', $customer->id)->firstOrFail();
         $this->assertSame($program->id, $session->training_program_id);
         $this->assertSame('hybrid', $session->delivery_mode);
-        $this->assertSame('2026-10-05', $session->start_date->toDateString());
-        $this->assertSame('2026-10-12', $session->end_date->toDateString());
-        $this->assertSame(['2026-10-05', '2026-10-12'], $session->meetings->map(fn ($m) => $m->meeting_date->toDateString())->all());
+        $this->assertSame('2026-10-10', $session->start_date->toDateString());
+        $this->assertSame('2026-10-13', $session->end_date->toDateString());
+        $this->assertSame(['2026-10-10', '2026-10-13'], $session->meetings->map(fn ($m) => $m->meeting_date->toDateString())->all());
 
         Mail::assertSent(CustomerRegistrationApproved::class, function (CustomerRegistrationApproved $mail) {
             $mail->assertTo('pt@menunggu.test');
@@ -182,7 +182,7 @@ class CustomerApprovalTest extends TestCase
             ->assertSessionHasErrors('programs.0.training_program_id');
         $this->actingAs($finance)->post(route('sales.approve', $customer), $this->approvalPayload($program, ['programs' => [[
             'training_program_id' => $program->id, 'delivery_mode' => 'bogus',
-            'meetings' => [['meeting_date' => '2026-10-05', 'start_time' => '12:00', 'end_time' => '09:00']],
+            'meetings' => [['meeting_date' => '2026-10-10', 'start_time' => '12:00', 'end_time' => '09:00']],
         ]]]))->assertSessionHasErrors(['programs.0.delivery_mode', 'programs.0.meetings.0.end_time']);
 
         $this->assertTrue($customer->fresh()->isPendingApproval());

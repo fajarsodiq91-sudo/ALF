@@ -47,11 +47,11 @@ class TrainingMeetingsTest extends TestCase
         $finance = $this->financeUser();
 
         $this->actingAs($finance)->post(route('training.meetings.store', $session), [
-            'meeting_date' => '2026-10-05', 'start_time' => '09:00', 'end_time' => '12:00', 'location' => 'Ruang A', 'topic' => 'Dasar',
+            'meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30', 'location' => 'Ruang A', 'topic' => 'Dasar',
         ])->assertRedirect(route('training.edit', $session));
         $meeting = $session->meetings()->firstOrFail();
         $this->assertFalse($meeting->is_completed);
-        $this->assertSame('09:00 – 12:00', $meeting->timeRange());
+        $this->assertSame('20:00 – 21:30', $meeting->timeRange());
 
         Carbon::setTestNow('2026-10-05 13:00:00');
         $this->actingAs($finance)->patch(route('training.meetings.toggle', $meeting))->assertRedirect();
@@ -78,7 +78,7 @@ class TrainingMeetingsTest extends TestCase
 
         $viewer = User::factory()->create();
         $viewer->givePermissionTo(['access-erp', 'training.view']);
-        $this->actingAs($viewer)->post(route('training.meetings.store', $session), ['meeting_date' => '2026-10-05'])->assertForbidden();
+        $this->actingAs($viewer)->post(route('training.meetings.store', $session), ['meeting_date' => '2026-10-06'])->assertForbidden();
         $this->actingAs($viewer)->patch(route('training.meetings.toggle', $meeting))->assertForbidden();
         $this->actingAs($viewer)->delete(route('training.meetings.destroy', $meeting))->assertForbidden();
     }

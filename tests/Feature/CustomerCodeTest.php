@@ -79,7 +79,7 @@ class CustomerCodeTest extends TestCase
     public function test_creating_through_the_form_assigns_code_and_ignores_submitted_code(): void
     {
         $this->actingAs($this->financeUser())->post(route('sales.store'), [
-            'name' => 'PT Baru', 'customer_type' => 'company', 'is_active' => '1', 'customer_code' => '999999',
+            'name' => 'PT Baru', 'phone' => '0812', 'customer_type' => 'company', 'is_active' => '1', 'customer_code' => '999999',
         ])->assertRedirect(route('sales.index'));
 
         $this->assertSame('260901', Customer::firstWhere('name', 'PT Baru')->customer_code);
@@ -92,7 +92,7 @@ class CustomerCodeTest extends TestCase
         }
 
         $this->actingAs($this->financeUser())->post(route('sales.store'), [
-            'name' => 'PT Penuh', 'customer_type' => 'company',
+            'name' => 'PT Penuh', 'phone' => '0812', 'customer_type' => 'company',
         ])->assertSessionHas('error');
         $this->assertNull(Customer::firstWhere('name', 'PT Penuh'));
     }
@@ -102,7 +102,7 @@ class CustomerCodeTest extends TestCase
         $customer = Customer::factory()->create();
 
         $this->actingAs($this->financeUser())->put(route('sales.update', $customer), [
-            'name' => 'Nama Baru', 'customer_type' => 'company', 'is_active' => '1', 'customer_code' => '000000',
+            'name' => 'Nama Baru', 'phone' => '0812', 'customer_type' => 'company', 'is_active' => '1', 'customer_code' => '000000',
         ])->assertRedirect(route('sales.index'));
 
         $this->assertSame('260901', $customer->fresh()->customer_code);

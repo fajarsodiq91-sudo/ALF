@@ -12,6 +12,22 @@
             </div>
         </div>
 
+        @php $hours = \App\Services\OperatingHours::formatted(); @endphp
+        @if ($hours)
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+                <h2 class="text-sm font-semibold text-gray-800">Our operating hours</h2>
+                <p class="text-xs text-gray-500">Meetings take place on these days and times.</p>
+                <dl class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                    @foreach ($hours as $day => $slots)
+                        <div class="flex justify-between gap-4 border-b border-gray-100 pb-1">
+                            <dt class="font-medium text-gray-700">{{ $day }}</dt>
+                            <dd class="text-right text-gray-500">{{ $slots }}</dd>
+                        </div>
+                    @endforeach
+                </dl>
+            </div>
+        @endif
+
         @forelse ($sessions as $session)
             @php
                 $done = $session->meetings->where('is_completed', true)->count();
