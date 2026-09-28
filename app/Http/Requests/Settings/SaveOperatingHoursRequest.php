@@ -54,14 +54,6 @@ class SaveOperatingHoursRequest extends FormRequest
 
                     return;
                 }
-
-                $sorted = collect($slots)->sortBy('start')->values();
-
-                foreach ($sorted as $i => $slot) {
-                    if ($i > 0 && $slot['start'] < $sorted[$i - 1]['end']) {
-                        $validator->errors()->add("hours.{$day}", 'Time slots on the same day cannot overlap.');
-                    }
-                }
             }
         }];
     }

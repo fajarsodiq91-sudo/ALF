@@ -157,9 +157,6 @@ class OperatingHoursTest extends TestCase
             ->assertSessionHasErrors('hours.2.0.start');
         $this->actingAs($admin)->put(route('masterdata.hours.update'), ['hours' => ['2' => [['start' => 'abc', 'end' => '20:00']]]])
             ->assertSessionHasErrors('hours.2.0.start');
-        $this->actingAs($admin)->put(route('masterdata.hours.update'), ['hours' => ['2' => [
-            ['start' => '09:00', 'end' => '10:30'], ['start' => '10:00', 'end' => '11:00'],
-        ]]])->assertSessionHasErrors('hours.2');
         $this->actingAs($admin)->put(route('masterdata.hours.update'), ['hours' => ['9' => [['start' => '09:00', 'end' => '10:00']]]])
             ->assertSessionHasErrors('hours');
 

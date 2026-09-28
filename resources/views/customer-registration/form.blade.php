@@ -120,7 +120,7 @@
                                 <p x-show="!installmentAllowed(program)" x-cloak class="mt-1 text-xs text-gray-500">This program has a single short meeting, so payment is 100% upfront.</p>
                                 <label x-show="installmentAllowed(program)" class="mt-2 flex items-start gap-2 text-gray-700">
                                     <input type="radio" :name="`programs[${i}][payment_plan]`" value="installment" x-model="program.payment_plan" class="mt-1 text-brand focus:ring-brand">
-                                    <span><span class="font-medium">50% upfront, 50% at the middle meeting (meeting 4 of 6, 7 of 12)</span><span class="block text-xs text-gray-500" x-text="rupiah(half(program)) + ' when you register, then ' + rupiah(priceOf(program) - half(program)) + (countOf(program) ? ' at meeting ' + middleOf(program) + ' (halfway through your ' + countOf(program) + ' meetings)' : ' at the middle meeting of your program')"></span></span>
+                                    <span><span class="font-medium">50% upfront, 50% at the middle meeting (meeting 4 of 6, 7 of 12; after the training for a full-day program)</span><span class="block text-xs text-gray-500" x-text="rupiah(half(program)) + ' when you register, then ' + rupiah(priceOf(program) - half(program)) + (minutesOf(program) === 420 ? ' after the training is completed' : countOf(program) ? ' at meeting ' + middleOf(program) + ' (halfway through your ' + countOf(program) + ' meetings)' : ' at the middle meeting of your program')"></span></span>
                                 </label>
                             </div>
                             <template x-if="priceOf(program) <= 0">

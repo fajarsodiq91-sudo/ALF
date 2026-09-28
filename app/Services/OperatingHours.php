@@ -199,11 +199,21 @@ class OperatingHours
         $clean = [];
 
         foreach ($days as $day => $slots) {
-            $rows = collect($slots)
+            $rows = [];
+
+            // Overlapping windows are merged into one (09:00-16:00 swallows 09:00-10:30 and 13:00-14:30).
+            foreach (collect($slots)
                 ->map(fn ($slot) => isset($slot['start']) ? [$slot['start'], $slot['end']] : [$slot[0], $slot[1]])
                 ->sortBy(fn ($slot) => $slot[0])
-                ->values()
-                ->all();
+                ->values() as $slot) {
+                $last = count($rows) - 1;
+
+                if ($last >= 0 && $slot[0] < $rows[$last][1]) {
+                    $rows[$last][1] = max($rows[$last][1], $slot[1]);
+                } else {
+                    $rows[] = $slot;
+                }
+            }
 
             if ($rows !== [] && (int) $day >= 1 && (int) $day <= 7) {
                 $clean[(int) $day] = $rows;

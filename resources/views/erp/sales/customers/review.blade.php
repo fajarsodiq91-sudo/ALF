@@ -52,7 +52,7 @@
                         const middle = program.meetings.length < 2 ? 1 : Math.floor(program.meetings.length / 2) + 1;
                         return [
                             { label: 'Down payment (50%)', amount: first, when: 'Upon registration' },
-                            { label: 'Final payment (50%)', amount: Math.round((fee - first) * 100) / 100, when: 'At meeting ' + middle },
+                            { label: 'Final payment (50%)', amount: Math.round((fee - first) * 100) / 100, when: this.minutesOf(program) === 420 ? 'After the training is completed' : 'At meeting ' + middle },
                         ];
                     }
                     return [{ label: 'Full payment', amount: fee, when: 'Upon registration' }];

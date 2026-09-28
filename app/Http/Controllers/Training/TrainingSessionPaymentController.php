@@ -7,6 +7,7 @@ use App\Http\Requests\Training\PayTrainingSessionPaymentRequest;
 use App\Models\Category;
 use App\Models\IncomeTransaction;
 use App\Models\TrainingSessionPayment;
+use App\Services\PaymentInvoices;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -49,7 +50,9 @@ class TrainingSessionPaymentController extends Controller
             $payment->update(['paid_date' => $request->input('paid_date'), 'income_transaction_id' => $income->id]);
         });
 
-        return $back->with('status', 'Payment recorded as income in Finance.');
+        PaymentInvoices::sendThanks($payment->fresh('session.customer'));
+
+        return $back->with('status', 'Payment recorded as income in Finance. A thank-you email was sent to the customer.');
     }
 
     public function cancel(TrainingSessionPayment $payment): RedirectResponse

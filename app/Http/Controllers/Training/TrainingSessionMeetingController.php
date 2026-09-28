@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
+use App\Services\PaymentInvoices;
 use App\Services\BookedSlots;
 use App\Services\OperatingHours;
 use App\Services\SessionPaymentPlan;
@@ -59,6 +60,7 @@ class TrainingSessionMeetingController extends Controller
 
         $done = ! $meeting->is_completed;
         $meeting->update(['is_completed' => $done, 'completed_at' => $done ? now() : null]);
+        PaymentInvoices::sendDue($meeting->session);
 
         return redirect()->route('training.edit', $meeting->training_session_id)
             ->with('status', $done ? 'Meeting marked as done.' : 'Meeting marked as upcoming again.');

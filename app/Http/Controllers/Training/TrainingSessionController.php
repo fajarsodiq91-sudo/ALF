@@ -11,6 +11,7 @@ use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Services\BookedSlots;
 use App\Services\CertificateIssuer;
+use App\Services\PaymentInvoices;
 use App\Services\SessionPaymentPlan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,6 +48,7 @@ class TrainingSessionController extends Controller
         SessionPaymentPlan::generate($session);
         $session->syncParticipantToken();
         CertificateIssuer::issueFor($session);
+        PaymentInvoices::sendDue($session);
 
         return redirect()->route('training.index')->with('status', 'Training session created successfully.');
     }
@@ -81,6 +83,8 @@ class TrainingSessionController extends Controller
         if ($changesMoney || $session->payments()->doesntExist()) {
             SessionPaymentPlan::generate($session);
         }
+
+        PaymentInvoices::sendDue($session);
 
         return redirect()->route('training.index')->with('status', 'Training session updated successfully.'.($certificates ? " {$certificates} certificate(s) issued." : ''));
     }

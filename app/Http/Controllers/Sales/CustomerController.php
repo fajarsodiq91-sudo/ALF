@@ -16,6 +16,7 @@ use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Services\BookedSlots;
 use App\Services\CustomerApproval;
+use App\Services\PaymentInvoices;
 use App\Services\MasterData;
 use App\Services\QrCodeGenerator;
 use DomainException;
@@ -163,9 +164,11 @@ class CustomerController extends Controller
         }
 
         $message = "Customer approved with ID {$customer->customer_code}.";
+        $invoices = fn () => $customer->sessions()->get()->each(fn ($session) => PaymentInvoices::sendDue($session));
 
         try {
             Mail::to($customer->email)->send(new CustomerRegistrationApproved($customer));
+            $invoices();
             $message .= " An email with the details and login link was sent to {$customer->email}.";
         } catch (Throwable $exception) {
             Log::error('Could not send the approval email.', ['customer_id' => $customer->id, 'error' => $exception->getMessage()]);

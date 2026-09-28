@@ -31,4 +31,12 @@ class ProgramSessionMinutesTest extends TestCase
         $this->assertCount(2, SessionPaymentPlan::preview(1000000, 'installment', 1, 420));
         $this->assertCount(1, SessionPaymentPlan::preview(1000000, 'installment', 1, 60));
     }
+
+    public function test_overlapping_windows_are_merged_when_saved(): void
+    {
+        OperatingHours::save([6 => [['09:00', '10:30'], ['13:00', '14:30'], ['09:00', '16:00']]], true);
+
+        $this->assertSame([6 => [['09:00', '16:00']]], OperatingHours::schedule());
+        $this->assertNull(OperatingHours::violation('2026-10-10', '09:00', '16:00', 420)); // a Saturday
+    }
 }

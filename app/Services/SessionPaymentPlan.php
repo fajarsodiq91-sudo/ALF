@@ -29,6 +29,12 @@ class SessionPaymentPlan
     /** A full-day program (7 hours) is a single meeting that may still be paid 50:50. */
     public const FULL_DAY_MINUTES = 420;
 
+    /** Full-day (corporate) programs: the second half is due once the training is completed, not at a meeting. */
+    public static function finalAfterCompletion(?int $sessionMinutes): bool
+    {
+        return $sessionMinutes === self::FULL_DAY_MINUTES;
+    }
+
     /** The plan that actually applies: with exactly one meeting, only paying in full upfront is allowed (except for a full-day program). */
     public static function effective(string $plan, ?int $meetingCount, ?int $sessionMinutes = null): string
     {
@@ -57,9 +63,11 @@ class SessionPaymentPlan
         if ($plan === self::INSTALLMENT) {
             $first = round($fee / 2, 2);
 
+            $afterCompletion = self::finalAfterCompletion($session->program?->session_minutes);
+
             $session->payments()->createMany([
                 ['label' => 'Down payment (50%)', 'percentage' => 50, 'amount' => $first, 'due_meeting_number' => null],
-                ['label' => 'Final payment (50%)', 'percentage' => 50, 'amount' => round($fee - $first, 2), 'due_meeting_number' => self::middleMeeting($session->meetings()->count())],
+                ['label' => 'Final payment (50%)', 'percentage' => 50, 'amount' => round($fee - $first, 2), 'due_meeting_number' => $afterCompletion ? null : self::middleMeeting($session->meetings()->count()), 'due_after_completion' => $afterCompletion],
             ]);
 
             return;
@@ -110,7 +118,7 @@ class SessionPaymentPlan
 
         if (self::effective($plan, $meetingCount, $sessionMinutes) === self::INSTALLMENT) {
             $first = round($fee / 2, 2);
-            $when = $meetingCount ? 'At meeting '.self::middleMeeting($meetingCount) : 'At the middle meeting';
+            $when = self::finalAfterCompletion($sessionMinutes) ? 'After the training is completed' : ($meetingCount ? 'At meeting '.self::middleMeeting($meetingCount) : 'At the middle meeting');
 
             return [
                 ['label' => 'Down payment (50%)', 'amount' => $first, 'when' => 'Upon registration'],
