@@ -3,19 +3,26 @@
 namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Sales\ApproveCustomerRequest;
 use App\Http\Requests\Sales\InviteCustomerRequest;
 use App\Http\Requests\Sales\StoreCustomerRequest;
 use App\Http\Requests\Sales\UpdateCustomerRequest;
+use App\Mail\CustomerRegistrationApproved;
 use App\Models\Customer;
 use App\Models\Project;
+use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
+use App\Services\CustomerApproval;
 use App\Services\QrCodeGenerator;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Throwable;
 
 class CustomerController extends Controller
 {
@@ -23,6 +30,8 @@ class CustomerController extends Controller
     {
         $customers = Customer::query()
             ->when($request->input('status') === 'awaiting', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_AWAITING))
+            ->when($request->input('status') === 'pending_approval', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_PENDING_APPROVAL))
+            ->when($request->input('status') === 'rejected', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_REJECTED))
             ->when(in_array($request->input('status'), ['active', 'inactive'], true), fn ($query) => $query->where('is_active', $request->input('status') === 'active'))
             ->when($request->filled('type'), fn ($query) => $query->where('customer_type', $request->string('type')))
             ->when($request->filled('q'), function ($query) use ($request) {
@@ -108,6 +117,70 @@ class CustomerController extends Controller
         $customer->issueRegistrationToken();
 
         return redirect()->route('sales.invite.show', $customer)->with('status', 'A new link was generated. The previous QR code no longer works.');
+    }
+
+    public function show(Customer $customer): View
+    {
+        $customer->load(['sessions.program', 'sessions.meetings', 'projects.session.program']);
+
+        return view('erp.sales.customers.show', ['customer' => $customer]);
+    }
+
+    /** The company reviews a customer's own submission and adds the programs they will take. */
+    public function review(Customer $customer): View|RedirectResponse
+    {
+        $this->authorize('sales.manage');
+
+        if (! $customer->isPendingApproval()) {
+            return redirect()->route('sales.index')->with('error', 'This customer is not waiting for approval.');
+        }
+
+        return view('erp.sales.customers.review', [
+            'customer' => $customer,
+            'programs' => TrainingProgram::where('is_active', true)->orderBy('name')->get(),
+        ]);
+    }
+
+    public function approve(ApproveCustomerRequest $request, Customer $customer): RedirectResponse
+    {
+        if (! $customer->isPendingApproval()) {
+            return redirect()->route('sales.index')->with('error', 'This customer is not waiting for approval.');
+        }
+
+        try {
+            CustomerApproval::approve($customer, $request->validated('programs'), $request->user());
+        } catch (DomainException $exception) {
+            return back()->withInput()->with('error', $exception->getMessage());
+        }
+
+        $message = "Customer approved with ID {$customer->customer_code}.";
+
+        try {
+            Mail::to($customer->email)->send(new CustomerRegistrationApproved($customer));
+            $message .= " An email with the details and login link was sent to {$customer->email}.";
+        } catch (Throwable $exception) {
+            Log::error('Could not send the approval email.', ['customer_id' => $customer->id, 'error' => $exception->getMessage()]);
+
+            return redirect()->route('sales.show', $customer)
+                ->with('error', $message.' The email could NOT be sent, so please contact the customer manually (check the mail settings).');
+        }
+
+        return redirect()->route('sales.show', $customer)->with('status', $message);
+    }
+
+    public function reject(Request $request, Customer $customer): RedirectResponse
+    {
+        $this->authorize('sales.manage');
+
+        $data = $request->validate(['rejection_reason' => ['nullable', 'string', 'max:1000']]);
+
+        if (! $customer->isPendingApproval()) {
+            return redirect()->route('sales.index')->with('error', 'This customer is not waiting for approval.');
+        }
+
+        CustomerApproval::reject($customer, $data['rejection_reason'] ?? null);
+
+        return redirect()->route('sales.index')->with('status', 'Registration rejected.');
     }
 
     public function edit(Customer $customer): View

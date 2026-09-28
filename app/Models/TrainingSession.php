@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'training_program_id', 'customer_id', 'instructor_id', 'start_date', 'end_date',
     'delivery_mode', 'location', 'participants_count', 'fee', 'status', 'notes',
+    'materials_url', 'certificate_url',
 ])]
 class TrainingSession extends Model
 {
@@ -46,5 +48,10 @@ class TrainingSession extends Model
     public function instructor(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'instructor_id');
+    }
+
+    public function meetings(): HasMany
+    {
+        return $this->hasMany(TrainingSessionMeeting::class)->orderBy('meeting_date')->orderBy('start_time');
     }
 }

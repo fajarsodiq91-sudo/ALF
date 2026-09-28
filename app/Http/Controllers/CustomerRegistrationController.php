@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Sales\RegisterCustomerRequest;
+use App\Mail\CustomerRegistrationReceived;
 use App\Models\Customer;
-use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Throwable;
 
 /** Public, login-free pages a customer reaches by scanning the QR code from the ERP. */
 class CustomerRegistrationController extends Controller
@@ -36,18 +39,25 @@ class CustomerRegistrationController extends Controller
 
         try {
             $customer->photo_path = $photoPath;
-            $customer->completeRegistration($request->safe()->except('photo'));
-        } catch (DomainException) {
+            $customer->submitRegistration($request->safe()->except('photo'));
+        } catch (Throwable $exception) {
             if ($photoPath) {
                 Storage::disk('public')->delete($photoPath);
             }
 
-            return back()->withInput()->withErrors(['name' => 'Registration is temporarily unavailable. Please contact PT Alfajar Logic Futura.']);
+            throw $exception;
+        }
+
+        try {
+            Mail::to($customer->email)->send(new CustomerRegistrationReceived($customer));
+        } catch (Throwable $exception) {
+            // The registration itself is saved; a mail problem must not make the customer resubmit.
+            Log::error('Could not send the registration confirmation email.', ['customer_id' => $customer->id, 'error' => $exception->getMessage()]);
         }
 
         return redirect()
             ->route('customer-registration.done')
-            ->with('registered', ['code' => $customer->customer_code, 'name' => $customer->name]);
+            ->with('registered', ['name' => $customer->name, 'email' => $customer->email]);
     }
 
     public function done(): View

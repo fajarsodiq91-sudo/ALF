@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
 use App\Models\MasterDataItem;
+use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use Illuminate\Support\Collection;
 
@@ -50,6 +51,13 @@ class MasterData
             'model' => LeaveRequest::class,
             'column' => 'leave_type',
             'protected' => [LeaveRequest::ANNUAL],
+        ],
+        'program_type' => [
+            'label' => 'Program Type',
+            'description' => 'Kinds of training programs, e.g. Learning or Consulting.',
+            'model' => TrainingProgram::class,
+            'column' => 'program_type',
+            'protected' => [],
         ],
         'delivery_mode' => [
             'label' => 'Training Delivery Mode',

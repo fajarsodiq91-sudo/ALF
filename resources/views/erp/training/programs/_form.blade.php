@@ -6,6 +6,15 @@
         <input type="text" name="name" id="name" value="{{ old('name', $program->name ?? '') }}" required  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
         @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
+    <div class="sm:col-span-2">
+        <label for="program_type" class="block text-sm font-medium text-gray-700">Program Type</label>
+        <select name="program_type" id="program_type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+            @foreach (\App\Services\MasterData::options('program_type', $program->program_type ?? null) as $value => $label)
+                <option value="{{ $value }}" @selected(old('program_type', $program->program_type ?? 'learning') === $value)>{{ $label }}</option>
+            @endforeach
+        </select>
+        @error('program_type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
     <div class="">
         <label for="duration_days" class="block text-sm font-medium text-gray-700">Duration (days)</label>
         <input type="number" name="duration_days" id="duration_days" value="{{ old('duration_days', $program->duration_days ?? 1) }}" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">

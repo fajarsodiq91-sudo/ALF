@@ -39,4 +39,26 @@ class CustomerFactory extends Factory
             'registration_status' => Customer::REGISTRATION_AWAITING,
         ]);
     }
+
+    /** A customer who filled in their own details and waits for the company's approval. */
+    public function pendingApproval(): static
+    {
+        return $this->state(fn () => [
+            'email' => fake()->unique()->safeEmail(),
+            'registration_status' => Customer::REGISTRATION_PENDING_APPROVAL,
+            'submitted_at' => now(),
+        ]);
+    }
+
+    /** An approved customer who can use the portal: password equals the ID, as the approval sets it. */
+    public function withPortalAccess(?string $password = null): static
+    {
+        return $this->afterCreating(function (Customer $customer) use ($password) {
+            $customer->forceFill([
+                'password' => $password ?? $customer->customer_code,
+                'must_change_password' => $password === null,
+                'approved_at' => now(),
+            ])->save();
+        });
+    }
 }

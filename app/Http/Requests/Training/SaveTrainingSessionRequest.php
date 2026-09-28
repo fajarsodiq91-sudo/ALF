@@ -30,6 +30,8 @@ class SaveTrainingSessionRequest extends FormRequest
             'participants_count' => ['required', 'integer', 'min:0'],
             'fee' => ['required', 'numeric', 'min:0'],
             'status' => ['required', Rule::in(array_keys(TrainingSession::STATUSES))],
+            'materials_url' => ['nullable', 'url', 'max:2048'],
+            'certificate_url' => ['nullable', 'url', 'max:2048'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }

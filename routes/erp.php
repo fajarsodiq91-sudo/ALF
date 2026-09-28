@@ -20,12 +20,14 @@ use App\Http\Controllers\Hr\PayrollController;
 use App\Http\Controllers\Projects\ProjectController;
 use App\Http\Controllers\Projects\ProjectTaskController;
 use App\Http\Controllers\Sales\CustomerController;
+use App\Http\Controllers\Sales\CustomerProjectController;
 use App\Http\Controllers\Settings\MasterDataController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\SystemSettingController;
 use App\Http\Controllers\Settings\UserController;
 use App\Http\Controllers\Training\TrainingProgramController;
 use App\Http\Controllers\Training\TrainingSessionController;
+use App\Http\Controllers\Training\TrainingSessionMeetingController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/erp', '/erp/dashboard');
@@ -151,10 +153,16 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::post('sales/invite', [CustomerController::class, 'invite'])->name('sales.invite.store');
         Route::get('sales/{customer}/invite', [CustomerController::class, 'showInvite'])->name('sales.invite.show');
         Route::post('sales/{customer}/invite/regenerate', [CustomerController::class, 'regenerateInvite'])->name('sales.invite.regenerate');
-        Route::resource('sales', CustomerController::class)->except(['show'])->parameters(['sales' => 'customer'])->names([
+        Route::get('sales/projects/{project}/download', [CustomerProjectController::class, 'download'])->name('sales.projects.download');
+        Route::patch('sales/projects/{project}/portfolio', [CustomerProjectController::class, 'togglePortfolio'])->name('sales.projects.portfolio');
+        Route::get('sales/{customer}/review', [CustomerController::class, 'review'])->name('sales.review');
+        Route::post('sales/{customer}/approve', [CustomerController::class, 'approve'])->name('sales.approve');
+        Route::post('sales/{customer}/reject', [CustomerController::class, 'reject'])->name('sales.reject');
+        Route::resource('sales', CustomerController::class)->parameters(['sales' => 'customer'])->names([
             'index' => 'sales.index',
             'create' => 'sales.create',
             'store' => 'sales.store',
+            'show' => 'sales.show',
             'edit' => 'sales.edit',
             'update' => 'sales.update',
             'destroy' => 'sales.destroy',
@@ -164,6 +172,12 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     Route::middleware('permission:training.view')->prefix('training')->group(function () {
         Route::resource('programs', TrainingProgramController::class)->except(['show'])
             ->parameters(['programs' => 'program'])->names('training.programs');
+    });
+
+    Route::middleware('permission:training.view')->prefix('training')->group(function () {
+        Route::post('{session}/meetings', [TrainingSessionMeetingController::class, 'store'])->name('training.meetings.store');
+        Route::patch('meetings/{meeting}/toggle', [TrainingSessionMeetingController::class, 'toggle'])->name('training.meetings.toggle');
+        Route::delete('meetings/{meeting}', [TrainingSessionMeetingController::class, 'destroy'])->name('training.meetings.destroy');
     });
 
     Route::middleware('permission:training.view')->group(function () {

@@ -28,6 +28,8 @@
                 <option value="active" @selected(request('status') === 'active')>Active</option>
                 <option value="inactive" @selected(request('status') === 'inactive')>Inactive</option>
                 <option value="awaiting" @selected(request('status') === 'awaiting')>Awaiting customer</option>
+                <option value="pending_approval" @selected(request('status') === 'pending_approval')>Pending approval</option>
+                <option value="rejected" @selected(request('status') === 'rejected')>Rejected</option>
             </select>
             <button type="submit" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 hover:shadow-md hover:-translate-y-px">Filter</button>
         </form>
@@ -63,7 +65,7 @@
                                     @if ($customer->isAwaitingCustomer())
                                         <span class="italic text-gray-400">Waiting for customer to fill in</span>
                                     @else
-                                        <span class="font-medium text-gray-800">{{ $customer->name }}</span>
+                                        <a href="{{ route('sales.show', $customer) }}" class="font-medium text-gray-800 hover:text-brand">{{ $customer->name }}</a>
                                     @endif
                                 </div>
                             </td>
@@ -75,6 +77,10 @@
                             <td class="px-4 py-3">
                                 @if ($customer->isAwaitingCustomer())
                                     <span class="inline-flex rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 text-xs font-medium">Awaiting customer</span>
+                                @elseif ($customer->isPendingApproval())
+                                    <span class="inline-flex rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 text-xs font-medium">Pending approval</span>
+                                @elseif ($customer->isRejected())
+                                    <span class="inline-flex rounded-full bg-red-50 text-red-700 px-2 py-0.5 text-xs font-medium">Rejected</span>
                                 @elseif ($customer->is_active)
                                     <span class="inline-flex rounded-full bg-green-50 text-green-700 px-2 py-0.5 text-xs font-medium">Active</span>
                                 @else
@@ -83,6 +89,9 @@
                             </td>
                             @can('sales.manage')
                                 <td class="px-4 py-3 text-right">
+                                    @if ($customer->isPendingApproval())
+                                        <a href="{{ route('sales.review', $customer) }}" class="mr-3 font-medium text-brand hover:text-brand-dark">Review</a>
+                                    @endif
                                     @if ($customer->isAwaitingCustomer())
                                         <a href="{{ route('sales.invite.show', $customer) }}" class="mr-3 text-brand hover:text-brand-dark font-medium">QR Code</a>
                                     @endif

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Training;
 
+use App\Services\MasterData;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class SaveTrainingProgramRequest extends FormRequest
 {
@@ -18,6 +20,7 @@ class SaveTrainingProgramRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'program_type' => ['required', Rule::in(MasterData::codes('program_type'))],
             'description' => ['nullable', 'string', 'max:1000'],
             'duration_days' => ['required', 'integer', 'min:1', 'max:365'],
             'standard_price' => ['required', 'numeric', 'min:0'],

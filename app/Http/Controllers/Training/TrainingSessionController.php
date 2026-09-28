@@ -48,7 +48,7 @@ class TrainingSessionController extends Controller
     {
         $this->authorize('training.manage');
 
-        return view('erp.training.sessions.edit', [...$this->formData(), 'session' => $session]);
+        return view('erp.training.sessions.edit', [...$this->formData(), 'session' => $session->load('meetings')]);
     }
 
     public function update(SaveTrainingSessionRequest $request, TrainingSession $session): RedirectResponse

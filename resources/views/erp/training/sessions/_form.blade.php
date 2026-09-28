@@ -75,6 +75,18 @@
         @error('fee') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
     <div class="sm:col-span-2">
+        <label for="materials_url" class="block text-sm font-medium text-gray-700">Learning Materials Link</label>
+        <input type="url" name="materials_url" id="materials_url" value="{{ old('materials_url', $session->materials_url ?? '') }}" placeholder="https://" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+        <p class="mt-1 text-xs text-gray-500">Shown to the customer in their portal once filled in.</p>
+        @error('materials_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+    <div class="sm:col-span-2">
+        <label for="certificate_url" class="block text-sm font-medium text-gray-700">Certificate Link</label>
+        <input type="url" name="certificate_url" id="certificate_url" value="{{ old('certificate_url', $session->certificate_url ?? '') }}" placeholder="https://" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+        <p class="mt-1 text-xs text-gray-500">Shown to the customer in their portal once filled in.</p>
+        @error('certificate_url') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+    <div class="sm:col-span-2">
         <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
         <textarea name="notes" id="notes" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">{{ old('notes', $session->notes ?? '') }}</textarea>
         @error('notes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror

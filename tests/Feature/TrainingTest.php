@@ -76,12 +76,12 @@ class TrainingTest extends TestCase
         $finance = $this->userWithRole('Finance');
 
         $this->actingAs($finance)->post(route('training.programs.store'), [
-            'name' => 'Power BI Dasar', 'duration_days' => 2, 'standard_price' => 5000000, 'is_active' => '1',
+            'name' => 'Power BI Dasar', 'program_type' => 'learning', 'duration_days' => 2, 'standard_price' => 5000000, 'is_active' => '1',
         ])->assertRedirect(route('training.programs.index'));
         $program = TrainingProgram::firstOrFail();
 
         $this->actingAs($finance)->put(route('training.programs.update', $program), [
-            'name' => 'Power BI Lanjut', 'duration_days' => 3, 'standard_price' => 7000000, 'is_active' => '0',
+            'name' => 'Power BI Lanjut', 'program_type' => 'consulting', 'duration_days' => 3, 'standard_price' => 7000000, 'is_active' => '0',
         ])->assertRedirect(route('training.programs.index'));
         $this->assertFalse($program->fresh()->is_active);
 

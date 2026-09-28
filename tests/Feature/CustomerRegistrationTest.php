@@ -2,13 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Mail\CustomerRegistrationReceived;
 use App\Models\Customer;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -83,13 +86,11 @@ class CustomerRegistrationTest extends TestCase
         $this->assertSame(0, Customer::count());
     }
 
-    public function test_customer_completes_registration_publicly_and_receives_id(): void
+    public function test_customer_submits_publicly_and_then_waits_for_approval(): void
     {
+        Mail::fake();
         $customer = $this->invite();
         $token = $customer->registration_token;
-
-        $this->post('/logout'); // the customer is not logged in
-        auth()->logout();
 
         $this->get(route('customer-registration.show', $token))->assertOk()->assertSee('Customer Registration');
 
@@ -99,13 +100,33 @@ class CustomerRegistrationTest extends TestCase
 
         $customer->refresh();
         $this->assertSame('PT Pelanggan Baru', $customer->name);
-        $this->assertSame('260901', $customer->customer_code);
         $this->assertSame('company', $customer->customer_type);
-        $this->assertFalse($customer->isAwaitingCustomer());
+        $this->assertTrue($customer->isPendingApproval());
+        $this->assertNull($customer->customer_code);
+        $this->assertNull($customer->password);
         $this->assertNull($customer->registration_token);
         Storage::disk('public')->assertExists($customer->photo_path);
 
-        $this->get(route('customer-registration.done'))->assertSee('260901');
+        $this->get(route('customer-registration.done'))->assertSee('waiting for approval')->assertSee('a@b.test');
+        Mail::assertSent(CustomerRegistrationReceived::class, fn ($mail) => $mail->hasTo('a@b.test'));
+    }
+
+    public function test_email_is_required_on_the_public_form(): void
+    {
+        $token = $this->invite()->registration_token;
+
+        $this->post(route('customer-registration.store', $token), ['name' => 'Tanpa Email'])->assertSessionHasErrors('email');
+    }
+
+    public function test_a_failing_mail_server_does_not_lose_the_registration(): void
+    {
+        Mail::shouldReceive('to')->andThrow(new RuntimeException('smtp down'));
+        $customer = $this->invite();
+
+        $this->post(route('customer-registration.store', $customer->registration_token), ['name' => 'Tetap Masuk', 'email' => 'x@y.test'])
+            ->assertRedirect(route('customer-registration.done'));
+
+        $this->assertTrue($customer->fresh()->isPendingApproval());
     }
 
     public function test_link_works_only_once(): void
@@ -113,10 +134,10 @@ class CustomerRegistrationTest extends TestCase
         $customer = $this->invite();
         $token = $customer->registration_token;
 
-        $this->post(route('customer-registration.store', $token), ['name' => 'Sekali'])->assertRedirect();
+        $this->post(route('customer-registration.store', $token), ['name' => 'Sekali', 'email' => 's@b.test'])->assertRedirect();
 
         $this->get(route('customer-registration.show', $token))->assertStatus(410);
-        $this->post(route('customer-registration.store', $token), ['name' => 'Dua Kali'])->assertStatus(410);
+        $this->post(route('customer-registration.store', $token), ['name' => 'Dua Kali', 'email' => 'd@b.test'])->assertStatus(410);
         $this->assertSame('Sekali', $customer->fresh()->name);
     }
 

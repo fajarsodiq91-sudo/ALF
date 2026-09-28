@@ -7,7 +7,8 @@ use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -16,7 +17,7 @@ use Illuminate\Support\Str;
     'name', 'customer_type', 'contact_person', 'email', 'phone',
     'city', 'address', 'is_active', 'notes', 'photo_path',
 ])]
-class Customer extends Model
+class Customer extends Authenticatable
 {
     /** @use HasFactory<CustomerFactory> */
     use HasFactory;
@@ -25,7 +26,14 @@ class Customer extends Model
 
     public const REGISTRATION_AWAITING = 'awaiting_customer';
 
+    /** The customer submitted their own details and the company still has to approve them. */
+    public const REGISTRATION_PENDING_APPROVAL = 'pending_approval';
+
+    public const REGISTRATION_REJECTED = 'rejected';
+
     public const TOKEN_VALID_DAYS = 7;
+
+    protected $hidden = ['password', 'remember_token'];
 
     /**
      * The permanent customer ID is assigned once and is never mass-assignable.
@@ -34,7 +42,7 @@ class Customer extends Model
     protected static function booted(): void
     {
         static::creating(function (Customer $customer) {
-            if ($customer->registration_status !== self::REGISTRATION_AWAITING) {
+            if (! in_array($customer->registration_status, [self::REGISTRATION_AWAITING, self::REGISTRATION_PENDING_APPROVAL], true)) {
                 $customer->customer_code ??= CustomerCodeGenerator::next(now());
             }
         });
@@ -51,6 +59,11 @@ class Customer extends Model
         return [
             'is_active' => 'boolean',
             'registration_token_expires_at' => 'datetime',
+            'password' => 'hashed',
+            'must_change_password' => 'boolean',
+            'submitted_at' => 'datetime',
+            'approved_at' => 'datetime',
+            'rejected_at' => 'datetime',
         ];
     }
 
@@ -58,6 +71,26 @@ class Customer extends Model
     public function scopeRegistered(Builder $query): void
     {
         $query->where('registration_status', self::REGISTRATION_COMPLETE);
+    }
+
+    public function isPendingApproval(): bool
+    {
+        return $this->registration_status === self::REGISTRATION_PENDING_APPROVAL;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->registration_status === self::REGISTRATION_REJECTED;
+    }
+
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(TrainingSession::class);
+    }
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(CustomerProject::class);
     }
 
     public function isAwaitingCustomer(): bool
@@ -91,8 +124,24 @@ class Customer extends Model
     }
 
     /**
-     * Saves the details given by the customer (or an admin), assigns the permanent ID
-     * and closes the invitation link.
+     * The customer submitted their own details through the invitation link. They now wait for
+     * the company's approval; the permanent ID is only assigned when that happens.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function submitRegistration(array $data): void
+    {
+        $this->fill($data);
+        $this->registration_status = self::REGISTRATION_PENDING_APPROVAL;
+        $this->registration_token = null;
+        $this->registration_token_expires_at = null;
+        $this->submitted_at = now();
+        $this->save();
+    }
+
+    /**
+     * An admin filling in an invitation themselves: completes it on the spot, no portal access.
+     * Assigns the permanent ID and closes the invitation link.
      *
      * @param  array<string, mixed>  $data
      */
