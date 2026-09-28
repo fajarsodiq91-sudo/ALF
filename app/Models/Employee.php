@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\EmployeeNumberGenerator;
 use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,6 +23,14 @@ class Employee extends Model
         'on_leave' => 'On Leave',
         'resigned' => 'Resigned',
     ];
+
+    /** The employee number is assigned once on creation (YYMM + running number) and never edited. */
+    protected static function booted(): void
+    {
+        static::creating(function (Employee $employee) {
+            $employee->employee_number ??= EmployeeNumberGenerator::next(now());
+        });
+    }
 
     protected function casts(): array
     {

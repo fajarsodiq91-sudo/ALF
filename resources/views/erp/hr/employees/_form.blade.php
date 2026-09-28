@@ -3,8 +3,8 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
     <div>
         <label for="employee_number" class="block text-sm font-medium text-gray-700">Employee Number</label>
-        <input type="text" name="employee_number" id="employee_number" value="{{ old('employee_number', $employee->employee_number ?? '') }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-        @error('employee_number') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        <input type="text" id="employee_number" value="{{ $employee->employee_number ?? 'Generated automatically when saved' }}" readonly disabled class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-500 shadow-sm sm:text-sm">
+        <p class="mt-1 text-xs text-gray-500">Format YYMM + running number (e.g. 260901). It is unique and cannot be changed.</p>
     </div>
     <div>
         <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
