@@ -21,6 +21,8 @@ use App\Http\Controllers\Sales\CustomerController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\SystemSettingController;
 use App\Http\Controllers\Settings\UserController;
+use App\Http\Controllers\Training\TrainingProgramController;
+use App\Http\Controllers\Training\TrainingSessionController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/erp', '/erp/dashboard');
@@ -126,7 +128,6 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
 
     // Planned modules — placeholder pages only, no functionality yet.
     Route::middleware('permission:access-erp')->group(function () {
-        Route::view('/training', 'erp.coming-soon', ['title' => 'Training'])->name('training.index');
         Route::view('/projects', 'erp.coming-soon', ['title' => 'Projects'])->name('projects.index');
     });
 
@@ -150,6 +151,16 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'update' => 'sales.update',
             'destroy' => 'sales.destroy',
         ]);
+    });
+
+    Route::middleware('permission:training.view')->prefix('training')->group(function () {
+        Route::resource('programs', TrainingProgramController::class)->except(['show'])
+            ->parameters(['programs' => 'program'])->names('training.programs');
+    });
+
+    Route::middleware('permission:training.view')->group(function () {
+        Route::resource('training', TrainingSessionController::class)->except(['show'])
+            ->parameters(['training' => 'session'])->names('training');
     });
 
     Route::middleware('permission:hr.view')->prefix('hr')->group(function () {

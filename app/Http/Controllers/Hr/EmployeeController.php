@@ -66,6 +66,11 @@ class EmployeeController extends Controller
     {
         $this->authorize('hr.manage');
 
+        if ($employee->payrolls()->exists()) {
+            return redirect()->route('hr.index')
+                ->with('error', 'This employee has payroll records and cannot be deleted. Set the status to Resigned instead.');
+        }
+
         $employee->delete();
 
         return redirect()

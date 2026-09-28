@@ -103,7 +103,6 @@ class ErpModulesTest extends TestCase
     public static function comingSoonModuleRoutes(): array
     {
         return [
-            ['training.index'],
             ['projects.index'],
         ];
     }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\StoreCustomerRequest;
 use App\Http\Requests\Sales\UpdateCustomerRequest;
 use App\Models\Customer;
+use App\Models\TrainingSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -70,6 +71,11 @@ class CustomerController extends Controller
     public function destroy(Customer $customer): RedirectResponse
     {
         $this->authorize('sales.manage');
+
+        if (TrainingSession::where('customer_id', $customer->id)->exists()) {
+            return redirect()->route('sales.index')
+                ->with('error', 'This customer has training sessions and cannot be deleted. Mark it inactive instead.');
+        }
 
         $customer->delete();
 

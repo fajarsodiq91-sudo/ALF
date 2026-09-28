@@ -51,7 +51,12 @@
                     @can('sales.view')
                         <x-erp.nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')" icon="sales">Sales</x-erp.nav-link>
                     @endcan
-                    <x-erp.nav-link :href="route('training.index')" :active="request()->routeIs('training.*')" icon="training" soon>Training</x-erp.nav-link>
+                    @can('training.view')
+                        <x-erp.nav-group label="Training" :active="request()->routeIs('training.*')" icon="training">
+                            <x-erp.nav-link :href="route('training.index')" :active="request()->routeIs('training.index', 'training.create', 'training.edit')" nested>Sessions</x-erp.nav-link>
+                            <x-erp.nav-link :href="route('training.programs.index')" :active="request()->routeIs('training.programs.*')" nested>Programs</x-erp.nav-link>
+                        </x-erp.nav-group>
+                    @endcan
                     <x-erp.nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')" icon="projects" soon>Projects</x-erp.nav-link>
                     @canany(['hr.view', 'hr.manage', 'hr.payroll'])
                         <x-erp.nav-group label="HR" :active="request()->routeIs('hr.*')" icon="hr">

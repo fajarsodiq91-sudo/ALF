@@ -23,8 +23,8 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-sm font-semibold text-gray-800 mb-1">Other modules</h3>
             <p class="text-sm text-gray-500">
-                Training and Projects are planned modules, shown in the sidebar as
-                "Coming Soon" until each one is built in its own phase.
+                Projects is a planned module, shown in the sidebar as
+                "Coming Soon" until it is built.
             </p>
         </div>
     </div>
