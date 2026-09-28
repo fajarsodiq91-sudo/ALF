@@ -27,7 +27,7 @@
                     </span>
                 </div>
 
-                <nav class="sidebar-scroll py-3 px-2.5 space-y-0.5 overflow-y-auto" style="height: calc(100% - 3.5rem);">
+                <nav x-data="{ openGroup: null }" class="sidebar-scroll py-3 px-2.5 space-y-0.5 overflow-y-auto" style="height: calc(100% - 3.5rem);">
                     <x-erp.nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="dashboard">
                         Dashboard
                     </x-erp.nav-link>
