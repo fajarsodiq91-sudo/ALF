@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\StoreCustomerRequest;
 use App\Http\Requests\Sales\UpdateCustomerRequest;
 use App\Models\Customer;
+use App\Models\Project;
 use App\Models\TrainingSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -72,9 +73,9 @@ class CustomerController extends Controller
     {
         $this->authorize('sales.manage');
 
-        if (TrainingSession::where('customer_id', $customer->id)->exists()) {
+        if (TrainingSession::where('customer_id', $customer->id)->exists() || Project::where('customer_id', $customer->id)->exists()) {
             return redirect()->route('sales.index')
-                ->with('error', 'This customer has training sessions and cannot be deleted. Mark it inactive instead.');
+                ->with('error', 'This customer has training sessions or projects and cannot be deleted. Mark it inactive instead.');
         }
 
         $customer->delete();

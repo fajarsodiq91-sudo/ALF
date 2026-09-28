@@ -100,25 +100,6 @@ class ErpModulesTest extends TestCase
         $response->assertForbidden();
     }
 
-    public static function comingSoonModuleRoutes(): array
-    {
-        return [
-            ['projects.index'],
-        ];
-    }
-
-    #[DataProvider('comingSoonModuleRoutes')]
-    public function test_any_erp_user_can_view_generic_coming_soon_modules(string $routeName): void
-    {
-        $user = User::factory()->create();
-        $user->assignRole('Staff');
-
-        $response = $this->actingAs($user)->get(route($routeName));
-
-        $response->assertOk();
-        $response->assertSee('Coming Soon');
-    }
-
     public static function settingsRoutes(): array
     {
         return [

@@ -17,6 +17,8 @@ use App\Http\Controllers\Hr\AttendanceController;
 use App\Http\Controllers\Hr\EmployeeController;
 use App\Http\Controllers\Hr\LeaveRequestController;
 use App\Http\Controllers\Hr\PayrollController;
+use App\Http\Controllers\Projects\ProjectController;
+use App\Http\Controllers\Projects\ProjectTaskController;
 use App\Http\Controllers\Sales\CustomerController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\SystemSettingController;
@@ -126,9 +128,11 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         });
     });
 
-    // Planned modules — placeholder pages only, no functionality yet.
-    Route::middleware('permission:access-erp')->group(function () {
-        Route::view('/projects', 'erp.coming-soon', ['title' => 'Projects'])->name('projects.index');
+    Route::middleware('permission:projects.view')->group(function () {
+        Route::resource('projects', ProjectController::class)->names('projects');
+        Route::post('projects/{project}/tasks', [ProjectTaskController::class, 'store'])->name('projects.tasks.store');
+        Route::patch('project-tasks/{task}', [ProjectTaskController::class, 'update'])->name('projects.tasks.update');
+        Route::delete('project-tasks/{task}', [ProjectTaskController::class, 'destroy'])->name('projects.tasks.destroy');
     });
 
     Route::middleware('permission:assets.view')->group(function () {
