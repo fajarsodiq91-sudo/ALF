@@ -68,11 +68,12 @@ class TrainingPaymentsTest extends TestCase
         return $session->refresh();
     }
 
-    public function test_middle_meeting_is_meeting_4_for_7_or_8_meetings(): void
+    public function test_middle_meeting_is_halfway_plus_one(): void
     {
-        $this->assertSame(4, SessionPaymentPlan::middleMeeting(8));
-        $this->assertSame(4, SessionPaymentPlan::middleMeeting(7));
-        $this->assertSame(3, SessionPaymentPlan::middleMeeting(5));
+        $this->assertSame(4, SessionPaymentPlan::middleMeeting(6));
+        $this->assertSame(7, SessionPaymentPlan::middleMeeting(12));
+        $this->assertSame(5, SessionPaymentPlan::middleMeeting(8));
+        $this->assertSame(2, SessionPaymentPlan::middleMeeting(2));
         $this->assertSame(1, SessionPaymentPlan::middleMeeting(1));
         $this->assertSame(1, SessionPaymentPlan::middleMeeting(0));
     }
@@ -96,8 +97,8 @@ class TrainingPaymentsTest extends TestCase
         $this->assertSame('4000000.00', $first->amount);
         $this->assertSame('4000000.00', $second->amount);
         $this->assertNull($first->due_meeting_number);
-        $this->assertSame(4, $second->due_meeting_number);
-        $this->assertSame('At meeting 4', $second->dueLabel());
+        $this->assertSame(5, $second->due_meeting_number);
+        $this->assertSame('At meeting 5', $second->dueLabel());
     }
 
     public function test_odd_amounts_never_lose_a_rupiah(): void
@@ -116,13 +117,13 @@ class TrainingPaymentsTest extends TestCase
     public function test_second_installment_follows_the_middle_meeting_as_meetings_change(): void
     {
         $session = $this->sessionWithMeetings(4, 'installment');
-        $this->assertSame(2, $session->payments->last()->due_meeting_number);
+        $this->assertSame(3, $session->payments->last()->due_meeting_number);
         $finance = $this->finance();
 
         foreach (['2026-11-03', '2026-11-10', '2026-11-17', '2026-11-24'] as $date) {
             $this->actingAs($finance)->post(route('training.meetings.store', $session), ['meeting_date' => $date, 'start_time' => '20:00', 'end_time' => '21:30']);
         }
-        $this->assertSame(4, $session->payments()->get()->last()->due_meeting_number); // 8 meetings
+        $this->assertSame(5, $session->payments()->get()->last()->due_meeting_number); // 8 meetings
 
         $this->actingAs($finance)->delete(route('training.meetings.destroy', $session->meetings()->first()));
         $this->assertSame(4, $session->payments()->get()->last()->due_meeting_number); // 7 meetings
@@ -130,17 +131,17 @@ class TrainingPaymentsTest extends TestCase
 
     public function test_due_status_follows_the_meetings(): void
     {
-        $session = $this->sessionWithMeetings(4, 'installment'); // 2nd half at meeting 2
+        $session = $this->sessionWithMeetings(4, 'installment'); // 2nd half at meeting 3
         [$first, $second] = $session->payments()->get()->all();
 
         $this->assertTrue($first->isDue());
-        $this->assertFalse($second->isDue()); // meeting 2 is on 2026-10-13, today is 2026-09-15
+        $this->assertFalse($second->isDue()); // meeting 3 is on 2026-10-20, today is 2026-09-15
 
-        $session->meetings()->skip(1)->first()->update(['is_completed' => true]);
+        $session->meetings()->skip(2)->first()->update(['is_completed' => true]);
         $this->assertTrue($second->fresh()->isDue());
 
-        Carbon::setTestNow('2026-10-14');
-        $session->meetings()->skip(1)->first()->update(['is_completed' => false]);
+        Carbon::setTestNow('2026-10-21');
+        $session->meetings()->skip(2)->first()->update(['is_completed' => false]);
         $this->assertTrue($second->fresh()->isDue()); // the date has come even if not ticked yet
     }
 
@@ -226,7 +227,7 @@ class TrainingPaymentsTest extends TestCase
         Account::factory()->create(['name' => 'Bank BCA Utama', 'is_active' => true]);
 
         $this->actingAs($this->finance())->get(route('training.edit', $session))->assertOk()
-            ->assertSee('Down payment (50%)')->assertSee('Final payment (50%)')->assertSee('At meeting 4')
+            ->assertSee('Down payment (50%)')->assertSee('Final payment (50%)')->assertSee('At meeting 5')
             ->assertSee('Rp 4.000.000')->assertSee('Record payment')->assertSee('Bank BCA Utama')->assertSee('Not yet due');
 
         $trainer = User::factory()->create();
@@ -305,7 +306,7 @@ class TrainingPaymentsTest extends TestCase
 
         $this->assertSame('installment', $customer->fresh()->requested_programs[0]['payment_plan']);
         $this->get(route('customer-registration.status', Customer::firstOrFail()->status_token))
-            ->assertSee('Fee Rp 7.500.000')->assertSee('Down payment (50%): Rp 3.750.000')->assertSee('Final payment (50%): Rp 3.750.000 — At meeting 1');
+            ->assertSee('Fee Rp 7.500.000')->assertSee('Down payment (50%): Rp 3.750.000')->assertSee('Final payment (50%): Rp 3.750.000 — At meeting 2');
 
         Mail::assertSent(CustomerRegistrationReceived::class, function (CustomerRegistrationReceived $mail) {
             $mail->assertSeeInHtml('Fee Rp 7.500.000');
@@ -337,7 +338,7 @@ class TrainingPaymentsTest extends TestCase
         Mail::fake();
         $program = TrainingProgram::factory()->create(['standard_price' => 8000000]);
         $customer = Customer::factory()->pendingApproval()->create([
-            'requested_programs' => [['training_program_id' => $program->id, 'payment_plan' => 'installment', 'meetings' => [['meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30']]]],
+            'requested_programs' => [['training_program_id' => $program->id, 'payment_plan' => 'installment', 'meetings' => [['meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30'], ['meeting_date' => '2026-10-08', 'start_time' => '20:00', 'end_time' => '21:30']]]],
         ]);
         $finance = $this->finance();
 
@@ -355,12 +356,12 @@ class TrainingPaymentsTest extends TestCase
         $session = TrainingSession::firstOrFail();
         $this->assertSame('installment', $session->payment_plan);
         $this->assertSame(['4000000.00', '4000000.00'], $session->payments->pluck('amount')->all());
-        $this->assertSame([null, 2], $session->payments->pluck('due_meeting_number')->all());
+        $this->assertSame([null, 3], $session->payments->pluck('due_meeting_number')->all());
 
         Mail::assertSent(CustomerRegistrationApproved::class, function (CustomerRegistrationApproved $mail) {
             $mail->assertSeeInHtml('Fee Rp 8.000.000');
             $mail->assertSeeInHtml('Down payment (50%): Rp 4.000.000 (Upon registration)');
-            $mail->assertSeeInHtml('Final payment (50%): Rp 4.000.000 (At meeting 2)');
+            $mail->assertSeeInHtml('Final payment (50%): Rp 4.000.000 (At meeting 3)');
 
             return true;
         });
@@ -392,6 +393,21 @@ class TrainingPaymentsTest extends TestCase
 
         $this->get(route('portal.dashboard'))->assertOk()
             ->assertSee('Payments')->assertSee('Rp 8.000.000')->assertSee('Down payment (50%)')->assertSee('Rp 4.000.000')
-            ->assertSee('Paid')->assertSee('At meeting 4')->assertSee('Upcoming');
+            ->assertSee('Paid')->assertSee('At meeting 5')->assertSee('Upcoming');
+    }
+
+    public function test_single_meeting_is_always_paid_in_full_upfront(): void
+    {
+        $this->assertSame('full', SessionPaymentPlan::effective('installment', 1));
+        $this->assertSame('installment', SessionPaymentPlan::effective('installment', 6));
+        $this->assertCount(1, SessionPaymentPlan::preview(1000000, 'installment', 1));
+
+        $session = TrainingSession::factory()->create(['fee' => 1000000, 'payment_plan' => 'installment']);
+        TrainingSessionMeeting::factory()->create(['training_session_id' => $session->id]);
+        SessionPaymentPlan::generate($session);
+
+        $this->assertSame('full', $session->fresh()->payment_plan);
+        $this->assertCount(1, $session->payments);
+        $this->assertEquals(1000000, $session->payments->first()->amount);
     }
 }

@@ -187,7 +187,7 @@ class Customer extends Authenticatable
             ->filter(fn ($entry) => $programs->has($entry['training_program_id']))
             ->map(fn ($entry) => [
                 'program' => $programs[$entry['training_program_id']],
-                'plan' => $entry['payment_plan'] ?? SessionPaymentPlan::FULL,
+                'plan' => SessionPaymentPlan::effective($entry['payment_plan'] ?? SessionPaymentPlan::FULL, count($entry['meetings'] ?? [])),
                 'price' => (float) $programs[$entry['training_program_id']]->standard_price,
                 'payments' => SessionPaymentPlan::preview($programs[$entry['training_program_id']]->standard_price, $entry['payment_plan'] ?? SessionPaymentPlan::FULL, count($entry['meetings'] ?? []) ?: null),
                 'meetings' => collect($entry['meetings'] ?? [])->map(function ($meeting) {

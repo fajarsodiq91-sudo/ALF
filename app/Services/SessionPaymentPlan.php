@@ -7,6 +7,7 @@ use App\Models\TrainingSession;
 /**
  * Turns a session's fee and payment plan into the payments the customer owes.
  * "full": everything upfront. "installment": half upfront, half at the middle meeting.
+ * A single-meeting program must always be paid in full upfront.
  */
 class SessionPaymentPlan
 {
@@ -16,13 +17,19 @@ class SessionPaymentPlan
 
     public const PLANS = [
         self::FULL => 'Pay in full upfront',
-        self::INSTALLMENT => '50% upfront, 50% at the middle meeting',
+        self::INSTALLMENT => '50% upfront, 50% at the middle meeting (meeting 4 of 6, 7 of 12)',
     ];
 
-    /** The meeting at which the second half falls due: the middle one (meeting 4 of 7 or 8). */
+    /** The meeting at which the second half falls due: 4 of 6 meetings, 7 of 12 (halfway, plus one). */
     public static function middleMeeting(int $meetingCount): int
     {
-        return max(1, (int) ceil($meetingCount / 2));
+        return $meetingCount < 2 ? 1 : intdiv($meetingCount, 2) + 1;
+    }
+
+    /** The plan that actually applies: with exactly one meeting, only paying in full upfront is allowed. */
+    public static function effective(string $plan, ?int $meetingCount): string
+    {
+        return $meetingCount === 1 ? self::FULL : $plan;
     }
 
     /**
@@ -34,12 +41,17 @@ class SessionPaymentPlan
         $session->payments()->whereNull('income_transaction_id')->delete();
 
         $fee = round((float) $session->fee, 2);
+        $plan = self::effective($session->payment_plan, $session->meetings()->count());
+
+        if ($plan !== $session->payment_plan) {
+            $session->update(['payment_plan' => $plan]);
+        }
 
         if ($fee <= 0) {
             return;
         }
 
-        if ($session->payment_plan === self::INSTALLMENT) {
+        if ($plan === self::INSTALLMENT) {
             $first = round($fee / 2, 2);
 
             $session->payments()->createMany([
@@ -57,6 +69,15 @@ class SessionPaymentPlan
     public static function syncDueMeeting(TrainingSession $session): void
     {
         if ($session->payment_plan !== self::INSTALLMENT) {
+            return;
+        }
+
+        // Down to a single meeting: the whole fee is due upfront, unless a payment is already recorded in Finance.
+        if ($session->meetings()->count() === 1) {
+            if ($session->payments()->whereNotNull('income_transaction_id')->doesntExist()) {
+                self::generate($session);
+            }
+
             return;
         }
 
@@ -84,7 +105,7 @@ class SessionPaymentPlan
             return [];
         }
 
-        if ($plan === self::INSTALLMENT) {
+        if (self::effective($plan, $meetingCount) === self::INSTALLMENT) {
             $first = round($fee / 2, 2);
             $when = $meetingCount ? 'At meeting '.self::middleMeeting($meetingCount) : 'At the middle meeting';
 

@@ -123,7 +123,7 @@ class RegisterCustomerRequest extends FormRequest
     {
         return collect($this->validated('programs', []))->map(fn ($program) => [
             'training_program_id' => (int) $program['training_program_id'],
-            'payment_plan' => $program['payment_plan'] ?? SessionPaymentPlan::FULL,
+            'payment_plan' => SessionPaymentPlan::effective($program['payment_plan'] ?? SessionPaymentPlan::FULL, count($program['meetings'])),
             'meetings' => collect($program['meetings'])->map(fn ($meeting) => [
                 'meeting_date' => $meeting['meeting_date'],
                 'start_time' => $meeting['start_time'] ?? null,
