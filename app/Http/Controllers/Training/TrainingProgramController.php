@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Training;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Training\SaveTrainingProgramRequest;
+use App\Models\TrainingCategory;
 use App\Models\TrainingProgram;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -13,7 +14,7 @@ class TrainingProgramController extends Controller
     public function index(): View
     {
         return view('erp.training.programs.index', [
-            'programs' => TrainingProgram::withCount('sessions')->orderBy('name')->get(),
+            'programs' => TrainingProgram::with('category')->withCount('sessions')->orderBy('name')->get(),
         ]);
     }
 
@@ -21,7 +22,9 @@ class TrainingProgramController extends Controller
     {
         $this->authorize('training.manage');
 
-        return view('erp.training.programs.create');
+        return view('erp.training.programs.create', [
+            'categories' => TrainingCategory::where('is_active', true)->orderBy('name')->get(),
+        ]);
     }
 
     public function store(SaveTrainingProgramRequest $request): RedirectResponse
@@ -35,7 +38,11 @@ class TrainingProgramController extends Controller
     {
         $this->authorize('training.manage');
 
-        return view('erp.training.programs.edit', ['program' => $program]);
+        $categories = TrainingCategory::where('is_active', true)
+            ->orWhere('id', $program->training_category_id)
+            ->orderBy('name')->get();
+
+        return view('erp.training.programs.edit', ['program' => $program, 'categories' => $categories]);
     }
 
     public function update(SaveTrainingProgramRequest $request, TrainingProgram $program): RedirectResponse

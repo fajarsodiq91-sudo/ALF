@@ -6,7 +6,7 @@
         <input type="text" name="name" id="name" value="{{ old('name', $program->name ?? '') }}" required  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
         @error('name') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
-    <div class="sm:col-span-2">
+    <div>
         <label for="program_type" class="block text-sm font-medium text-gray-700">Program Type</label>
         <select name="program_type" id="program_type" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
             @foreach (\App\Services\MasterData::options('program_type', $program->program_type ?? null) as $value => $label)
@@ -14,6 +14,17 @@
             @endforeach
         </select>
         @error('program_type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+    <div>
+        <label for="training_category_id" class="block text-sm font-medium text-gray-700">Category</label>
+        <select name="training_category_id" id="training_category_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+            <option value="">No category</option>
+            @foreach ($categories as $category)
+                <option value="{{ $category->id }}" @selected((string) old('training_category_id', $program->training_category_id ?? '') === (string) $category->id)>{{ $category->name }}</option>
+            @endforeach
+        </select>
+        <p class="mt-1 text-xs text-gray-500">Groups this program for customers, e.g. "Excel Basic" under "Data Analyst".</p>
+        @error('training_category_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
     <div class="">
         <label for="session_minutes" class="block text-sm font-medium text-gray-700">Session length (minutes)</label>

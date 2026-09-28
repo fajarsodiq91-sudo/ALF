@@ -55,6 +55,7 @@
                         <x-erp.nav-group label="Training" :active="request()->routeIs('training.*')" icon="training">
                             <x-erp.nav-link :href="route('training.index')" :active="request()->routeIs('training.index', 'training.create', 'training.edit')" nested>Sessions</x-erp.nav-link>
                             <x-erp.nav-link :href="route('training.programs.index')" :active="request()->routeIs('training.programs.*')" nested>Programs</x-erp.nav-link>
+                            <x-erp.nav-link :href="route('training.categories.index')" :active="request()->routeIs('training.categories.*')" nested>Categories</x-erp.nav-link>
                         </x-erp.nav-group>
                     @endcan
                     @can('projects.view')

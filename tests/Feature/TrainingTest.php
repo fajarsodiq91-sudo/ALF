@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\Payroll;
+use App\Models\TrainingCategory;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Models\User;
@@ -63,12 +64,65 @@ class TrainingTest extends TestCase
             route('training.programs.index'),
             route('training.programs.create'),
             route('training.programs.edit', $session->program),
+            route('training.categories.index'),
+            route('training.categories.create'),
         ] as $url) {
             $this->actingAs($finance)->get($url)->assertOk();
         }
 
         $this->actingAs($this->userWithRole('Staff'))->get(route('training.index'))->assertForbidden();
         $this->actingAs($this->userWithRole('Staff'))->get(route('training.programs.index'))->assertForbidden();
+        $this->actingAs($this->userWithRole('Staff'))->get(route('training.categories.index'))->assertForbidden();
+    }
+
+    public function test_category_crud_and_delete_guard(): void
+    {
+        $finance = $this->userWithRole('Finance');
+
+        $this->actingAs($finance)->post(route('training.categories.store'), [
+            'name' => 'Data Analyst', 'is_active' => '1',
+        ])->assertRedirect(route('training.categories.index'));
+        $category = TrainingCategory::firstOrFail();
+
+        $this->actingAs($finance)->put(route('training.categories.update', $category), [
+            'name' => 'Data Analyst Lanjut', 'is_active' => '0',
+        ])->assertRedirect(route('training.categories.index'));
+        $this->assertSame('Data Analyst Lanjut', $category->fresh()->name);
+        $this->assertFalse($category->fresh()->is_active);
+
+        TrainingProgram::factory()->create(['training_category_id' => $category->id]);
+        $this->actingAs($finance)->delete(route('training.categories.destroy', $category))->assertSessionHas('error');
+        $this->assertModelExists($category);
+
+        $empty = TrainingCategory::factory()->create();
+        $this->actingAs($finance)->delete(route('training.categories.destroy', $empty))->assertSessionHas('status');
+        $this->assertModelMissing($empty);
+    }
+
+    public function test_category_name_must_be_unique(): void
+    {
+        $finance = $this->userWithRole('Finance');
+        TrainingCategory::factory()->create(['name' => 'Data Analyst']);
+
+        $this->actingAs($finance)->post(route('training.categories.store'), ['name' => 'Data Analyst'])
+            ->assertSessionHasErrors('name');
+    }
+
+    public function test_program_can_be_grouped_into_a_category(): void
+    {
+        $finance = $this->userWithRole('Finance');
+        $category = TrainingCategory::factory()->create(['name' => 'Data Analyst']);
+
+        $this->actingAs($finance)->post(route('training.programs.store'), [
+            'name' => 'Excel Basic', 'program_type' => 'learning', 'training_category_id' => $category->id,
+            'duration_days' => 2, 'standard_price' => 5000000, 'is_active' => '1',
+        ])->assertRedirect(route('training.programs.index'));
+
+        $program = TrainingProgram::firstOrFail();
+        $this->assertSame($category->id, $program->training_category_id);
+        $this->assertSame('Data Analyst', $program->category->name);
+
+        $this->actingAs($finance)->get(route('training.programs.index'))->assertSee('Data Analyst');
     }
 
     public function test_program_crud_and_delete_guard(): void

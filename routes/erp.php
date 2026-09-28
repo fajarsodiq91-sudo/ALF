@@ -28,6 +28,7 @@ use App\Http\Controllers\Settings\OperatingHoursController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\SystemSettingController;
 use App\Http\Controllers\Settings\UserController;
+use App\Http\Controllers\Training\TrainingCategoryController;
 use App\Http\Controllers\Training\TrainingProgramController;
 use App\Http\Controllers\Training\TrainingSessionController;
 use App\Http\Controllers\Training\TrainingSessionMeetingController;
@@ -181,6 +182,8 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     Route::middleware('permission:training.view')->prefix('training')->group(function () {
         Route::resource('programs', TrainingProgramController::class)->except(['show'])
             ->parameters(['programs' => 'program'])->names('training.programs');
+        Route::resource('categories', TrainingCategoryController::class)->except(['show'])
+            ->parameters(['categories' => 'category'])->names('training.categories');
     });
 
     Route::middleware('permission:training.view')->prefix('training')->group(function () {

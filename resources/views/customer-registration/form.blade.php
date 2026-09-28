@@ -98,8 +98,8 @@
                             </div>
                             <select :name="`programs[${i}][training_program_id]`" x-model="program.training_program_id" @change="resize(program)" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                                 <option value="">Select a program</option>
-                                @foreach ($programs as $type => $group)
-                                    <optgroup label="{{ \App\Services\MasterData::label('program_type', $type) }}">
+                                @foreach ($programs as $categoryName => $group)
+                                    <optgroup label="{{ $categoryName }}">
                                         @foreach ($group as $catalogProgram)
                                             <option value="{{ $catalogProgram->id }}">{{ $catalogProgram->name }}</option>
                                         @endforeach

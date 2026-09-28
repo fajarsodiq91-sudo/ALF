@@ -27,7 +27,13 @@
                     @forelse ($programs as $program)
                         <tr>
                             <td class="px-4 py-3">
-                                <div class="font-medium text-gray-800">{{ $program->name }} <span class="ml-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand">{{ \App\Services\MasterData::label('program_type', $program->program_type) }}</span></div>
+                                <div class="font-medium text-gray-800">
+                                    {{ $program->name }}
+                                    <span class="ml-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand">{{ \App\Services\MasterData::label('program_type', $program->program_type) }}</span>
+                                    @if ($program->category)
+                                        <span class="ml-1 rounded-full bg-steel-100 px-2 py-0.5 text-xs font-medium text-steel-700">{{ $program->category->name }}</span>
+                                    @endif
+                                </div>
                                 @if ($program->description)
                                     <div class="text-xs text-gray-500">{{ $program->description }}</div>
                                 @endif

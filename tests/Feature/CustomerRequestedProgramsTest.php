@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Mail\CustomerRegistrationReceived;
 use App\Models\Customer;
+use App\Models\TrainingCategory;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Models\User;
@@ -67,20 +68,32 @@ class CustomerRequestedProgramsTest extends TestCase
         return ['meeting_date' => $date, 'start_time' => $start, 'end_time' => $end];
     }
 
-    public function test_form_lists_active_programs_by_type_and_the_available_days(): void
+    public function test_form_lists_active_programs_by_category_and_the_available_days(): void
     {
-        TrainingProgram::factory()->create(['name' => 'Power BI Dasar', 'program_type' => 'learning']);
-        TrainingProgram::factory()->create(['name' => 'Strategi Data', 'program_type' => 'consulting']);
+        $dataAnalyst = TrainingCategory::factory()->create(['name' => 'Data Analyst']);
+        $operatingKomputer = TrainingCategory::factory()->create(['name' => 'Operating Komputer']);
+        TrainingProgram::factory()->create(['name' => 'Power BI Dasar', 'training_category_id' => $dataAnalyst->id]);
+        TrainingProgram::factory()->create(['name' => 'Komputer Basic', 'training_category_id' => $operatingKomputer->id]);
+        TrainingProgram::factory()->create(['name' => 'Belum Dikategorikan']);
         TrainingProgram::factory()->create(['name' => 'Program Nonaktif', 'is_active' => false]);
         $token = $this->token();
 
         $this->get(route('customer-registration.show', $token))->assertOk()
             ->assertSee('Programs you would like to take')
-            ->assertSee('Power BI Dasar')->assertSee('Strategi Data')
-            ->assertSee('Learning')->assertSee('Consulting')
+            ->assertSee('Power BI Dasar')->assertSee('Komputer Basic')
+            ->assertSee('Data Analyst')->assertSee('Operating Komputer')->assertSee('Lainnya')
             ->assertDontSee('Program Nonaktif')
             ->assertSee('Our operating hours')->assertSee('"start":"20:00","end":"21:30"', false)
             ->assertSee('window.operatingHours', false)->assertSee('window.bookedSlots', false);
+    }
+
+    public function test_form_groups_programs_without_a_category_under_lainnya(): void
+    {
+        TrainingProgram::factory()->create(['name' => 'Excel Basic']);
+        $token = $this->token();
+
+        $this->get(route('customer-registration.show', $token))->assertOk()
+            ->assertSeeInOrder(['<optgroup label="Lainnya">', 'Excel Basic'], false);
     }
 
     public function test_customer_picks_programs_and_dates_and_they_are_saved(): void
