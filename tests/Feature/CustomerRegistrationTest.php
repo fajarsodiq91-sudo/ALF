@@ -107,8 +107,23 @@ class CustomerRegistrationTest extends TestCase
         $this->assertNull($customer->registration_token);
         Storage::disk('public')->assertExists($customer->photo_path);
 
-        $this->get(route('customer-registration.done'))->assertSee('waiting for approval')->assertSee('a@b.test');
+        $this->get(route('customer-registration.done'))
+            ->assertSee('<!DOCTYPE html>', false)
+            ->assertSee('/build/assets/app-', false)
+            ->assertSee('Waiting for approval')
+            ->assertSee('What happens next')
+            ->assertSee('a@b.test')
+            ->assertSee('PT Pelanggan Baru');
         Mail::assertSent(CustomerRegistrationReceived::class, fn ($mail) => $mail->hasTo('a@b.test'));
+    }
+
+    public function test_thank_you_page_is_a_complete_page_even_without_session_data(): void
+    {
+        $this->get(route('customer-registration.done'))
+            ->assertOk()
+            ->assertSee('<!DOCTYPE html>', false)
+            ->assertSee('Waiting for approval')
+            ->assertSee('What happens next');
     }
 
     public function test_email_is_required_on_the_public_form(): void
