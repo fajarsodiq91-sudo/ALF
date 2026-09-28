@@ -11,7 +11,7 @@ class EnsurePortalPasswordChanged
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->user('customer')?->must_change_password && ! $request->routeIs('portal.password.*', 'portal.logout')) {
+        if (! $request->session()->has('portal_preview') && $request->user('customer')?->must_change_password && ! $request->routeIs('portal.password.*', 'portal.logout')) {
             return redirect()->route('portal.password.edit');
         }
 

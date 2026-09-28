@@ -139,6 +139,7 @@ class Customer extends Authenticatable
         $this->registration_token = null;
         $this->registration_token_expires_at = null;
         $this->submitted_at = now();
+        $this->status_token = Str::random(40);
         $this->save();
     }
 
@@ -163,6 +164,12 @@ class Customer extends Authenticatable
     public function photoUrl(): ?string
     {
         return $this->photo_path ? asset('storage/'.$this->photo_path) : null;
+    }
+
+    /** Finds a registration by the permanent status link sent to the customer after they submitted. */
+    public static function findByStatusToken(string $token): ?self
+    {
+        return self::where('status_token', $token)->first();
     }
 
     /**

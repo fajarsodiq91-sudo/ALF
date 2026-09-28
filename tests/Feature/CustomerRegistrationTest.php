@@ -96,7 +96,7 @@ class CustomerRegistrationTest extends TestCase
 
         $this->post(route('customer-registration.store', $token), [
             'name' => 'PT Pelanggan Baru', 'email' => 'a@b.test', 'phone' => '0812', 'city' => 'Bandung', 'photo' => $this->photo(),
-        ])->assertRedirect(route('customer-registration.done'));
+        ])->assertRedirect();
 
         $customer->refresh();
         $this->assertSame('PT Pelanggan Baru', $customer->name);
@@ -107,7 +107,7 @@ class CustomerRegistrationTest extends TestCase
         $this->assertNull($customer->registration_token);
         Storage::disk('public')->assertExists($customer->photo_path);
 
-        $this->get(route('customer-registration.done'))
+        $this->get(route('customer-registration.status', Customer::firstOrFail()->status_token))
             ->assertSee('<!DOCTYPE html>', false)
             ->assertSee('/build/assets/app-', false)
             ->assertSee('Waiting for approval')
@@ -117,13 +117,14 @@ class CustomerRegistrationTest extends TestCase
         Mail::assertSent(CustomerRegistrationReceived::class, fn ($mail) => $mail->hasTo('a@b.test'));
     }
 
-    public function test_thank_you_page_is_a_complete_page_even_without_session_data(): void
+    public function test_the_old_done_address_is_generic_without_a_registration_in_this_session(): void
     {
         $this->get(route('customer-registration.done'))
             ->assertOk()
             ->assertSee('<!DOCTYPE html>', false)
-            ->assertSee('Waiting for approval')
-            ->assertSee('What happens next');
+            ->assertSee('Thank you for registering')
+            ->assertDontSee('Waiting for approval')
+            ->assertDontSee('Approved');
     }
 
     public function test_phone_is_the_contact_field_and_is_required_everywhere(): void
@@ -151,7 +152,7 @@ class CustomerRegistrationTest extends TestCase
         $customer = $this->invite();
 
         $this->post(route('customer-registration.store', $customer->registration_token), ['name' => 'Tetap Masuk', 'email' => 'x@y.test', 'phone' => '0812'])
-            ->assertRedirect(route('customer-registration.done'));
+            ->assertRedirect();
 
         $this->assertTrue($customer->fresh()->isPendingApproval());
     }

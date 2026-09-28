@@ -18,6 +18,7 @@ Route::get('/thank-you', [PublicSiteController::class, 'thankYou'])->name('thank
 
 Route::middleware('throttle:30,1')->prefix('customer-registration')->name('customer-registration.')->group(function () {
     Route::get('/done', [CustomerRegistrationController::class, 'done'])->name('done');
+    Route::get('/status/{token}', [CustomerRegistrationController::class, 'status'])->name('status');
     Route::get('/{token}', [CustomerRegistrationController::class, 'show'])->name('show');
     Route::post('/{token}', [CustomerRegistrationController::class, 'store'])->name('store');
 });
@@ -28,7 +29,7 @@ Route::prefix('portal')->name('portal.')->group(function () {
         Route::post('login', [PortalLoginController::class, 'store'])->name('login.store');
     });
 
-    Route::middleware(['auth:customer', 'portal.password'])->group(function () {
+    Route::middleware(['auth:customer', 'portal.readonly', 'portal.password'])->group(function () {
         Route::get('/', PortalDashboardController::class)->name('dashboard');
         Route::get('password', [PortalPasswordController::class, 'edit'])->name('password.edit');
         Route::put('password', [PortalPasswordController::class, 'update'])->name('password.update');

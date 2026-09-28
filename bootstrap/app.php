@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsurePortalPasswordChanged;
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\PortalReadOnlyInPreview;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -29,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'portal.password' => EnsurePortalPasswordChanged::class,
+            'portal.readonly' => PortalReadOnlyInPreview::class,
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,

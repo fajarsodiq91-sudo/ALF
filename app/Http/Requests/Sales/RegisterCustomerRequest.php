@@ -31,7 +31,7 @@ class RegisterCustomerRequest extends FormRequest
             'programs' => ['nullable', 'array', 'max:5'],
             'programs.*.training_program_id' => ['required', Rule::exists(TrainingProgram::class, 'id')->where('is_active', true)],
             'programs.*.payment_plan' => ['nullable', Rule::in(array_keys(SessionPaymentPlan::PLANS))],
-            'programs.*.meetings' => ['required', 'array', 'min:1', 'max:20'],
+            'programs.*.meetings' => ['required', 'array', 'min:1', 'max:100'],
             'programs.*.meetings.*.meeting_date' => ['required', 'date', 'after_or_equal:today'],
             'programs.*.meetings.*.start_time' => ['nullable', 'date_format:H:i'],
             'programs.*.meetings.*.end_time' => ['nullable', 'date_format:H:i', 'after:programs.*.meetings.*.start_time'],
@@ -64,7 +64,26 @@ class RegisterCustomerRequest extends FormRequest
                 return;
             }
 
+            $catalog = TrainingProgram::whereIn('id', collect($this->input('programs', []))->pluck('training_program_id'))->get()->keyBy('id');
+
             foreach ($this->input('programs', []) as $i => $program) {
+                $expected = $catalog[$program['training_program_id']]->duration_days;
+                $chosen = count($program['meetings']);
+
+                if ($chosen !== $expected) {
+                    $validator->errors()->add("programs.{$i}.meetings", "{$catalog[$program['training_program_id']]->name} has {$expected} meeting(s); please choose a date and time for all {$expected} (you chose {$chosen}).");
+
+                    continue;
+                }
+
+                $slots = collect($program['meetings'])->map(fn ($m) => ($m['meeting_date'] ?? '').'|'.($m['start_time'] ?? '').'|'.($m['end_time'] ?? ''));
+
+                if ($slots->count() !== $slots->unique()->count()) {
+                    $validator->errors()->add("programs.{$i}.meetings", "{$catalog[$program['training_program_id']]->name}: the same date and time was chosen more than once.");
+
+                    continue;
+                }
+
                 foreach ($program['meetings'] as $j => $meeting) {
                     $violation = OperatingHours::violation($meeting['meeting_date'], $meeting['start_time'] ?? null, $meeting['end_time'] ?? null);
 

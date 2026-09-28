@@ -76,6 +76,10 @@
                         <x-erp.nav-link :href="route('assets.index')" :active="request()->routeIs('assets.*')" icon="assets">Assets</x-erp.nav-link>
                     @endcan
 
+                    @can('sales.view')
+                        <x-erp.nav-link :href="route('customer-portal.index')" :active="request()->routeIs('customer-portal.*')" icon="portal">Customer Portal</x-erp.nav-link>
+                    @endcan
+
                     @can('masterdata.manage')
                         <x-erp.nav-link :href="route('masterdata.index')" :active="request()->routeIs('masterdata.*')" icon="masterdata">Master Data</x-erp.nav-link>
                     @endcan

@@ -19,7 +19,7 @@
                 'topic' => '',
             ])->all(),
         ])->all();
-        $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type])->values();
+        $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type, 'meetings' => $program->duration_days])->values();
         $inputClass = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm';
     @endphp
 
@@ -29,6 +29,14 @@
             return {
                 programs, emptyProgram, emptyMeeting, catalog, hours: window.operatingHours,
                 rupiah(amount) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount); },
+                expectedMeetings(program) {
+                    const item = this.catalog.find(c => String(c.id) === String(program.training_program_id));
+                    return item ? item.meetings : 0;
+                },
+                /** Adds empty meeting rows up to the program's meeting count (never removes what was filled in). */
+                fillMeetings(program) {
+                    while (program.meetings.length < this.expectedMeetings(program)) { program.meetings.push({ ...this.emptyMeeting }); }
+                },
                 /** Mirrors the server's payment plan so the split is visible before approving. */
                 paymentPreview(program) {
                     const fee = parseFloat(program.fee) || 0;
@@ -126,7 +134,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Program</label>
-                            <select :name="`programs[${i}][training_program_id]`" x-model="program.training_program_id" required class="{{ $inputClass }}">
+                            <select :name="`programs[${i}][training_program_id]`" x-model="program.training_program_id" @change="fillMeetings(program)" required class="{{ $inputClass }}">
                                 <option value="">Select program</option>
                                 <template x-for="item in catalog.filter(c => !program.program_type || c.type === program.program_type)" :key="item.id">
                                     <option :value="item.id" :selected="String(item.id) === String(program.training_program_id)" x-text="item.name"></option>
@@ -180,6 +188,8 @@
                     </div>
 
                     <h4 class="mt-5 text-sm font-medium text-gray-700">Meeting schedule</h4>
+                    <p x-show="expectedMeetings(program)" x-cloak class="text-xs" :class="program.meetings.length === expectedMeetings(program) ? 'text-gray-500' : 'text-amber-700'"
+                       x-text="`This program has ${expectedMeetings(program)} meeting(s); ${program.meetings.length} scheduled.`"></p>
                     <div class="mt-2 space-y-3">
                         <template x-for="(meeting, j) in program.meetings" :key="j">
                             <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 items-end rounded-md bg-gray-50 p-3">

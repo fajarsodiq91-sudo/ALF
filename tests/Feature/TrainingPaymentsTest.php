@@ -291,7 +291,7 @@ class TrainingPaymentsTest extends TestCase
     public function test_customer_choice_of_payment_plan_is_saved_shown_and_emailed(): void
     {
         Mail::fake();
-        $program = TrainingProgram::factory()->create(['name' => 'Power BI Dasar', 'standard_price' => 7500000]);
+        $program = TrainingProgram::factory()->create(['name' => 'Power BI Dasar', 'standard_price' => 7500000, 'duration_days' => 2]);
         $this->actingAs($this->finance())->post(route('sales.invite.store'), ['customer_type' => 'company']);
         $customer = Customer::firstOrFail();
 
@@ -301,10 +301,10 @@ class TrainingPaymentsTest extends TestCase
                 ['meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30'],
                 ['meeting_date' => '2026-10-08', 'start_time' => '20:00', 'end_time' => '21:30'],
             ]]],
-        ])->assertRedirect(route('customer-registration.done'));
+        ])->assertRedirect();
 
         $this->assertSame('installment', $customer->fresh()->requested_programs[0]['payment_plan']);
-        $this->get(route('customer-registration.done'))
+        $this->get(route('customer-registration.status', Customer::firstOrFail()->status_token))
             ->assertSee('Fee Rp 7.500.000')->assertSee('Down payment (50%): Rp 3.750.000')->assertSee('Final payment (50%): Rp 3.750.000 — At meeting 1');
 
         Mail::assertSent(CustomerRegistrationReceived::class, function (CustomerRegistrationReceived $mail) {

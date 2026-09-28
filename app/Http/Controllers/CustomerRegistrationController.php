@@ -32,6 +32,7 @@ class CustomerRegistrationController extends Controller
             'token' => $token,
             'programs' => $programs->groupBy('program_type'),
             'prices' => $programs->mapWithKeys(fn ($program) => [$program->id => (float) $program->standard_price]),
+            'meetingCounts' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->duration_days]),
         ]);
     }
 
@@ -66,22 +67,38 @@ class CustomerRegistrationController extends Controller
             Log::error('Could not send the registration confirmation email.', ['customer_id' => $customer->id, 'error' => $exception->getMessage()]);
         }
 
-        return redirect()
-            ->route('customer-registration.done')
-            ->with('registered', [
-                'name' => $customer->name,
-                'email' => $customer->email,
-                'programs' => collect($customer->requestedProgramSummaries())->map(fn ($entry) => [
-                    'name' => $entry['program']->name,
-                    'meetings' => collect($entry['meetings'])->pluck('label')->all(),
-                    'price' => $entry['price'],
-                    'payments' => $entry['payments'],
-                ])->all(),
-            ]);
+        session(['registration_status_token' => $customer->status_token]);
+
+        return redirect()->route('customer-registration.status', $customer->status_token);
     }
 
-    public function done(): View
+    /** The live status of a registration: waiting for approval, approved (with the customer ID), or not approved. */
+    public function status(string $token): View|Response
     {
-        return view('customer-registration.done', ['registered' => session('registered')]);
+        $customer = Customer::findByStatusToken($token);
+
+        if (! $customer) {
+            return response()->view('customer-registration.invalid', [], 404);
+        }
+
+        return view('customer-registration.status', [
+            'customer' => $customer,
+            'requested' => $customer->isPendingApproval() ? $customer->requestedProgramSummaries() : [],
+            'sessions' => $customer->registration_status === Customer::REGISTRATION_COMPLETE
+                ? $customer->sessions()->with(['program', 'meetings', 'payments'])->orderBy('start_date')->get()
+                : collect(),
+        ]);
+    }
+
+    /** Old address of the thank-you page: send people who registered in this browser to their live status. */
+    public function done(): View|RedirectResponse
+    {
+        $token = session('registration_status_token');
+
+        if ($token && Customer::findByStatusToken($token)) {
+            return redirect()->route('customer-registration.status', $token);
+        }
+
+        return view('customer-registration.done');
     }
 }

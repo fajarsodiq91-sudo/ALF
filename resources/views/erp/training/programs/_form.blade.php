@@ -16,8 +16,9 @@
         @error('program_type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
     <div class="">
-        <label for="duration_days" class="block text-sm font-medium text-gray-700">Duration (days)</label>
+        <label for="duration_days" class="block text-sm font-medium text-gray-700">Number of meetings</label>
         <input type="number" name="duration_days" id="duration_days" value="{{ old('duration_days', $program->duration_days ?? 1) }}" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+        <p class="mt-1 text-xs text-gray-500">Customers pick a date and time slot for exactly this many meetings when they register.</p>
         @error('duration_days') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
     <div class="">

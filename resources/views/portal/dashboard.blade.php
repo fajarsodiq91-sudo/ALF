@@ -153,6 +153,9 @@
                         </ul>
                     @endif
 
+                    @if (session()->has('portal_preview'))
+                        <p class="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">Uploading is disabled in preview mode.</p>
+                    @else
                     <form action="{{ route('portal.projects.store') }}" method="POST" enctype="multipart/form-data" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                         @csrf
                         <input type="hidden" name="training_session_id" value="{{ $session->id }}">
@@ -177,6 +180,7 @@
                             <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-brand-dark hover:to-brand-dark hover:shadow-md transition-all">Upload project</button>
                         </div>
                     </form>
+                    @endif
                 </div>
             </section>
         @empty

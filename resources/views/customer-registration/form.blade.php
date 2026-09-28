@@ -12,10 +12,19 @@
     <body class="font-sans antialiased text-gray-900 min-h-screen bg-gradient-to-br from-steel-100 via-white to-brand-50">
         @include('erp.partials.operating-hours')
         <script>
-            function registrationForm(initial, prices) {
+            function registrationForm(initial, prices, counts) {
                 return {
                     programs: initial.map(p => ({ payment_plan: 'full', ...p })),
                     prices,
+                    counts,
+                    countOf(program) { return parseInt(this.counts[program.training_program_id]) || 0; },
+                    middleOf(program) { return Math.max(1, Math.ceil(this.countOf(program) / 2)); },
+                    /** Shows exactly as many date rows as the chosen program has meetings. */
+                    resize(program) {
+                        const n = this.countOf(program);
+                        while (program.meetings.length < n) { program.meetings.push({ meeting_date: '', start_time: '', end_time: '' }); }
+                        program.meetings.splice(n);
+                    },
                     priceOf(program) { return parseFloat(this.prices[program.training_program_id]) || 0; },
                     rupiah(amount) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount); },
                     half(program) { return Math.round(this.priceOf(program) / 2 * 100) / 100; },
@@ -23,8 +32,7 @@
                     dueNow() { return this.programs.reduce((sum, p) => sum + (p.payment_plan === 'installment' ? this.half(p) : this.priceOf(p)), 0); },
                     hours: window.operatingHours,
                     today: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
-                    addProgram() { this.programs.push({ training_program_id: '', payment_plan: 'full', meetings: [{ meeting_date: '', start_time: '', end_time: '' }] }); },
-                    addMeeting(program) { program.meetings.push({ meeting_date: '', start_time: '', end_time: '' }); },
+                    addProgram() { this.programs.push({ training_program_id: '', payment_plan: 'full', meetings: [] }); },
                 };
             }
         </script>
@@ -37,7 +45,7 @@
                 <h1 class="text-lg font-semibold text-gray-800">Customer Registration</h1>
                 <p class="mt-1 text-sm text-gray-500">Please fill in your details. Registration type: <span class="font-medium text-gray-700">{{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }}</span>.</p>
 
-                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" x-data='registrationForm(@json(old("programs", [])), @json($prices))'>
+                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" x-data='registrationForm(@json(old("programs", [])), @json($prices), @json($meetingCounts))'>
                     @csrf
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Name / Company Name <span class="text-red-600">*</span></label>
@@ -84,7 +92,7 @@
                                 <span class="text-xs font-semibold uppercase tracking-wide text-gray-500" x-text="'Program ' + (i + 1)"></span>
                                 <button type="button" @click="programs.splice(i, 1)" class="text-xs text-gray-400 hover:text-red-600">Remove</button>
                             </div>
-                            <select :name="`programs[${i}][training_program_id]`" x-model="program.training_program_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                            <select :name="`programs[${i}][training_program_id]`" x-model="program.training_program_id" @change="resize(program)" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                                 <option value="">Select a program</option>
                                 @foreach ($programs as $type => $group)
                                     <optgroup label="{{ \App\Services\MasterData::label('program_type', $type) }}">
@@ -107,18 +115,22 @@
                                 </label>
                                 <label class="mt-2 flex items-start gap-2 text-gray-700">
                                     <input type="radio" :name="`programs[${i}][payment_plan]`" value="installment" x-model="program.payment_plan" class="mt-1 text-brand focus:ring-brand">
-                                    <span><span class="font-medium">50% upfront, 50% at the middle meeting</span><span class="block text-xs text-gray-500" x-text="rupiah(half(program)) + ' when you register, then ' + rupiah(priceOf(program) - half(program)) + ' at the middle meeting of your program'"></span></span>
+                                    <span><span class="font-medium">50% upfront, 50% at the middle meeting</span><span class="block text-xs text-gray-500" x-text="rupiah(half(program)) + ' when you register, then ' + rupiah(priceOf(program) - half(program)) + (countOf(program) ? ' at meeting ' + middleOf(program) + ' (the middle of your ' + countOf(program) + ' meetings)' : ' at the middle meeting of your program')"></span></span>
                                 </label>
                             </div>
                             <template x-if="priceOf(program) <= 0">
                                 <input type="hidden" :name="`programs[${i}][payment_plan]`" value="full">
                             </template>
 
-                            <div class="mt-3 space-y-2">
+                            <p x-show="countOf(program)" x-cloak class="mt-3 text-xs font-medium text-gray-600">
+                                This program has <span x-text="countOf(program)"></span> meeting(s). Choose a date and time slot for each one.
+                            </p>
+                            <div class="mt-2 space-y-2">
                                 <template x-for="(meeting, j) in program.meetings" :key="j">
-                                    <div class="grid grid-cols-2 gap-2 items-start">
+                                    <div class="grid grid-cols-2 gap-2 items-start rounded-md bg-gray-50 p-2">
+                                        <p class="col-span-2 text-xs font-semibold text-gray-500" x-text="'Meeting ' + (j + 1) + ' of ' + program.meetings.length"></p>
                                         <div>
-                                            <label class="block text-xs text-gray-500">Preferred date</label>
+                                            <label class="block text-xs text-gray-500">Date</label>
                                             <input type="date" required :min="today" :name="`programs[${i}][meetings][${j}][meeting_date]`" x-model="meeting.meeting_date" @change="syncSlot(meeting)" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                                             <p x-show="hoursHint(meeting.meeting_date)" x-text="hoursHint(meeting.meeting_date)" x-cloak class="mt-1 text-xs text-red-600"></p>
                                         </div>
@@ -145,13 +157,9 @@
                                                 <input type="hidden" :name="`programs[${i}][meetings][${j}][end_time]`" :value="meeting.end_time">
                                             </div>
                                         </template>
-                                        <div class="col-span-2 text-right" x-show="program.meetings.length > 1">
-                                            <button type="button" @click="program.meetings.splice(j, 1)" class="text-xs text-gray-400 hover:text-red-600">Remove this date</button>
-                                        </div>
                                     </div>
                                 </template>
                             </div>
-                            <button type="button" @click="addMeeting(program)" class="mt-2 text-sm font-medium text-brand hover:text-brand-dark">+ Add another date</button>
                         </div>
                     </template>
 

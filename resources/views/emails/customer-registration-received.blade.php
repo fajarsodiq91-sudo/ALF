@@ -24,6 +24,10 @@ Once it is approved, you will receive another email with your customer ID and a 
 @endforeach
 
 @endif
+<x-mail::button :url="route('customer-registration.status', $customer->status_token)">
+Check your registration status
+</x-mail::button>
+
 If you have questions in the meantime, just reply to this email.
 
 Regards,<br>

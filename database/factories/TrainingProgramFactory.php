@@ -16,7 +16,7 @@ class TrainingProgramFactory extends Factory
             'name' => fake()->randomElement(['Microsoft Excel', 'Microsoft Power BI', 'SQL', 'Python', 'AI for Business']).' '.fake()->unique()->numerify('##'),
             'program_type' => 'learning',
             'description' => fake()->optional()->sentence(),
-            'duration_days' => fake()->numberBetween(1, 5),
+            'duration_days' => 1,
             'standard_price' => fake()->randomFloat(2, 2_000_000, 20_000_000),
             'is_active' => true,
         ];

@@ -14,7 +14,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Program</th>
-                        <th class="px-4 py-3 text-right font-medium text-gray-500">Duration</th>
+                        <th class="px-4 py-3 text-right font-medium text-gray-500">Meetings</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Standard Price</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Sessions</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Status</th>
@@ -32,7 +32,7 @@
                                     <div class="text-xs text-gray-500">{{ $program->description }}</div>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-right text-gray-500">{{ $program->duration_days }} day(s)</td>
+                            <td class="px-4 py-3 text-right text-gray-500">{{ $program->duration_days }}</td>
                             <td class="px-4 py-3 text-right text-gray-800">Rp {{ number_format((float) $program->standard_price, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right text-gray-500">{{ $program->sessions_count }}</td>
                             <td class="px-4 py-3">

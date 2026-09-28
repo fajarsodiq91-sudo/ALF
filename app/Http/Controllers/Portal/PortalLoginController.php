@@ -54,6 +54,7 @@ class PortalLoginController extends Controller
         }
 
         RateLimiter::clear($throttleKey);
+        $request->session()->forget('portal_preview'); // a real login is never a preview
         $request->session()->regenerate();
 
         return redirect()->intended(route('portal.dashboard'));
@@ -61,9 +62,11 @@ class PortalLoginController extends Controller
 
     public function destroy(Request $request): RedirectResponse
     {
+        $wasPreview = $request->session()->pull('portal_preview') !== null;
+
         Auth::guard('customer')->logout();
         $request->session()->regenerateToken();
 
-        return redirect()->route('portal.login');
+        return $wasPreview ? redirect()->route('customer-portal.index')->with('status', 'Left the customer portal preview.') : redirect()->route('portal.login');
     }
 }

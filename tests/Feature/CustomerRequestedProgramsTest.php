@@ -86,14 +86,14 @@ class CustomerRequestedProgramsTest extends TestCase
     public function test_customer_picks_programs_and_dates_and_they_are_saved(): void
     {
         Mail::fake();
-        $program = TrainingProgram::factory()->create(['name' => 'Power BI Dasar']);
+        $program = TrainingProgram::factory()->create(['name' => 'Power BI Dasar', 'duration_days' => 2]);
         $second = TrainingProgram::factory()->create(['name' => 'Excel Lanjut']);
         $token = $this->token();
 
         $this->post(route('customer-registration.store', $token), $this->base(['programs' => [
             ['training_program_id' => $program->id, 'meetings' => [$this->slot('2026-10-06', '20:00', '21:30'), $this->slot('2026-10-10', '09:00', '10:30')]],
             ['training_program_id' => $second->id, 'meetings' => [$this->slot('2026-10-11', '14:40', '16:00')]],
-        ]]))->assertRedirect(route('customer-registration.done'));
+        ]]))->assertRedirect();
 
         $customer = Customer::firstOrFail();
         $this->assertTrue($customer->isPendingApproval());
@@ -115,8 +115,75 @@ class CustomerRequestedProgramsTest extends TestCase
             return true;
         });
 
-        $this->get(route('customer-registration.done'))
+        $this->get(route('customer-registration.status', Customer::firstOrFail()->status_token))
             ->assertSee('Programs and dates you asked for')->assertSee('Power BI Dasar')->assertSee('Sat, 10 Oct 2026, 09:00 – 10:30')->assertSee('Excel Lanjut');
+    }
+
+    public function test_form_tells_the_browser_how_many_meetings_each_program_has(): void
+    {
+        $program = TrainingProgram::factory()->create(['name' => 'Excel Basic', 'duration_days' => 6]);
+        $token = $this->token();
+
+        $this->get(route('customer-registration.show', $token))->assertOk()
+            ->assertSee('"'.$program->id.'":6', false)
+            ->assertSee('Choose a date and time slot for each one')
+            ->assertDontSee('Add another date')
+            ->assertDontSee('Remove this date');
+    }
+
+    public function test_customer_must_choose_exactly_as_many_meetings_as_the_program_has(): void
+    {
+        Mail::fake();
+        $program = TrainingProgram::factory()->create(['name' => 'Excel Basic', 'duration_days' => 3]);
+        $token = $this->token();
+        $post = fn (array $meetings) => $this->post(route('customer-registration.store', $token), $this->base($this->choice($program, $meetings)));
+        $dates = [$this->slot('2026-10-06', '20:00', '21:30'), $this->slot('2026-10-08', '20:00', '21:30'), $this->slot('2026-10-13', '20:00', '21:30')];
+
+        $post(array_slice($dates, 0, 2))->assertSessionHasErrors('programs.0.meetings');
+        $post([...$dates, $this->slot('2026-10-15', '20:00', '21:30')])->assertSessionHasErrors('programs.0.meetings');
+        $post([$dates[0], $dates[1], $dates[1]])->assertSessionHasErrors('programs.0.meetings'); // same date and time twice
+        $this->assertTrue(Customer::firstOrFail()->isAwaitingCustomer());
+
+        $post($dates)->assertSessionHasNoErrors();
+        $this->assertCount(3, Customer::firstOrFail()->requested_programs[0]['meetings']);
+    }
+
+    public function test_the_error_names_the_program_and_the_expected_count(): void
+    {
+        $program = TrainingProgram::factory()->create(['name' => 'Excel Basic', 'duration_days' => 6]);
+        $token = $this->token();
+
+        $this->post(route('customer-registration.store', $token), $this->base($this->choice($program, [$this->slot('2026-10-06', '20:00', '21:30')])))
+            ->assertSessionHasErrors(['programs.0.meetings' => 'Excel Basic has 6 meeting(s); please choose a date and time for all 6 (you chose 1).']);
+    }
+
+    public function test_the_same_day_can_hold_two_different_slots(): void
+    {
+        Mail::fake();
+        $program = TrainingProgram::factory()->create(['duration_days' => 2]);
+        $token = $this->token();
+
+        $this->post(route('customer-registration.store', $token), $this->base($this->choice($program, [
+            $this->slot('2026-10-10', '09:00', '10:30'), $this->slot('2026-10-10', '10:40', '12:10'),
+        ])))->assertSessionHasNoErrors();
+    }
+
+    public function test_program_form_calls_the_field_number_of_meetings(): void
+    {
+        $finance = $this->financeUser();
+
+        $this->actingAs($finance)->get(route('training.programs.create'))->assertOk()->assertSee('Number of meetings')->assertDontSee('Duration (days)');
+        TrainingProgram::factory()->create(['name' => 'Excel Basic', 'duration_days' => 6]);
+        $this->actingAs($finance)->get(route('training.programs.index'))->assertSee('Meetings')->assertDontSee('day(s)');
+    }
+
+    public function test_review_page_knows_each_programs_meeting_count(): void
+    {
+        $program = TrainingProgram::factory()->create(['duration_days' => 6]);
+        $customer = Customer::factory()->pendingApproval()->create();
+
+        $this->actingAs($this->financeUser())->get(route('sales.review', $customer))->assertOk()
+            ->assertSee('"meetings":6', false)->assertSee('meeting(s);', false);
     }
 
     public function test_choosing_programs_is_optional(): void
@@ -124,12 +191,12 @@ class CustomerRequestedProgramsTest extends TestCase
         Mail::fake();
         $token = $this->token();
 
-        $this->post(route('customer-registration.store', $token), $this->base())->assertRedirect(route('customer-registration.done'));
+        $this->post(route('customer-registration.store', $token), $this->base())->assertRedirect();
 
         $customer = Customer::firstOrFail();
         $this->assertNull($customer->requested_programs);
         $this->assertSame([], $customer->requestedProgramSummaries());
-        $this->get(route('customer-registration.done'))->assertDontSee('Programs and dates you asked for');
+        $this->get(route('customer-registration.status', Customer::firstOrFail()->status_token))->assertDontSee('Programs and dates you asked for');
         Mail::assertSent(CustomerRegistrationReceived::class, function (CustomerRegistrationReceived $mail) {
             $mail->assertDontSeeInHtml('Programs and dates you asked for');
 

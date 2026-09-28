@@ -20,6 +20,7 @@ use App\Http\Controllers\Hr\PayrollController;
 use App\Http\Controllers\Projects\ProjectController;
 use App\Http\Controllers\Projects\ProjectTaskController;
 use App\Http\Controllers\Sales\CustomerController;
+use App\Http\Controllers\Sales\CustomerPortalPreviewController;
 use App\Http\Controllers\Sales\CustomerProjectController;
 use App\Http\Controllers\Settings\MasterDataController;
 use App\Http\Controllers\Settings\RoleController;
@@ -130,6 +131,11 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             Route::get('/tax-summary', [ReportController::class, 'taxSummary'])->name('tax-summary');
             Route::get('/account-balances', [ReportController::class, 'accountBalances'])->name('account-balances');
         });
+    });
+
+    Route::middleware('permission:sales.view')->group(function () {
+        Route::get('customer-portal', [CustomerPortalPreviewController::class, 'index'])->name('customer-portal.index');
+        Route::get('customer-portal/{customer}/open', [CustomerPortalPreviewController::class, 'open'])->name('customer-portal.open');
     });
 
     Route::middleware('permission:projects.view')->group(function () {

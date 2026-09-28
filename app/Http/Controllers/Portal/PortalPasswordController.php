@@ -10,8 +10,12 @@ use Illuminate\View\View;
 
 class PortalPasswordController extends Controller
 {
-    public function edit(Request $request): View
+    public function edit(Request $request): View|RedirectResponse
     {
+        if ($request->session()->has('portal_preview')) {
+            return redirect()->route('portal.dashboard')->with('error', 'Passwords cannot be changed in preview mode.');
+        }
+
         return view('portal.password', ['forced' => $request->user('customer')->must_change_password]);
     }
 
