@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CustomerRegistrationController;
 use App\Http\Controllers\ParticipantJoinController;
+use App\Http\Controllers\Portal\PortalCertificateController;
 use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Controllers\Portal\PortalLoginController;
 use App\Http\Controllers\Portal\PortalPasswordController;
@@ -38,6 +39,8 @@ Route::prefix('portal')->name('portal.')->group(function () {
 
     Route::middleware(['auth:customer', 'portal.readonly', 'portal.password'])->group(function () {
         Route::get('/', PortalDashboardController::class)->name('dashboard');
+        Route::get('certificates', [PortalCertificateController::class, 'index'])->name('certificates.index');
+        Route::get('certificates/{certificate}', [PortalCertificateController::class, 'show'])->name('certificates.show');
         Route::get('password', [PortalPasswordController::class, 'edit'])->name('password.edit');
         Route::put('password', [PortalPasswordController::class, 'update'])->name('password.update');
         Route::post('projects', [PortalProjectController::class, 'store'])->name('projects.store');

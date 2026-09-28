@@ -27,6 +27,7 @@
                 @auth('customer')
                     <div class="flex items-center gap-4 text-sm">
                         <span class="hidden sm:inline text-white/80">{{ auth('customer')->user()->name }} · <span class="font-mono">{{ auth('customer')->user()->customer_code }}</span></span>
+                        <a href="{{ route('portal.certificates.index') }}" class="text-white/80 hover:text-white">Certificates</a>
                         @unless ($preview)
                             <a href="{{ route('portal.password.edit') }}" class="text-white/80 hover:text-white">Password</a>
                         @endunless

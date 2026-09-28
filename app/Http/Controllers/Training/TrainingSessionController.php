@@ -10,6 +10,7 @@ use App\Models\Employee;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Services\BookedSlots;
+use App\Services\CertificateIssuer;
 use App\Services\SessionPaymentPlan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,6 +46,7 @@ class TrainingSessionController extends Controller
         $session = TrainingSession::create([...$request->validated(), 'payment_plan' => $request->validated('payment_plan') ?? SessionPaymentPlan::FULL]);
         SessionPaymentPlan::generate($session);
         $session->syncParticipantToken();
+        CertificateIssuer::issueFor($session);
 
         return redirect()->route('training.index')->with('status', 'Training session created successfully.');
     }
@@ -73,13 +75,14 @@ class TrainingSessionController extends Controller
 
         $session->update($data);
         $session->syncParticipantToken();
+        $certificates = CertificateIssuer::issueFor($session);
 
         // Sessions created before payment plans existed get their schedule the first time they are saved.
         if ($changesMoney || $session->payments()->doesntExist()) {
             SessionPaymentPlan::generate($session);
         }
 
-        return redirect()->route('training.index')->with('status', 'Training session updated successfully.');
+        return redirect()->route('training.index')->with('status', 'Training session updated successfully.'.($certificates ? " {$certificates} certificate(s) issued." : ''));
     }
 
     public function destroy(TrainingSession $session): RedirectResponse
