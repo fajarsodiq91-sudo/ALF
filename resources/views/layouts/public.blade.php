@@ -48,7 +48,11 @@
           @foreach ($navItems as $routeName => $item)
             <a href="{{ $item['url'] }}" @class(['is-current' => request()->routeIs($routeName)])>{{ $item['label'] }}</a>
           @endforeach
-          <a href="{{ route('login') }}">Login</a>
+          <a href="{{ route('login') }}">Staff Login</a>
+          <a class="btn btn--small btn--outline" href="{{ route('portal.login') }}">
+            <svg class="btn__icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Customer Portal
+          </a>
           <a class="btn btn--small btn--primary" href="{{ route('contact') }}">Consultation</a>
         </nav>
       </div>
@@ -73,6 +77,7 @@
             <li><a href="{{ route('services') }}">Services</a></li>
             <li><a href="{{ route('portfolio') }}">Portfolio</a></li>
             <li><a href="{{ route('contact') }}">Contact</a></li>
+            <li><a href="{{ route('portal.login') }}">Customer Portal</a></li>
           </ul>
         </div>
         <div>

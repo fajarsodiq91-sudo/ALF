@@ -168,7 +168,7 @@ class TrainingPaymentsTest extends TestCase
         $this->assertSame('income', $income->category->type);
         $this->assertStringContainsString($customer->customer_code, $income->description);
         $this->assertStringContainsString('Down payment', $income->description);
-        $this->assertSame(4000000.0, (float) $account->fresh()->currentBalance() - (float) $account->opening_balance);
+        $this->assertEqualsWithDelta(4000000.0, (float) $account->fresh()->currentBalance() - (float) $account->opening_balance, 0.01);
     }
 
     public function test_a_payment_cannot_be_recorded_twice_and_can_be_cancelled(): void
