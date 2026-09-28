@@ -48,11 +48,15 @@
                         </x-erp.nav-group>
                     @endcanany
 
-                    <x-erp.nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')" icon="sales" soon>Sales</x-erp.nav-link>
+                    @can('sales.view')
+                        <x-erp.nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')" icon="sales">Sales</x-erp.nav-link>
+                    @endcan
                     <x-erp.nav-link :href="route('training.index')" :active="request()->routeIs('training.*')" icon="training" soon>Training</x-erp.nav-link>
                     <x-erp.nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')" icon="projects" soon>Projects</x-erp.nav-link>
                     <x-erp.nav-link :href="route('hr.index')" :active="request()->routeIs('hr.*')" icon="hr" soon>HR</x-erp.nav-link>
-                    <x-erp.nav-link :href="route('assets.index')" :active="request()->routeIs('assets.*')" icon="assets" soon>Assets</x-erp.nav-link>
+                    @can('assets.view')
+                        <x-erp.nav-link :href="route('assets.index')" :active="request()->routeIs('assets.*')" icon="assets">Assets</x-erp.nav-link>
+                    @endcan
 
                     @canany(['settings.manage-users', 'settings.manage-roles', 'settings.manage-system'])
                         <x-erp.nav-group label="Settings" :active="request()->routeIs('settings.*')" icon="settings">

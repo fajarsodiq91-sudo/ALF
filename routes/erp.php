@@ -1,17 +1,19 @@
 <?php
 
+use App\Http\Controllers\Assets\AssetController;
 use App\Http\Controllers\Finance\AccountController;
 use App\Http\Controllers\Finance\CategoryController;
 use App\Http\Controllers\Finance\DashboardController;
+use App\Http\Controllers\Finance\ExpenseTransactionController;
 use App\Http\Controllers\Finance\IncomeTransactionController;
 use App\Http\Controllers\Finance\LoanController;
 use App\Http\Controllers\Finance\LoanRepaymentController;
-use App\Http\Controllers\Finance\ExpenseTransactionController;
 use App\Http\Controllers\Finance\ReportController;
 use App\Http\Controllers\Finance\TaxController;
 use App\Http\Controllers\Finance\TaxPaymentController;
 use App\Http\Controllers\Finance\TransactionLedgerController;
 use App\Http\Controllers\Finance\TransferTransactionController;
+use App\Http\Controllers\Sales\CustomerController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\SystemSettingController;
 use App\Http\Controllers\Settings\UserController;
@@ -120,11 +122,31 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
 
     // Planned modules — placeholder pages only, no functionality yet.
     Route::middleware('permission:access-erp')->group(function () {
-        Route::view('/sales', 'erp.coming-soon', ['title' => 'Sales'])->name('sales.index');
         Route::view('/training', 'erp.coming-soon', ['title' => 'Training'])->name('training.index');
         Route::view('/projects', 'erp.coming-soon', ['title' => 'Projects'])->name('projects.index');
         Route::view('/hr', 'erp.coming-soon', ['title' => 'HR'])->name('hr.index');
-        Route::view('/assets', 'erp.coming-soon', ['title' => 'Assets'])->name('assets.index');
+    });
+
+    Route::middleware('permission:assets.view')->group(function () {
+        Route::resource('assets', AssetController::class)->except(['show'])->names([
+            'index' => 'assets.index',
+            'create' => 'assets.create',
+            'store' => 'assets.store',
+            'edit' => 'assets.edit',
+            'update' => 'assets.update',
+            'destroy' => 'assets.destroy',
+        ]);
+    });
+
+    Route::middleware('permission:sales.view')->group(function () {
+        Route::resource('sales', CustomerController::class)->except(['show'])->parameters(['sales' => 'customer'])->names([
+            'index' => 'sales.index',
+            'create' => 'sales.create',
+            'store' => 'sales.store',
+            'edit' => 'sales.edit',
+            'update' => 'sales.update',
+            'destroy' => 'sales.destroy',
+        ]);
     });
 
     // Settings — each area gated by its own permission.
