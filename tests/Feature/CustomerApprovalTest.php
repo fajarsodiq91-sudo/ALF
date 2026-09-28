@@ -85,6 +85,34 @@ class CustomerApprovalTest extends TestCase
         $this->actingAs($finance)->get(route('sales.review', $done))->assertRedirect(route('sales.index'));
     }
 
+    public function test_review_page_offers_program_types_and_lists_programs_with_their_type(): void
+    {
+        TrainingProgram::factory()->create(['name' => 'Power BI Dasar', 'program_type' => 'learning']);
+        TrainingProgram::factory()->create(['name' => 'Strategi Data', 'program_type' => 'consulting']);
+        TrainingProgram::factory()->create(['name' => 'Program Lama', 'is_active' => false]);
+        $customer = Customer::factory()->pendingApproval()->create();
+
+        $response = $this->actingAs($this->financeUser())->get(route('sales.review', $customer));
+
+        $response->assertOk()
+            ->assertSee('Program type')->assertSee('Learning')->assertSee('Consulting')
+            ->assertSee('Power BI Dasar')->assertSee('Strategi Data')
+            ->assertDontSee('Program Lama')
+            ->assertDontSee('no active programs to choose from');
+        $this->assertCount(2, $response->viewData('programs'));
+        $this->assertSame(['learning' => 'Learning', 'consulting' => 'Consulting'], $response->viewData('programTypes'));
+    }
+
+    public function test_review_page_explains_an_empty_program_catalog(): void
+    {
+        $customer = Customer::factory()->pendingApproval()->create();
+
+        $this->actingAs($this->financeUser())->get(route('sales.review', $customer))
+            ->assertOk()
+            ->assertSee('no active programs to choose from')
+            ->assertSee(route('training.programs.create'), false);
+    }
+
     public function test_approving_assigns_id_password_programs_and_emails_the_customer(): void
     {
         Mail::fake();

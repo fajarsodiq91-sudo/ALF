@@ -1,12 +1,13 @@
 <x-layouts.erp title="Review Registration">
     @php
-        $emptyProgram = ['training_program_id' => '', 'delivery_mode' => 'onsite', 'location' => '', 'fee' => '', 'meetings' => [['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => '']]];
+        $emptyProgram = ['program_type' => '', 'training_program_id' => '', 'delivery_mode' => 'onsite', 'location' => '', 'fee' => '', 'meetings' => [['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => '']]];
         $emptyMeeting = ['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => ''];
         $modes = \App\Services\MasterData::options('delivery_mode');
+        $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type])->values();
         $inputClass = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm';
     @endphp
 
-    <div class="max-w-4xl space-y-6" x-data='{ programs: @json(old("programs", [$emptyProgram])), emptyProgram: @json($emptyProgram), emptyMeeting: @json($emptyMeeting) }'>
+    <div class="max-w-4xl space-y-6" x-data='{ programs: @json(old("programs", [$emptyProgram])), emptyProgram: @json($emptyProgram), emptyMeeting: @json($emptyMeeting), catalog: @json($catalog) }'>
         <x-erp.flash />
 
         @if ($errors->any())
@@ -43,6 +44,18 @@
         <form action="{{ route('sales.approve', $customer) }}" method="POST" class="space-y-6">
             @csrf
 
+            @if ($programs->isEmpty())
+                <div class="rounded-md bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+                    <p class="font-medium">There are no active programs to choose from yet.</p>
+                    <p class="mt-1">
+                        The program list comes from your catalog. Add at least one program (choose its type, Learning or Consulting) first, then come back to this page.
+                        @can('training.manage')
+                            <a href="{{ route('training.programs.create') }}" class="font-medium underline">Add a program</a>.
+                        @endcan
+                    </p>
+                </div>
+            @endif
+
             <template x-for="(program, i) in programs" :key="i">
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     <div class="flex items-center justify-between">
@@ -51,14 +64,29 @@
                     </div>
 
                     <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="sm:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">Program (consulting or learning)</label>
-                            <select :name="`programs[${i}][training_program_id]`" x-model="program.training_program_id" required class="{{ $inputClass }}">
-                                <option value="">Select program</option>
-                                @foreach ($programs as $catalogProgram)
-                                    <option value="{{ $catalogProgram->id }}">{{ $catalogProgram->name }} ({{ \App\Services\MasterData::label('program_type', $catalogProgram->program_type) }})</option>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Program type</label>
+                            <select x-model="program.program_type" @change="program.training_program_id = ''" class="{{ $inputClass }}">
+                                <option value="">All types</option>
+                                @foreach ($programTypes as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
                                 @endforeach
                             </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Program</label>
+                            <select :name="`programs[${i}][training_program_id]`" x-model="program.training_program_id" required class="{{ $inputClass }}">
+                                <option value="">Select program</option>
+                                <template x-for="item in catalog.filter(c => !program.program_type || c.type === program.program_type)" :key="item.id">
+                                    <option :value="item.id" :selected="String(item.id) === String(program.training_program_id)" x-text="item.name"></option>
+                                </template>
+                            </select>
+                            <p x-show="catalog.filter(c => !program.program_type || c.type === program.program_type).length === 0" x-cloak class="mt-1 text-xs text-amber-700">
+                                No active program of this type yet.
+                                @can('training.manage')
+                                    <a href="{{ route('training.programs.create') }}" class="font-medium underline">Add one in Training &gt; Programs</a>.
+                                @endcan
+                            </p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Delivery mode</label>
@@ -115,7 +143,7 @@
             <button type="button" @click="programs.push(JSON.parse(JSON.stringify(emptyProgram)))" class="text-sm font-medium text-brand hover:text-brand-dark">+ Add another program</button>
 
             <div class="flex items-center gap-3">
-                <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">Approve &amp; Send Email</button>
+                <button type="submit" @disabled($programs->isEmpty()) class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50">Approve &amp; Send Email</button>
                 <a href="{{ route('sales.index') }}" class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>
             </div>
             <p class="text-xs text-gray-500">

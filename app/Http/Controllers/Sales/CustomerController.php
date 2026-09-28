@@ -14,6 +14,7 @@ use App\Models\Project;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Services\CustomerApproval;
+use App\Services\MasterData;
 use App\Services\QrCodeGenerator;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
@@ -139,6 +140,7 @@ class CustomerController extends Controller
         return view('erp.sales.customers.review', [
             'customer' => $customer,
             'programs' => TrainingProgram::where('is_active', true)->orderBy('name')->get(),
+            'programTypes' => MasterData::options('program_type'),
         ]);
     }
 
