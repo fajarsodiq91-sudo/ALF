@@ -16,7 +16,7 @@
         <select name="customer_id" id="customer_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
             <option value="">— Public batch / no customer —</option>
             @foreach ($customers as $customer)
-                <option value="{{ $customer->id }}" @selected((int) old('customer_id', $session->customer_id ?? '') === $customer->id)>{{ $customer->name }}</option>
+                <option value="{{ $customer->id }}" @selected((int) old('customer_id', $session->customer_id ?? '') === $customer->id)>{{ $customer->customer_code }} — {{ $customer->name }}</option>
             @endforeach
         </select>
         @error('customer_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror

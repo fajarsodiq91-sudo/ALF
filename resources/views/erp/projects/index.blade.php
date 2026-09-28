@@ -43,7 +43,7 @@
                         <tr>
                             <td class="px-4 py-3 text-gray-500">{{ $project->code }}</td>
                             <td class="px-4 py-3"><a href="{{ route('projects.show', $project) }}" class="font-medium text-brand hover:text-brand-dark">{{ $project->name }}</a></td>
-                            <td class="px-4 py-3 text-gray-500">{{ $project->customer?->name ?? '—' }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ $project->customer ? $project->customer->customer_code.' — '.$project->customer->name : '—' }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $project->projectManager?->name ?? '—' }}</td>
                             <td class="px-4 py-3 whitespace-nowrap {{ $project->isOverdue() ? 'text-red-600 font-medium' : 'text-gray-500' }}">{{ $project->end_date?->format('d M Y') ?? '—' }}@if ($project->isOverdue()) (overdue)@endif</td>
                             <td class="px-4 py-3 text-right text-gray-800">Rp {{ number_format((float) $project->contract_value, 0, ',', '.') }}</td>

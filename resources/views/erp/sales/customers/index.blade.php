@@ -15,7 +15,7 @@
         </div>
 
         <form method="GET" action="{{ route('sales.index') }}" class="mb-4 flex flex-wrap gap-3">
-            <input type="text" name="q" value="{{ request('q') }}" placeholder="Search name, contact, or email"
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Search ID, name, contact, or email"
                    class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
             <select name="type" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                 <option value="">All types</option>
@@ -35,6 +35,7 @@
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500">ID</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Name</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Type</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Contact Person</th>
@@ -50,6 +51,7 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($customers as $customer)
                         <tr>
+                            <td class="px-4 py-3 font-mono text-gray-500">{{ $customer->customer_code }}</td>
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $customer->name }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ \App\Models\Customer::TYPES[$customer->customer_type] ?? $customer->customer_type }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $customer->contact_person ?: '—' }}</td>
@@ -76,7 +78,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-6 text-center text-gray-400">No customers yet.</td>
+                            <td colspan="9" class="px-4 py-6 text-center text-gray-400">No customers yet.</td>
                         </tr>
                     @endforelse
                 </tbody>

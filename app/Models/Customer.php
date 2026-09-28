@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\CustomerCodeGenerator;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,6 +22,14 @@ class Customer extends Model
         'individual' => 'Individual',
         'government' => 'Government / Institution',
     ];
+
+    /** The customer ID is assigned once, on creation, and is never mass-assignable. */
+    protected static function booted(): void
+    {
+        static::creating(function (Customer $customer) {
+            $customer->customer_code ??= CustomerCodeGenerator::next(now());
+        });
+    }
 
     protected function casts(): array
     {

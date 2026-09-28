@@ -1,6 +1,15 @@
 @php $customer ??= null; @endphp
 
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    @if ($customer)
+        <div class="sm:col-span-2">
+            <span class="block text-sm font-medium text-gray-700">Customer ID</span>
+            <p class="mt-1 font-mono text-sm text-gray-800">{{ $customer->customer_code }}</p>
+            <p class="text-xs text-gray-500">Permanent ID for this customer, also used for repeat orders. It cannot be changed.</p>
+        </div>
+    @else
+        <p class="sm:col-span-2 text-xs text-gray-500">A permanent customer ID (YYMMNN) is generated automatically when the customer is saved.</p>
+    @endif
     <div class="sm:col-span-2">
         <label for="name" class="block text-sm font-medium text-gray-700">Customer Name</label>
         <input type="text" name="name" id="name" value="{{ old('name', $customer->name ?? '') }}" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">

@@ -25,7 +25,7 @@
 
             <dl class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div><dt class="text-gray-500">Status</dt><dd class="font-medium text-gray-800">{{ \App\Models\Project::STATUSES[$project->status] ?? $project->status }}</dd></div>
-                <div><dt class="text-gray-500">Customer</dt><dd class="font-medium text-gray-800">{{ $project->customer?->name ?? '—' }}</dd></div>
+                <div><dt class="text-gray-500">Customer</dt><dd class="font-medium text-gray-800">{{ $project->customer ? $project->customer->customer_code.' — '.$project->customer->name : '—' }}</dd></div>
                 <div><dt class="text-gray-500">Project Manager</dt><dd class="font-medium text-gray-800">{{ $project->projectManager?->name ?? '—' }}</dd></div>
                 <div><dt class="text-gray-500">Contract Value</dt><dd class="font-medium text-gray-800">Rp {{ number_format((float) $project->contract_value, 0, ',', '.') }}</dd></div>
                 <div><dt class="text-gray-500">Start</dt><dd class="font-medium text-gray-800">{{ $project->start_date?->format('d M Y') ?? '—' }}</dd></div>

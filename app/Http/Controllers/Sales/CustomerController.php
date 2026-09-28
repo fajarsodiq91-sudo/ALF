@@ -8,6 +8,7 @@ use App\Http\Requests\Sales\UpdateCustomerRequest;
 use App\Models\Customer;
 use App\Models\Project;
 use App\Models\TrainingSession;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -22,6 +23,7 @@ class CustomerController extends Controller
             ->when($request->filled('q'), function ($query) use ($request) {
                 $term = '%'.$request->string('q').'%';
                 $query->where(fn ($inner) => $inner->where('name', 'like', $term)
+                    ->orWhere('customer_code', 'like', $term)
                     ->orWhere('contact_person', 'like', $term)
                     ->orWhere('email', 'like', $term));
             })
@@ -40,10 +42,14 @@ class CustomerController extends Controller
 
     public function store(StoreCustomerRequest $request): RedirectResponse
     {
-        Customer::create([
-            ...$request->validated(),
-            'is_active' => $request->boolean('is_active'),
-        ]);
+        try {
+            Customer::create([
+                ...$request->validated(),
+                'is_active' => $request->boolean('is_active'),
+            ]);
+        } catch (DomainException $exception) {
+            return back()->withInput()->with('error', $exception->getMessage());
+        }
 
         return redirect()
             ->route('sales.index')
