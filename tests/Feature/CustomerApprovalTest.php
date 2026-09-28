@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Mail\CustomerRegistrationApproved;
 use App\Mail\CustomerRegistrationRejected;
 use App\Models\Customer;
+use App\Models\Employee;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Models\User;
@@ -146,6 +147,52 @@ class CustomerApprovalTest extends TestCase
             $mail->assertSeeInHtml('Ruang Meeting A');
             $mail->assertSeeInHtml('Kantor ALF, Bandung');
             $mail->assertSeeInHtml(route('portal.login'));
+
+            return true;
+        });
+    }
+
+    public function test_instructor_is_chosen_on_the_review_page_and_carried_to_the_session_and_email(): void
+    {
+        Mail::fake();
+        $program = TrainingProgram::factory()->create();
+        $instructor = Employee::factory()->create(['name' => 'Bu Instruktur', 'position' => 'Trainer']);
+        $resigned = Employee::factory()->create(['name' => 'Pak Keluar', 'status' => 'resigned']);
+        $customer = Customer::factory()->pendingApproval()->create();
+        $finance = $this->financeUser();
+
+        $this->actingAs($finance)->get(route('sales.review', $customer))
+            ->assertOk()->assertSee('Instructor (optional)')->assertSee('Bu Instruktur (Trainer)')->assertDontSee('Pak Keluar');
+
+        $payload = $this->approvalPayload($program);
+        $payload['programs'][0]['instructor_id'] = $resigned->id;
+        $this->actingAs($finance)->post(route('sales.approve', $customer), $payload)->assertSessionHasErrors('programs.0.instructor_id');
+        $this->assertTrue($customer->fresh()->isPendingApproval());
+
+        $payload['programs'][0]['instructor_id'] = $instructor->id;
+        $this->actingAs($finance)->post(route('sales.approve', $customer), $payload)->assertRedirect(route('sales.show', $customer));
+
+        $this->assertSame($instructor->id, TrainingSession::firstOrFail()->instructor_id);
+        Mail::assertSent(CustomerRegistrationApproved::class, function (CustomerRegistrationApproved $mail) {
+            $mail->assertSeeInHtml('Instructor: Bu Instruktur');
+
+            return true;
+        });
+    }
+
+    public function test_instructor_is_optional_when_approving(): void
+    {
+        Mail::fake();
+        $program = TrainingProgram::factory()->create();
+        $customer = Customer::factory()->pendingApproval()->create();
+        $payload = $this->approvalPayload($program);
+        $payload['programs'][0]['instructor_id'] = '';
+
+        $this->actingAs($this->financeUser())->post(route('sales.approve', $customer), $payload)->assertRedirect(route('sales.show', $customer));
+
+        $this->assertNull(TrainingSession::firstOrFail()->instructor_id);
+        Mail::assertSent(CustomerRegistrationApproved::class, function (CustomerRegistrationApproved $mail) {
+            $mail->assertDontSeeInHtml('Instructor:');
 
             return true;
         });

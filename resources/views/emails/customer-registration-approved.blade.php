@@ -23,6 +23,11 @@ Your registration at PT Alfajar Logic Futura has been **approved**.
 
 Delivery: {{ \App\Services\MasterData::label('delivery_mode', $session->delivery_mode) }}@if ($session->location) · {{ $session->location }}@endif
 
+@if ($session->instructor)
+Instructor: {{ $session->instructor->name }}
+
+@endif
+
 @foreach ($session->meetings as $meeting)
 - {{ $meeting->meeting_date->format('l, d M Y') }}@if ($meeting->timeRange()), {{ $meeting->timeRange() }}@endif @if ($meeting->location ?? $session->location) at {{ $meeting->location ?? $session->location }}@endif @if ($meeting->topic) ({{ $meeting->topic }})@endif
 

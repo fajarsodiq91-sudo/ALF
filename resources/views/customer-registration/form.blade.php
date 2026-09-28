@@ -10,6 +10,18 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased text-gray-900 min-h-screen bg-gradient-to-br from-steel-100 via-white to-brand-50">
+        @include('erp.partials.operating-hours')
+        <script>
+            function registrationForm(initial) {
+                return {
+                    programs: initial,
+                    hours: window.operatingHours,
+                    today: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
+                    addProgram() { this.programs.push({ training_program_id: '', meetings: [{ meeting_date: '', start_time: '', end_time: '' }] }); },
+                    addMeeting(program) { program.meetings.push({ meeting_date: '', start_time: '', end_time: '' }); },
+                };
+            }
+        </script>
         <div class="mx-auto max-w-xl px-4 py-8">
             <div class="mb-6 flex items-center justify-center gap-3">
                 <img src="{{ asset('assets/icons/alf.png') }}" alt="" class="h-10 w-10 rounded">
@@ -19,7 +31,7 @@
                 <h1 class="text-lg font-semibold text-gray-800">Customer Registration</h1>
                 <p class="mt-1 text-sm text-gray-500">Please fill in your details. Registration type: <span class="font-medium text-gray-700">{{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }}</span>.</p>
 
-                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4">
+                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" x-data='registrationForm(@json(old("programs", [])))'>
                     @csrf
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Name / Company Name <span class="text-red-600">*</span></label>
@@ -46,6 +58,87 @@
                     <textarea name="address" id="address" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">{{ old('address') }}</textarea>
                     @error('address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
+                <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <h2 class="text-sm font-semibold text-gray-800">Programs you would like to take <span class="font-normal text-gray-500">(optional)</span></h2>
+                    <p class="mt-1 text-xs text-gray-500">
+                        Choose a program and the dates and time slots that suit you. Our team will confirm the final schedule when they approve your registration.
+                    </p>
+
+                    @if ($errors->has('programs') || collect($errors->keys())->contains(fn ($key) => str_starts_with($key, 'programs.')))
+                        <ul class="mt-3 list-disc rounded-md border border-red-200 bg-red-50 py-2 pl-8 pr-3 text-sm text-red-700">
+                            @foreach (collect($errors->keys())->filter(fn ($key) => str_starts_with($key, 'programs'))->flatMap(fn ($key) => $errors->get($key))->unique() as $message)
+                                <li>{{ $message }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
+
+                    <template x-for="(program, i) in programs" :key="i">
+                        <div class="mt-3 rounded-md border border-gray-200 bg-white p-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500" x-text="'Program ' + (i + 1)"></span>
+                                <button type="button" @click="programs.splice(i, 1)" class="text-xs text-gray-400 hover:text-red-600">Remove</button>
+                            </div>
+                            <select :name="`programs[${i}][training_program_id]`" x-model="program.training_program_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                <option value="">Select a program</option>
+                                @foreach ($programs as $type => $group)
+                                    <optgroup label="{{ \App\Services\MasterData::label('program_type', $type) }}">
+                                        @foreach ($group as $catalogProgram)
+                                            <option value="{{ $catalogProgram->id }}">{{ $catalogProgram->name }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
+                            </select>
+
+                            <div class="mt-3 space-y-2">
+                                <template x-for="(meeting, j) in program.meetings" :key="j">
+                                    <div class="grid grid-cols-2 gap-2 items-start">
+                                        <div>
+                                            <label class="block text-xs text-gray-500">Preferred date</label>
+                                            <input type="date" required :min="today" :name="`programs[${i}][meetings][${j}][meeting_date]`" x-model="meeting.meeting_date" @change="syncSlot(meeting)" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                            <p x-show="hoursHint(meeting.meeting_date)" x-text="hoursHint(meeting.meeting_date)" x-cloak class="mt-1 text-xs text-red-600"></p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-500">Time slot</label>
+                                            <select @change="pickSlot(meeting, $event.target.value)" :required="hours.enforced" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                                <option value="">Select slot</option>
+                                                <template x-for="slot in slotsFor(meeting.meeting_date)" :key="slot.value">
+                                                    <option :value="slot.value" :selected="slot.start === meeting.start_time && slot.end === meeting.end_time" x-text="slot.label"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                        <div x-show="!hours.enforced">
+                                            <label class="block text-xs text-gray-500">Start</label>
+                                            <input type="time" :name="`programs[${i}][meetings][${j}][start_time]`" x-model="meeting.start_time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                        </div>
+                                        <div x-show="!hours.enforced">
+                                            <label class="block text-xs text-gray-500">End</label>
+                                            <input type="time" :name="`programs[${i}][meetings][${j}][end_time]`" x-model="meeting.end_time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                        </div>
+                                        <template x-if="hours.enforced">
+                                            <div class="hidden">
+                                                <input type="hidden" :name="`programs[${i}][meetings][${j}][start_time]`" :value="meeting.start_time">
+                                                <input type="hidden" :name="`programs[${i}][meetings][${j}][end_time]`" :value="meeting.end_time">
+                                            </div>
+                                        </template>
+                                        <div class="col-span-2 text-right" x-show="program.meetings.length > 1">
+                                            <button type="button" @click="program.meetings.splice(j, 1)" class="text-xs text-gray-400 hover:text-red-600">Remove this date</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <button type="button" @click="addMeeting(program)" class="mt-2 text-sm font-medium text-brand hover:text-brand-dark">+ Add another date</button>
+                        </div>
+                    </template>
+
+                    <button type="button" @click="addProgram()" class="mt-3 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">+ Choose a program</button>
+                    <p class="mt-3 text-xs text-gray-500">
+                        Available days:
+                        @foreach (\App\Services\OperatingHours::formatted() as $day => $slots)
+                            <span class="whitespace-nowrap"><span class="font-medium text-gray-600">{{ $day }}</span> {{ $slots }}@if (! $loop->last);@endif</span>
+                        @endforeach
+                    </p>
+                </div>
+
                 <div>
                     <label for="photo" class="block text-sm font-medium text-gray-700">Photo</label>
                     <input type="file" name="photo" id="photo" accept="image/png,image/jpeg,image/webp"

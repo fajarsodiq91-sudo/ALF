@@ -37,6 +37,7 @@ class CustomerApproval
                 $session = TrainingSession::create([
                     'training_program_id' => $entry['training_program_id'],
                     'customer_id' => $customer->id,
+                    'instructor_id' => $entry['instructor_id'] ?? null,
                     'start_date' => $meetings->first()['meeting_date'],
                     'end_date' => $meetings->last()['meeting_date'],
                     'delivery_mode' => $entry['delivery_mode'],

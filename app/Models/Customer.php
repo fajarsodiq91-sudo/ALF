@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\CustomerCodeGenerator;
+use Carbon\Carbon;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +16,7 @@ use Illuminate\Support\Str;
 
 #[Fillable([
     'name', 'customer_type', 'email', 'phone',
-    'city', 'address', 'is_active', 'notes', 'photo_path',
+    'city', 'address', 'is_active', 'notes', 'photo_path', 'requested_programs',
 ])]
 class Customer extends Authenticatable
 {
@@ -60,6 +61,7 @@ class Customer extends Authenticatable
             'is_active' => 'boolean',
             'registration_token_expires_at' => 'datetime',
             'password' => 'hashed',
+            'requested_programs' => 'array',
             'must_change_password' => 'boolean',
             'submitted_at' => 'datetime',
             'approved_at' => 'datetime',
@@ -160,5 +162,36 @@ class Customer extends Authenticatable
     public function photoUrl(): ?string
     {
         return $this->photo_path ? asset('storage/'.$this->photo_path) : null;
+    }
+
+    /**
+     * The programs and preferred dates the customer picked while registering, with the
+     * program records resolved. Programs that no longer exist are dropped.
+     *
+     * @return list<array{program: TrainingProgram, meetings: list<array{date: Carbon, start: ?string, end: ?string, label: string}>}>
+     */
+    public function requestedProgramSummaries(): array
+    {
+        $requested = collect($this->requested_programs ?? []);
+        $programs = TrainingProgram::whereIn('id', $requested->pluck('training_program_id'))->get()->keyBy('id');
+
+        return $requested
+            ->filter(fn ($entry) => $programs->has($entry['training_program_id']))
+            ->map(fn ($entry) => [
+                'program' => $programs[$entry['training_program_id']],
+                'meetings' => collect($entry['meetings'] ?? [])->map(function ($meeting) {
+                    $date = Carbon::parse($meeting['meeting_date']);
+                    $time = ! empty($meeting['start_time']) ? ', '.substr($meeting['start_time'], 0, 5).(! empty($meeting['end_time']) ? ' – '.substr($meeting['end_time'], 0, 5) : '') : '';
+
+                    return [
+                        'date' => $date,
+                        'start' => $meeting['start_time'] ?? null,
+                        'end' => $meeting['end_time'] ?? null,
+                        'label' => $date->format('D, d M Y').$time,
+                    ];
+                })->all(),
+            ])
+            ->values()
+            ->all();
     }
 }

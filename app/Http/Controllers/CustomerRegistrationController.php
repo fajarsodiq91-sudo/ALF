@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Sales\RegisterCustomerRequest;
 use App\Mail\CustomerRegistrationReceived;
 use App\Models\Customer;
+use App\Models\TrainingProgram;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -24,7 +25,11 @@ class CustomerRegistrationController extends Controller
             return response()->view('customer-registration.invalid', [], 410);
         }
 
-        return view('customer-registration.form', ['customer' => $customer, 'token' => $token]);
+        return view('customer-registration.form', [
+            'customer' => $customer,
+            'token' => $token,
+            'programs' => TrainingProgram::where('is_active', true)->orderBy('name')->get()->groupBy('program_type'),
+        ]);
     }
 
     public function store(RegisterCustomerRequest $request, string $token): RedirectResponse|Response
@@ -39,7 +44,10 @@ class CustomerRegistrationController extends Controller
 
         try {
             $customer->photo_path = $photoPath;
-            $customer->submitRegistration($request->safe()->except('photo'));
+            $customer->submitRegistration([
+                ...$request->safe()->except(['photo', 'programs']),
+                'requested_programs' => $request->requestedPrograms() ?: null,
+            ]);
         } catch (Throwable $exception) {
             if ($photoPath) {
                 Storage::disk('public')->delete($photoPath);
@@ -57,7 +65,14 @@ class CustomerRegistrationController extends Controller
 
         return redirect()
             ->route('customer-registration.done')
-            ->with('registered', ['name' => $customer->name, 'email' => $customer->email]);
+            ->with('registered', [
+                'name' => $customer->name,
+                'email' => $customer->email,
+                'programs' => collect($customer->requestedProgramSummaries())->map(fn ($entry) => [
+                    'name' => $entry['program']->name,
+                    'meetings' => collect($entry['meetings'])->pluck('label')->all(),
+                ])->all(),
+            ]);
     }
 
     public function done(): View

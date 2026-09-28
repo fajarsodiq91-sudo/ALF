@@ -1,8 +1,23 @@
 <x-layouts.erp title="Review Registration">
     @php
-        $emptyProgram = ['program_type' => '', 'training_program_id' => '', 'delivery_mode' => 'onsite', 'location' => '', 'fee' => '', 'meetings' => [['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => '']]];
+        $emptyProgram = ['program_type' => '', 'instructor_id' => '', 'training_program_id' => '', 'delivery_mode' => 'onsite', 'location' => '', 'fee' => '', 'meetings' => [['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => '']]];
         $emptyMeeting = ['meeting_date' => '', 'start_time' => '', 'end_time' => '', 'location' => '', 'topic' => ''];
         $modes = \App\Services\MasterData::options('delivery_mode');
+        $prefill = collect($requested)->map(fn ($entry) => [
+            'program_type' => $entry['program']->program_type,
+            'training_program_id' => (string) $entry['program']->id,
+            'instructor_id' => '',
+            'delivery_mode' => array_key_first($modes) ?? 'onsite',
+            'location' => '',
+            'fee' => (string) (float) $entry['program']->standard_price,
+            'meetings' => collect($entry['meetings'])->map(fn ($meeting) => [
+                'meeting_date' => $meeting['date']->format('Y-m-d'),
+                'start_time' => $meeting['start'] ? substr($meeting['start'], 0, 5) : '',
+                'end_time' => $meeting['end'] ? substr($meeting['end'], 0, 5) : '',
+                'location' => '',
+                'topic' => '',
+            ])->all(),
+        ])->all();
         $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type])->values();
         $inputClass = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm';
     @endphp
@@ -14,7 +29,7 @@
         }
     </script>
 
-    <div class="max-w-4xl space-y-6" x-data='reviewForm(@json(old("programs", [$emptyProgram])), @json($emptyProgram), @json($emptyMeeting), @json($catalog))'>
+    <div class="max-w-4xl space-y-6" x-data='reviewForm(@json(old("programs", $prefill ?: [$emptyProgram])), @json($emptyProgram), @json($emptyMeeting), @json($catalog))'>
         <x-erp.flash />
 
         @if ($errors->any())
@@ -46,6 +61,18 @@
             </dl>
             <p class="mt-3 text-xs text-gray-500">Need to correct something first? <a href="{{ route('sales.edit', $customer) }}" class="text-brand hover:text-brand-dark font-medium">Edit the details</a>.</p>
         </div>
+
+        @if ($requested)
+            <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                <p class="font-medium">Requested by the customer</p>
+                <p class="text-xs text-blue-700">These are pre-filled below. Adjust the dates, mode, place, and fee, or remove anything you cannot offer.</p>
+                <ul class="mt-2 space-y-1">
+                    @foreach ($requested as $entry)
+                        <li><span class="font-medium">{{ $entry['program']->name }}</span>: {{ collect($entry['meetings'])->pluck('label')->implode(' · ') }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <form action="{{ route('sales.approve', $customer) }}" method="POST" class="space-y-6">
             @csrf
@@ -99,6 +126,15 @@
                             <select :name="`programs[${i}][delivery_mode]`" x-model="program.delivery_mode" required class="{{ $inputClass }}">
                                 @foreach ($modes as $value => $label)
                                     <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Instructor (optional)</label>
+                            <select :name="`programs[${i}][instructor_id]`" x-model="program.instructor_id" class="{{ $inputClass }}">
+                                <option value="">Not assigned yet</option>
+                                @foreach ($instructors as $instructor)
+                                    <option value="{{ $instructor->id }}">{{ $instructor->name }}@if ($instructor->position) ({{ $instructor->position }})@endif</option>
                                 @endforeach
                             </select>
                         </div>

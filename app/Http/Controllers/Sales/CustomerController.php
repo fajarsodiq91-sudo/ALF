@@ -10,6 +10,7 @@ use App\Http\Requests\Sales\UpdateCustomerRequest;
 use App\Mail\CustomerRegistrationApproved;
 use App\Mail\CustomerRegistrationRejected;
 use App\Models\Customer;
+use App\Models\Employee;
 use App\Models\Project;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
@@ -141,6 +142,8 @@ class CustomerController extends Controller
             'customer' => $customer,
             'programs' => TrainingProgram::where('is_active', true)->orderBy('name')->get(),
             'programTypes' => MasterData::options('program_type'),
+            'instructors' => Employee::where('status', '!=', 'resigned')->orderBy('name')->get(),
+            'requested' => $customer->requestedProgramSummaries(),
         ]);
     }
 

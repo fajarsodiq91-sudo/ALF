@@ -69,6 +69,23 @@
                         </li>
                     </ol>
 
+                    @if (! empty($registered['programs']))
+                        <div class="mt-6 rounded-lg border border-gray-200 px-4 py-3">
+                            <h3 class="text-sm font-semibold text-gray-800">Programs and dates you asked for</h3>
+                            <p class="text-xs text-gray-500">Our team will confirm the final schedule when they approve your registration.</p>
+                            <ul class="mt-2 space-y-2 text-sm">
+                                @foreach ($registered['programs'] as $entry)
+                                    <li>
+                                        <span class="font-medium text-gray-800">{{ $entry['name'] }}</span>
+                                        <ul class="mt-0.5 list-disc pl-5 text-gray-500">
+                                            @foreach ($entry['meetings'] as $label)<li>{{ $label }}</li>@endforeach
+                                        </ul>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     @if ($registered)
                         <div class="mt-6 flex gap-3 rounded-lg bg-brand-50 px-4 py-3">
                             <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 shrink-0 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
