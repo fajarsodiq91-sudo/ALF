@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\BlockedSlot;
 use App\Models\Customer;
+use App\Models\TrainingProgram;
 use App\Models\TrainingSessionMeeting;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -54,6 +55,70 @@ class BookedSlots
     public static function describe(string $date, string $start, string $end): string
     {
         return Carbon::parse($date)->format('D, d M Y').', '.substr($start, 0, 5).' – '.substr($end, 0, 5);
+    }
+
+    /**
+     * The same bookings as {@see keys()}, grouped by that key, with the context a calendar tooltip
+     * or details popup needs: who booked it (a scheduled meeting or a pending registration request)
+     * or why the company blocked it.
+     *
+     * @return array<string, list<array<string, mixed>>>
+     */
+    public static function details(): array
+    {
+        $scheduled = TrainingSessionMeeting::query()
+            ->whereNotNull('start_time')
+            ->whereNotNull('end_time')
+            ->whereHas('session', fn ($query) => $query->where('status', '!=', 'cancelled'))
+            ->with(['session.program', 'session.customer', 'session.instructor'])
+            ->get()
+            ->map(function (TrainingSessionMeeting $meeting) {
+                $session = $meeting->session;
+
+                return [
+                    'key' => $meeting->meeting_date->toDateString().'|'.substr($meeting->start_time, 0, 5).'-'.substr($meeting->end_time, 0, 5),
+                    'type' => 'meeting',
+                    'title' => $session->program?->name ?? 'Training session',
+                    'customer' => $session->customer?->name,
+                    'instructor' => $session->instructor?->name,
+                    'location' => $meeting->location ?: $session->location,
+                    'topic' => $meeting->topic,
+                    'session_id' => $session->id,
+                ];
+            });
+
+        $pendingCustomers = Customer::query()
+            ->where('registration_status', Customer::REGISTRATION_PENDING_APPROVAL)
+            ->get(['id', 'name', 'requested_programs']);
+
+        $programNames = TrainingProgram::query()
+            ->whereIn('id', $pendingCustomers
+                ->flatMap(fn (Customer $customer) => collect($customer->requested_programs ?? [])->pluck('training_program_id'))
+                ->unique())
+            ->pluck('name', 'id');
+
+        $requested = $pendingCustomers->flatMap(fn (Customer $customer) => collect($customer->requested_programs ?? [])
+            ->flatMap(fn ($program) => collect($program['meetings'] ?? [])
+                ->filter(fn ($meeting) => ! empty($meeting['start_time']) && ! empty($meeting['end_time']))
+                ->map(fn ($meeting) => [
+                    'key' => Carbon::parse($meeting['meeting_date'])->toDateString().'|'.substr($meeting['start_time'], 0, 5).'-'.substr($meeting['end_time'], 0, 5),
+                    'type' => 'pending',
+                    'title' => 'Pending registration',
+                    'customer' => $customer->name,
+                    'program' => $programNames[$program['training_program_id']] ?? null,
+                ])));
+
+        $blocked = BlockedSlot::query()->get()->map(fn (BlockedSlot $slot) => [
+            'key' => $slot->key(),
+            'type' => 'blocked',
+            'title' => 'Blocked by the company',
+            'reason' => $slot->reason,
+        ]);
+
+        return $scheduled->concat($requested)->concat($blocked)
+            ->groupBy('key')
+            ->map(fn (Collection $entries) => $entries->map(fn (array $entry) => collect($entry)->except('key')->all())->values()->all())
+            ->all();
     }
 
     /**

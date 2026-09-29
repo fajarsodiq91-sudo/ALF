@@ -98,6 +98,32 @@
         }
     }
 
+    $canViewTraining = auth()->user()->can('training.view');
+    $canManageSlots = auth()->user()->can('masterdata.manage');
+
+    $bookingDetails = collect(\App\Services\BookedSlots::details())
+        ->map(function (array $entries) use ($canViewTraining, $canManageSlots) {
+            return collect($entries)->map(function (array $entry) use ($canViewTraining, $canManageSlots) {
+                if (in_array($entry['type'], ['meeting', 'pending'], true)) {
+                    if (! $canViewTraining) {
+                        return ['type' => $entry['type'], 'title' => 'Booked'];
+                    }
+
+                    if ($entry['type'] === 'meeting') {
+                        $entry['url'] = route('training.edit', $entry['session_id']);
+                    }
+
+                    return $entry;
+                }
+
+                if ($entry['type'] === 'blocked' && ! $canManageSlots) {
+                    return ['type' => 'blocked', 'title' => 'Blocked by the company'];
+                }
+
+                return $entry;
+            })->all();
+        })->all();
+
     $icons = [
         'user' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
         'cash' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v2m9-8a9 9 0 11-18 0 9 9 0 0118 0z',
@@ -136,8 +162,8 @@
 
         <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
             <h3 class="text-sm font-semibold text-gray-800">Calendar &amp; operating hours</h3>
-            <p class="mb-3 text-xs text-gray-500">Open slots and the ones already booked by customers or blocked by the company.</p>
-            @include('erp.partials.availability-calendar')
+            <p class="mb-3 text-xs text-gray-500">Open slots and the ones already booked by customers or blocked by the company. Hover or click a booked time to see details.</p>
+            @include('erp.partials.availability-calendar', ['details' => $bookingDetails])
         </div>
     </div>
 </x-layouts.erp>

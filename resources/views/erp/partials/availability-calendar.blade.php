@@ -2,22 +2,26 @@
     Month calendar of the company's operating hours: green = available, red = booked (by a customer or blocked by the company).
     Read-only by default. With $manage the company can click a green slot to block it, or a grey (blocked) slot to free it.
     Optional: $blocks (key => id, from BlockedSlot), $blockUrl (POST), $unblockUrl (DELETE, with "__ID__" as the placeholder).
+    Optional: $details (key => list of booking detail arrays, from BookedSlots::details()) shows a tooltip on hover and
+    a read-only popup on click for booked slots; omit it to keep booked slots inert, as on the customer portal.
 --}}
 @php
     $manage = $manage ?? false;
     $blocks = $blocks ?? [];
     $booked = $booked ?? \App\Services\BookedSlots::keys();
+    $details = $details ?? [];
 @endphp
 @include('erp.partials.operating-hours')
 <script>
-    function availabilityCalendar(booked, blocks, manage) {
+    function availabilityCalendar(booked, blocks, manage, details) {
         const pad = n => String(n).padStart(2, '0');
         const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
         const now = new Date();
 
         return {
-            booked, blocks, manage, cursor: new Date(now.getFullYear(), now.getMonth(), 1), today: iso(now), months: 6,
+            booked, blocks, manage, details, cursor: new Date(now.getFullYear(), now.getMonth(), 1), today: iso(now), months: 6,
             pending: null,
+            viewing: null,
 
             canPrev() { return this.cursor > new Date(now.getFullYear(), now.getMonth(), 1); },
             canNext() { return this.cursor < new Date(now.getFullYear(), now.getMonth() + this.months, 1); },
@@ -31,7 +35,7 @@
                     .map(key => { const [d, r] = key.split('|'); const [s, e] = r.split('-'); return { key, d, start: s, end: e }; })
                     .filter(x => x.d === date && window.toMin(x.start) < to && window.toMin(x.end) > from)
                     .sort((x, y) => window.toMin(x.start) - window.toMin(y.start))
-                    .map(x => ({ ...x, blockId: this.manage ? this.blocks[x.key] : undefined }));
+                    .map(x => ({ ...x, blockId: this.manage ? this.blocks[x.key] : undefined, detail: this.details[x.key] || [] }));
                 let covered = 0, cursor = from;
                 bookings.forEach(x => {
                     const s = Math.max(window.toMin(x.start), cursor), e = Math.min(window.toMin(x.end), to);
@@ -70,11 +74,36 @@
                 this.pending = { block: false, day, id: booking.blockId, start: booking.start, end: booking.end, label: booking.start + ' – ' + booking.end };
             },
             cancel() { this.pending = null; },
+
+            /** Multi-line native tooltip for a booked slot: one paragraph per detail entry. */
+            tooltipFor(b) {
+                if (this.manage && b.blockId) { return 'Blocked by you: click to free it'; }
+                if (!b.detail || !b.detail.length) { return 'Booked'; }
+
+                return b.detail.map(d => this.detailLines(d).join('\n')).join('\n\n');
+            },
+            detailLines(d) {
+                const lines = [d.title || 'Booked'];
+                if (d.customer) { lines.push('Customer: ' + d.customer); }
+                if (d.program) { lines.push('Program: ' + d.program); }
+                if (d.instructor) { lines.push('Instructor: ' + d.instructor); }
+                if (d.location) { lines.push('Location: ' + d.location); }
+                if (d.topic) { lines.push('Topic: ' + d.topic); }
+                if (d.reason) { lines.push('Reason: ' + d.reason); }
+                return lines;
+            },
+
+            /** Opens the read-only details popup for a booked slot (read-only calendars only). */
+            view(day, b) {
+                if (this.manage || !b.detail || !b.detail.length) { return; }
+                this.viewing = { day, booking: b };
+            },
+            closeView() { this.viewing = null; },
         };
     }
 </script>
 
-<div x-data='availabilityCalendar(@json($booked), @json($blocks), @json($manage))'>
+<div x-data='availabilityCalendar(@json($booked), @json($blocks), @json($manage), @json($details))'>
     <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
             <button type="button" @click="move(-1)" :disabled="!canPrev()" class="rounded-md border border-gray-300 px-2.5 py-1 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-30" aria-label="Previous month">&larr;</button>
@@ -102,7 +131,7 @@
                         <div class="min-h-[5.5rem] rounded-md border p-1" :class="[day.inMonth ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50', day.past ? 'opacity-50' : '']">
                             <div class="flex items-center justify-between px-0.5 text-xs">
                                 <span :class="day.iso === today ? 'rounded-full bg-brand px-1.5 font-semibold text-white' : (day.inMonth ? 'font-medium text-gray-700' : 'text-gray-400')" x-text="day.number"></span>
-                                <span x-show="!day.slots.length && day.inMonth && !day.past" class="text-[10px] uppercase text-gray-300">Closed</span>
+                                <span x-show="!day.windows.length && day.inMonth && !day.past" class="text-[10px] uppercase text-gray-300">Closed</span>
                             </div>
                             <div class="mt-1 space-y-1">
                                 <template x-for="w in day.windows" :key="w.value">
@@ -119,10 +148,11 @@
                                                 }"
                                                 x-text="w.label"></button>
                                         <template x-for="b in w.bookings" :key="b.key">
-                                            <button type="button" @click="unblock(day, b)" :disabled="!(manage && b.blockId && !day.past)"
-                                                    :title="b.blockId ? 'Blocked by you: click to free it' : 'Booked'"
+                                            <button type="button" @click="b.blockId ? unblock(day, b) : view(day, b)"
+                                                    :disabled="!(manage && b.blockId && !day.past) && !(b.detail && b.detail.length)"
+                                                    :title="tooltipFor(b)"
                                                     class="mt-0.5 block w-full rounded px-1 text-left text-[10px] leading-tight"
-                                                    :class="b.blockId ? 'bg-slate-200 text-slate-700 cursor-pointer hover:bg-slate-300' : 'bg-red-50 text-red-600 cursor-default'"
+                                                    :class="b.blockId ? 'bg-slate-200 text-slate-700 cursor-pointer hover:bg-slate-300' : (b.detail && b.detail.length ? 'bg-red-50 text-red-600 cursor-pointer hover:bg-red-100' : 'bg-red-50 text-red-600 cursor-default')"
                                                     x-text="b.start + '–' + b.end + (b.blockId ? ' blocked' : ' booked')"></button>
                                         </template>
                                     </div>
@@ -167,4 +197,33 @@
             </template>
         </div>
     @endif
+
+    <div x-show="viewing" x-cloak @keydown.escape.window="closeView()" @click.self="closeView()" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <template x-if="viewing">
+            <div class="w-full max-w-sm space-y-3 rounded-xl bg-white p-5 shadow-2xl">
+                <div class="flex items-start justify-between gap-2">
+                    <h4 class="text-base font-semibold text-gray-800">Booking details</h4>
+                    <button type="button" @click="closeView()" class="text-gray-400 hover:text-gray-600" aria-label="Close">&times;</button>
+                </div>
+                <p class="text-sm text-gray-600">
+                    <span x-text="viewing.day.iso"></span> &middot; <span x-text="viewing.booking.start + ' – ' + viewing.booking.end"></span>
+                </p>
+                <template x-for="(d, i) in viewing.booking.detail" :key="i">
+                    <div class="rounded-lg border border-gray-200 p-3 text-sm space-y-1">
+                        <p class="font-semibold text-gray-800" x-text="d.title || 'Booked'"></p>
+                        <p x-show="d.customer" class="text-gray-600">Customer: <span class="text-gray-800" x-text="d.customer"></span></p>
+                        <p x-show="d.program" class="text-gray-600">Program: <span class="text-gray-800" x-text="d.program"></span></p>
+                        <p x-show="d.instructor" class="text-gray-600">Instructor: <span class="text-gray-800" x-text="d.instructor"></span></p>
+                        <p x-show="d.location" class="text-gray-600">Location: <span class="text-gray-800" x-text="d.location"></span></p>
+                        <p x-show="d.topic" class="text-gray-600">Topic: <span class="text-gray-800" x-text="d.topic"></span></p>
+                        <p x-show="d.reason" class="text-gray-600">Reason: <span class="text-gray-800" x-text="d.reason"></span></p>
+                        <a x-show="d.url" :href="d.url" class="inline-block text-sm font-medium text-brand hover:underline">View session &rarr;</a>
+                    </div>
+                </template>
+                <div class="flex justify-end">
+                    <button type="button" @click="closeView()" class="rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">Close</button>
+                </div>
+            </div>
+        </template>
+    </div>
 </div>
