@@ -96,13 +96,11 @@
 
 <x-layouts.erp title="Dashboard">
     <div class="max-w-5xl space-y-6">
-        <div class="bg-white rounded-lg shadow-md border border-gray-200 p-5">
-            <h3 class="text-sm font-semibold text-gray-800 mb-1">Needs your attention</h3>
-            <p class="mb-4 text-xs text-gray-500">Pending approvals, confirmations, and other tasks waiting on you.</p>
+        @if (count($followUps) > 0)
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-5">
+                <h3 class="text-sm font-semibold text-gray-800 mb-1">Needs your attention</h3>
+                <p class="mb-4 text-xs text-gray-500">Pending approvals, confirmations, and other tasks waiting on you.</p>
 
-            @if (count($followUps) === 0)
-                <p class="text-sm text-gray-400">Nothing pending right now &mdash; you're all caught up.</p>
-            @else
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     @foreach ($followUps as $item)
                         <a href="{{ $item['route'] }}" class="flex items-center gap-2.5 rounded-lg border border-gray-200 p-3 hover:border-brand/40 hover:bg-brand-50/50 transition-colors group">
@@ -118,8 +116,8 @@
                         </a>
                     @endforeach
                 </div>
-            @endif
-        </div>
+            </div>
+        @endif
 
         <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
             <h3 class="text-sm font-semibold text-gray-800">Calendar &amp; operating hours</h3>
