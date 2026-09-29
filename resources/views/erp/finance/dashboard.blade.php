@@ -29,6 +29,41 @@
             </div>
         </div>
 
+        <!-- Charts -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Charts</h2>
+
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6 mb-4">
+                <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Cash Flow — Last 12 Months</h3>
+                <div class="relative h-72">
+                    <canvas id="cashFlowChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Expense by Category — {{ now()->year }}</h3>
+                    <div class="relative h-64">
+                        <canvas id="expenseCategoryChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Tax Paid — Last 6 Months</h3>
+                    <div class="relative h-64">
+                        <canvas id="taxPaymentsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Loans</h3>
+                    <div class="relative h-64">
+                        <canvas id="loansChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left Column: Year & Total Metrics -->
             <div class="lg:col-span-1 space-y-6">
@@ -156,4 +191,123 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chartData = @json($charts);
+
+            const formatRupiah = (value) => 'Rp ' + Number(value).toLocaleString('id-ID');
+
+            const gridColor = '#e1e0d9';
+            const tickColor = '#898781';
+            const legend = { position: 'bottom', labels: { color: '#52514e', boxWidth: 12, padding: 16 } };
+
+            new Chart(document.getElementById('cashFlowChart'), {
+                type: 'line',
+                data: {
+                    labels: chartData.cashFlow.labels,
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: chartData.cashFlow.income,
+                            borderColor: '#008300',
+                            backgroundColor: '#008300',
+                            tension: 0.3,
+                            pointRadius: 3,
+                            borderWidth: 2,
+                        },
+                        {
+                            label: 'Expense',
+                            data: chartData.cashFlow.expense,
+                            borderColor: '#e34948',
+                            backgroundColor: '#e34948',
+                            tension: 0.3,
+                            pointRadius: 3,
+                            borderWidth: 2,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend,
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${formatRupiah(ctx.parsed.y)}` } },
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: tickColor } },
+                        y: { grid: { color: gridColor }, ticks: { color: tickColor, callback: (v) => formatRupiah(v) } },
+                    },
+                },
+            });
+
+            new Chart(document.getElementById('expenseCategoryChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.expenseByCategory.labels,
+                    datasets: [{
+                        data: chartData.expenseByCategory.totals,
+                        backgroundColor: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'],
+                        borderColor: '#fcfcfb',
+                        borderWidth: 2,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#52514e', boxWidth: 12, padding: 12, font: { size: 11 } } },
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${formatRupiah(ctx.parsed)}` } },
+                    },
+                },
+            });
+
+            new Chart(document.getElementById('taxPaymentsChart'), {
+                type: 'bar',
+                data: {
+                    labels: chartData.taxPayments.labels,
+                    datasets: [
+                        { label: 'VAT', data: chartData.taxPayments.vat, backgroundColor: '#2a78d6' },
+                        { label: 'Withholding', data: chartData.taxPayments.withholding, backgroundColor: '#eb6834' },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend,
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${formatRupiah(ctx.parsed.y)}` } },
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: tickColor } },
+                        y: { grid: { color: gridColor }, ticks: { color: tickColor, callback: (v) => formatRupiah(v) } },
+                    },
+                },
+            });
+
+            new Chart(document.getElementById('loansChart'), {
+                type: 'bar',
+                data: {
+                    labels: chartData.loans.labels,
+                    datasets: [
+                        { label: 'Disbursed', data: chartData.loans.disbursed, backgroundColor: '#2a78d6' },
+                        { label: 'Repaid', data: chartData.loans.repaid, backgroundColor: '#eb6834' },
+                        { label: 'Outstanding', data: chartData.loans.outstanding, backgroundColor: '#1baf7a' },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend,
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${formatRupiah(ctx.parsed.y)}` } },
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: tickColor } },
+                        y: { grid: { color: gridColor }, ticks: { color: tickColor, callback: (v) => formatRupiah(v) } },
+                    },
+                },
+            });
+        });
+    </script>
 </x-layouts.erp>
