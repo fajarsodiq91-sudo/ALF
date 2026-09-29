@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Training;
 
+use App\Models\TrainingProgram;
 use App\Services\MasterData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,6 +28,24 @@ class SaveTrainingProgramRequest extends FormRequest
             'session_minutes' => ['nullable', 'integer', 'min:15', 'max:720'],
             'standard_price' => ['required', 'numeric', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
+            'discount_type' => ['nullable', Rule::in(array_keys(TrainingProgram::DISCOUNT_TYPES))],
+            'discount_value' => [
+                'nullable', 'required_with:discount_type', 'numeric', 'min:0.01',
+                ...($this->input('discount_type') === TrainingProgram::DISCOUNT_PERCENTAGE ? ['max:100'] : []),
+            ],
+            'discount_expires_at' => ['nullable', 'required_with:discount_type', 'date'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'discount_value.required_with' => 'Enter the discount amount for this promo.',
+            'discount_value.max' => 'A percentage discount cannot be more than 100%.',
+            'discount_expires_at.required_with' => 'Set until when this promo is active.',
         ];
     }
 }

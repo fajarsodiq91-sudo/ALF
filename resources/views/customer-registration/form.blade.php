@@ -12,10 +12,10 @@
     <body class="font-sans antialiased text-gray-900 min-h-screen bg-gradient-to-br from-steel-100 via-white to-brand-50">
         @include('erp.partials.slot-picker', ['booked' => $booked])
         <script>
-            function registrationForm(initial, prices, counts, minutes) {
+            function registrationForm(initial, prices, standardPrices, discountLabels, counts, minutes) {
                 return {
                     programs: initial.map(p => ({ payment_plan: 'full', ...p })),
-                    prices,
+                    prices, standardPrices, discountLabels,
                     counts, minutes,
                     minutesOf(program) { return parseInt(this.minutes[program.training_program_id]) || null; },
                     countOf(program) { return parseInt(this.counts[program.training_program_id]) || 0; },
@@ -29,6 +29,9 @@
                         if (!this.installmentAllowed(program)) { program.payment_plan = 'full'; }
                     },
                     priceOf(program) { return parseFloat(this.prices[program.training_program_id]) || 0; },
+                    standardPriceOf(program) { return parseFloat(this.standardPrices[program.training_program_id]) || 0; },
+                    discountLabelOf(program) { return this.discountLabels[program.training_program_id] || null; },
+                    hasDiscount(program) { return this.discountLabelOf(program) !== null && this.standardPriceOf(program) > this.priceOf(program); },
                     rupiah(amount) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount); },
                     half(program) { return Math.round(this.priceOf(program) / 2 * 100) / 100; },
                     totalFee() { return this.programs.reduce((sum, p) => sum + this.priceOf(p), 0); },
@@ -49,7 +52,7 @@
                 <h1 class="text-lg font-semibold text-gray-800">Customer Registration</h1>
                 <p class="mt-1 text-sm text-gray-500">Please fill in your details. Registration type: <span class="font-medium text-gray-700">{{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }}</span>.</p>
 
-                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" @submit="if (!allReady()) { $event.preventDefault(); attempted = true; }" x-data='registrationForm(@json(old("programs", [])), @json($prices), @json($meetingCounts), @json($sessionMinutes))'>
+                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" @submit="if (!allReady()) { $event.preventDefault(); attempted = true; }" x-data='registrationForm(@json(old("programs", [])), @json($prices), @json($standardPrices), @json($discountLabels), @json($meetingCounts), @json($sessionMinutes))'>
                     @csrf
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Name / Company Name <span class="text-red-600">*</span></label>
@@ -101,7 +104,7 @@
                                 @foreach ($programs as $categoryName => $group)
                                     <optgroup label="{{ $categoryName }}">
                                         @foreach ($group as $catalogProgram)
-                                            <option value="{{ $catalogProgram->id }}">{{ $catalogProgram->name }}</option>
+                                            <option value="{{ $catalogProgram->id }}">{{ $catalogProgram->name }}{{ $catalogProgram->hasActiveDiscount() ? ' — '.$catalogProgram->discountLabel() : '' }}</option>
                                         @endforeach
                                     </optgroup>
                                 @endforeach
@@ -110,8 +113,12 @@
                             <div x-show="priceOf(program) > 0" x-cloak class="mt-3 rounded-md bg-brand-50 px-3 py-3 text-sm">
                                 <div class="flex items-center justify-between">
                                     <span class="text-gray-600">Program fee</span>
-                                    <span class="font-semibold text-gray-900" x-text="rupiah(priceOf(program))"></span>
+                                    <span>
+                                        <span x-show="hasDiscount(program)" x-cloak class="mr-2 text-xs text-gray-400 line-through" x-text="rupiah(standardPriceOf(program))"></span>
+                                        <span class="font-semibold text-gray-900" x-text="rupiah(priceOf(program))"></span>
+                                    </span>
                                 </div>
+                                <p x-show="hasDiscount(program)" x-cloak class="mt-1 text-xs font-medium text-green-600" x-text="'Promo: ' + discountLabelOf(program)"></p>
                                 <p class="mt-3 text-xs font-medium text-gray-600">How would you like to pay?</p>
                                 <label class="mt-1 flex items-start gap-2 text-gray-700">
                                     <input type="radio" :name="`programs[${i}][payment_plan]`" value="full" x-model="program.payment_plan" class="mt-1 text-brand focus:ring-brand">

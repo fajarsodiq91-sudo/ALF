@@ -212,23 +212,28 @@ class Customer extends Authenticatable
 
         return $requested
             ->filter(fn ($entry) => $programs->has($entry['training_program_id']))
-            ->map(fn ($entry) => [
-                'program' => $programs[$entry['training_program_id']],
-                'plan' => SessionPaymentPlan::effective($entry['payment_plan'] ?? SessionPaymentPlan::FULL, count($entry['meetings'] ?? []), $programs[$entry['training_program_id']]->session_minutes),
-                'price' => (float) $programs[$entry['training_program_id']]->standard_price,
-                'payments' => SessionPaymentPlan::preview($programs[$entry['training_program_id']]->standard_price, $entry['payment_plan'] ?? SessionPaymentPlan::FULL, count($entry['meetings'] ?? []) ?: null, $programs[$entry['training_program_id']]->session_minutes),
-                'meetings' => collect($entry['meetings'] ?? [])->map(function ($meeting) {
-                    $date = Carbon::parse($meeting['meeting_date']);
-                    $time = ! empty($meeting['start_time']) ? ', '.substr($meeting['start_time'], 0, 5).(! empty($meeting['end_time']) ? ' – '.substr($meeting['end_time'], 0, 5) : '') : '';
+            ->map(function ($entry) use ($programs) {
+                $program = $programs[$entry['training_program_id']];
+                $price = $program->finalPrice();
 
-                    return [
-                        'date' => $date,
-                        'start' => $meeting['start_time'] ?? null,
-                        'end' => $meeting['end_time'] ?? null,
-                        'label' => $date->format('D, d M Y').$time,
-                    ];
-                })->all(),
-            ])
+                return [
+                    'program' => $program,
+                    'plan' => SessionPaymentPlan::effective($entry['payment_plan'] ?? SessionPaymentPlan::FULL, count($entry['meetings'] ?? []), $program->session_minutes),
+                    'price' => $price,
+                    'payments' => SessionPaymentPlan::preview($price, $entry['payment_plan'] ?? SessionPaymentPlan::FULL, count($entry['meetings'] ?? []) ?: null, $program->session_minutes),
+                    'meetings' => collect($entry['meetings'] ?? [])->map(function ($meeting) {
+                        $date = Carbon::parse($meeting['meeting_date']);
+                        $time = ! empty($meeting['start_time']) ? ', '.substr($meeting['start_time'], 0, 5).(! empty($meeting['end_time']) ? ' – '.substr($meeting['end_time'], 0, 5) : '') : '';
+
+                        return [
+                            'date' => $date,
+                            'start' => $meeting['start_time'] ?? null,
+                            'end' => $meeting['end_time'] ?? null,
+                            'label' => $date->format('D, d M Y').$time,
+                        ];
+                    })->all(),
+                ];
+            })
             ->values()
             ->all();
     }

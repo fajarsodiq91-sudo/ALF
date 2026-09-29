@@ -10,7 +10,7 @@
             'payment_plan' => $entry['plan'],
             'delivery_mode' => array_key_first($modes) ?? 'onsite',
             'location' => '',
-            'fee' => (string) (float) $entry['program']->standard_price,
+            'fee' => (string) $entry['price'],
             'meetings' => collect($entry['meetings'])->map(fn ($meeting) => [
                 'meeting_date' => $meeting['date']->format('Y-m-d'),
                 'start_time' => $meeting['start'] ? substr($meeting['start'], 0, 5) : '',
@@ -19,7 +19,7 @@
                 'topic' => '',
             ])->all(),
         ])->all();
-        $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type, 'meetings' => $program->duration_days, 'minutes' => $program->session_minutes])->values();
+        $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type, 'meetings' => $program->duration_days, 'minutes' => $program->session_minutes, 'price' => $program->finalPrice(), 'standardPrice' => (float) $program->standard_price, 'discountLabel' => $program->discountLabel()])->values();
         $inputClass = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm';
     @endphp
 
@@ -33,6 +33,12 @@
                 minutesOf(program) {
                     const item = this.catalog.find(c => String(c.id) === String(program.training_program_id));
                     return item ? item.minutes : null;
+                },
+                catalogItem(program) { return this.catalog.find(c => String(c.id) === String(program.training_program_id)) || null; },
+                priceHint(program) {
+                    const item = this.catalogItem(program);
+                    if (!item || !item.discountLabel) return null;
+                    return `Promo: ${item.discountLabel} — standard ${this.rupiah(item.standardPrice)}, now ${this.rupiah(item.price)}`;
                 },
                 expectedMeetings(program) {
                     const item = this.catalog.find(c => String(c.id) === String(program.training_program_id));
@@ -150,7 +156,7 @@
                             <select :name="`programs[${i}][training_program_id]`" x-model="program.training_program_id" @change="fillMeetings(program)" required class="{{ $inputClass }}">
                                 <option value="">Select program</option>
                                 <template x-for="item in catalog.filter(c => !program.program_type || c.type === program.program_type)" :key="item.id">
-                                    <option :value="item.id" :selected="String(item.id) === String(program.training_program_id)" x-text="item.name"></option>
+                                    <option :value="item.id" :selected="String(item.id) === String(program.training_program_id)" x-text="item.name + (item.discountLabel ? ' — ' + item.discountLabel : '')"></option>
                                 </template>
                             </select>
                             <p x-show="catalog.filter(c => !program.program_type || c.type === program.program_type).length === 0" x-cloak class="mt-1 text-xs text-amber-700">
@@ -185,6 +191,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Fee (Rp)</label>
                             <input type="number" min="0" step="0.01" :name="`programs[${i}][fee]`" x-model="program.fee" class="{{ $inputClass }}">
+                            <p x-show="priceHint(program)" x-cloak class="mt-1 text-xs font-medium text-green-600" x-text="priceHint(program)"></p>
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Payment plan</label>

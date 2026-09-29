@@ -15,7 +15,7 @@
                     <tr>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Program</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Meetings</th>
-                        <th class="px-4 py-3 text-right font-medium text-gray-500">Standard Price</th>
+                        <th class="px-4 py-3 text-right font-medium text-gray-500">Price</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Sessions</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Status</th>
                         @can('training.manage')
@@ -39,7 +39,15 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-right text-gray-500">{{ $program->duration_days }}</td>
-                            <td class="px-4 py-3 text-right text-gray-800">Rp {{ number_format((float) $program->standard_price, 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right">
+                                @if ($program->hasActiveDiscount())
+                                    <div class="text-xs text-gray-400 line-through">Rp {{ number_format((float) $program->standard_price, 0, ',', '.') }}</div>
+                                    <div class="text-gray-800 font-medium">Rp {{ number_format($program->finalPrice(), 0, ',', '.') }}</div>
+                                    <div class="text-xs font-medium text-green-600">{{ $program->discountLabel() }} · until {{ $program->discount_expires_at->format('d M Y') }}</div>
+                                @else
+                                    <span class="text-gray-800">Rp {{ number_format((float) $program->standard_price, 0, ',', '.') }}</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-3 text-right text-gray-500">{{ $program->sessions_count }}</td>
                             <td class="px-4 py-3">
                                 @if ($program->is_active)
