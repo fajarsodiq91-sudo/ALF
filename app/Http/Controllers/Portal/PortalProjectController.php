@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomerProject;
+use App\Services\ImageCompressor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -36,7 +37,7 @@ class PortalProjectController extends Controller
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'external_url' => $data['external_url'] ?? null,
-            'file_path' => $file?->store("customer-projects/{$customer->id}", 'local'),
+            'file_path' => $file ? ImageCompressor::store($file, "customer-projects/{$customer->id}", 'local') : null,
             'file_name' => $file?->getClientOriginalName(),
         ]);
 

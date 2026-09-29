@@ -7,6 +7,7 @@ use App\Mail\CustomerRegistrationReceived;
 use App\Models\Customer;
 use App\Models\TrainingProgram;
 use App\Services\BookedSlots;
+use App\Services\ImageCompressor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -54,7 +55,8 @@ class CustomerRegistrationController extends Controller
             return response()->view('customer-registration.invalid', [], 410);
         }
 
-        $photoPath = $request->file('photo')?->store('customer-photos', 'public');
+        $photo = $request->file('photo');
+        $photoPath = $photo ? ImageCompressor::store($photo, 'customer-photos', 'public') : null;
 
         try {
             $customer->photo_path = $photoPath;

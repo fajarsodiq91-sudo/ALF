@@ -8,6 +8,7 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\IncomeTransaction;
 use App\Models\TrainingSessionPayment;
+use App\Services\ImageCompressor;
 use App\Services\PaymentInvoices;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
@@ -66,7 +67,7 @@ class TrainingSessionPaymentController extends Controller
             $payment->update([
                 'paid_date' => $request->input('paid_date'),
                 'income_transaction_id' => $income->id,
-                'proof_path' => $isTransfer && $proofFile ? $proofFile->store("training-payments/{$payment->id}", 'local') : null,
+                'proof_path' => $isTransfer && $proofFile ? ImageCompressor::store($proofFile, "training-payments/{$payment->id}", 'local') : null,
                 'proof_original_name' => $isTransfer && $proofFile ? $proofFile->getClientOriginalName() : null,
                 'proof_url' => $isTransfer ? $request->input('proof_url') : null,
             ]);

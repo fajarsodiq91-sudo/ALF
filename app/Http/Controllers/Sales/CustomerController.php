@@ -16,8 +16,9 @@ use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Services\BookedSlots;
 use App\Services\CustomerApproval;
-use App\Services\PaymentInvoices;
+use App\Services\ImageCompressor;
 use App\Services\MasterData;
+use App\Services\PaymentInvoices;
 use App\Services\QrCodeGenerator;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
@@ -260,6 +261,6 @@ class CustomerController extends Controller
 
     private function storePhoto(?UploadedFile $photo): ?string
     {
-        return $photo?->store('customer-photos', 'public');
+        return $photo ? ImageCompressor::store($photo, 'customer-photos', 'public') : null;
     }
 }
