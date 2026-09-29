@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['training_session_id', 'customer_id']);
+            $table->unique(['training_session_id', 'customer_id'], 'training_session_participants_session_customer_unique');
         });
     }
 
