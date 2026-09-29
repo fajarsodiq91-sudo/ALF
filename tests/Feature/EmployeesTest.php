@@ -6,6 +6,8 @@ use App\Models\Employee;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -19,6 +21,7 @@ class EmployeesTest extends TestCase
 
         $this->seed(RolePermissionSeeder::class);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+        Storage::fake('public');
     }
 
     private function userWithRole(string $role): User
@@ -32,6 +35,14 @@ class EmployeesTest extends TestCase
     /**
      * @return array<string, mixed>
      */
+    // 1x1 transparent PNG: keeps these tests independent of GD, which this server does not have.
+    private function pngBytes(): string
+    {
+        return base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+        );
+    }
+
     private function payload(array $overrides = []): array
     {
         return [
@@ -134,5 +145,49 @@ class EmployeesTest extends TestCase
             ->get(route('hr.index', ['status' => 'resigned']))
             ->assertSee('Karyawan Keluar')
             ->assertDontSee('Karyawan Aktif');
+    }
+
+    public function test_a_signature_can_be_uploaded_replaced_and_removed(): void
+    {
+        $user = $this->userWithRole('Finance');
+
+        $this->actingAs($user)->post(route('hr.store'), $this->payload([
+            'signature' => UploadedFile::fake()->createWithContent('sig.png', $this->pngBytes()),
+        ]))->assertRedirect(route('hr.index'));
+
+        $employee = Employee::firstWhere('name', $this->payload()['name']);
+        $this->assertNotNull($employee->signature_path);
+        Storage::disk('public')->assertExists($employee->signature_path);
+        $oldPath = $employee->signature_path;
+
+        $this->actingAs($user)->put(route('hr.update', $employee), $this->payload([
+            'signature' => UploadedFile::fake()->createWithContent('new-sig.png', $this->pngBytes()),
+        ]))->assertRedirect(route('hr.index'));
+        $employee->refresh();
+        Storage::disk('public')->assertMissing($oldPath);
+        Storage::disk('public')->assertExists($employee->signature_path);
+        $newPath = $employee->signature_path;
+
+        // Saving without touching the file keeps the current signature.
+        $this->actingAs($user)->put(route('hr.update', $employee), $this->payload());
+        $this->assertSame($newPath, $employee->fresh()->signature_path);
+
+        $this->actingAs($user)->put(route('hr.update', $employee), $this->payload(['remove_signature' => '1']));
+        $this->assertNull($employee->fresh()->signature_path);
+        Storage::disk('public')->assertMissing($newPath);
+    }
+
+    public function test_deleting_an_employee_deletes_their_signature_file(): void
+    {
+        $user = $this->userWithRole('Finance');
+        $this->actingAs($user)->post(route('hr.store'), $this->payload([
+            'signature' => UploadedFile::fake()->createWithContent('sig.png', $this->pngBytes()),
+        ]));
+        $employee = Employee::firstWhere('name', $this->payload()['name']);
+        $path = $employee->signature_path;
+
+        $this->actingAs($user)->delete(route('hr.destroy', $employee));
+
+        Storage::disk('public')->assertMissing($path);
     }
 }

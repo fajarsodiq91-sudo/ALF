@@ -12,6 +12,12 @@
             @endcan
         </div>
 
+        @if (request()->boolean('ready_to_complete'))
+            <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                Showing sessions that have ended and still need to be marked as done.
+            </div>
+        @endif
+
         <form method="GET" action="{{ route('training.index') }}" class="mb-4 flex flex-wrap gap-3">
             <select name="program_id" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                 <option value="">All programs</option>
@@ -51,6 +57,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($sessions as $session)
+                        @php $readyToComplete = ! in_array($session->status, ['completed', 'cancelled'], true) && $session->end_date->isPast(); @endphp
                         <tr>
                             <td class="px-4 py-3 text-gray-500 whitespace-nowrap">{{ $session->start_date->format('d M Y') }}@if (! $session->start_date->isSameDay($session->end_date)) – {{ $session->end_date->format('d M Y') }}@endif</td>
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $session->program->name }}</td>
@@ -67,9 +74,18 @@
                                     'bg-green-50 text-green-700' => $session->status === 'completed',
                                     'bg-gray-100 text-gray-500' => $session->status === 'cancelled',
                                 ])>{{ \App\Models\TrainingSession::STATUSES[$session->status] ?? $session->status }}</span>
+                                @if ($readyToComplete)
+                                    <span class="mt-1 block text-xs font-medium text-amber-600">Ended — mark as done</span>
+                                @endif
                             </td>
                             @can('training.manage')
                                 <td class="px-4 py-3 text-right whitespace-nowrap">
+                                    @if ($readyToComplete)
+                                        <form action="{{ route('training.complete', $session) }}" method="POST" class="inline" onsubmit="return confirm('Mark this session as done? Certificates will be issued if it is a learning program.');">
+                                            @csrf
+                                            <button type="submit" class="mr-3 text-green-700 hover:text-green-800 font-medium">Mark as done</button>
+                                        </form>
+                                    @endif
                                     <a href="{{ route('training.edit', $session) }}" class="text-brand hover:text-brand-dark font-medium">Edit</a>
                                     <form action="{{ route('training.destroy', $session) }}" method="POST" class="inline" onsubmit="return confirm('Delete this session?');">
                                         @csrf

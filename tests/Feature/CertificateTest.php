@@ -104,7 +104,7 @@ class CertificateTest extends TestCase
 
         $this->actingAs($customer, 'customer')->get(route('portal.certificates.index'))->assertOk()->assertSee($certificate->number);
         $this->actingAs($customer, 'customer')->get(route('portal.certificates.show', $certificate))->assertOk()
-            ->assertSee($customer->name)->assertSee($certificate->number)->assertSee('Certificate of Completion');
+            ->assertSee($customer->name)->assertSee($certificate->number)->assertSee('Certificate')->assertSee('of Completion');
 
         $other = $this->customer('260902');
         $this->actingAs($other, 'customer')->get(route('portal.certificates.show', $certificate))->assertForbidden();

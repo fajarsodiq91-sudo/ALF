@@ -199,6 +199,22 @@ class Customer extends Authenticatable
         return self::where('status_token', $token)->first();
     }
 
+    /** The public, login-free link to this customer's portfolio (shown on their certificates' QR code). Created the first time it is needed. */
+    public function portfolioToken(): string
+    {
+        if ($this->portfolio_token === null) {
+            $this->forceFill(['portfolio_token' => Str::random(40)])->save();
+        }
+
+        return $this->portfolio_token;
+    }
+
+    /** Finds a customer by their public portfolio link token. */
+    public static function findByPortfolioToken(string $token): ?self
+    {
+        return self::where('portfolio_token', $token)->first();
+    }
+
     /**
      * The programs and preferred dates the customer picked while registering, with the
      * program records resolved. Programs that no longer exist are dropped.

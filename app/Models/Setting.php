@@ -18,6 +18,8 @@ class Setting extends Model
         'company_phone' => 'Phone',
         'company_email' => 'Email',
         'company_npwp' => 'NPWP (tax ID)',
+        'certificate_signer_name' => 'Certificate default signer name',
+        'certificate_signer_title' => 'Certificate default signer title',
     ];
 
     public static function values(): array

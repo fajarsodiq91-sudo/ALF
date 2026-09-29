@@ -4,6 +4,7 @@
     use App\Models\Payroll;
     use App\Models\Project;
     use App\Models\ProjectTask;
+    use App\Models\TrainingSession;
     use App\Models\TrainingSessionPayment;
 
     $followUps = [];
@@ -30,6 +31,19 @@
                 'count' => $count,
                 'route' => route('training.index', ['payment' => 'awaiting']),
                 'icon' => 'cash',
+            ];
+        }
+    }
+
+    if (auth()->user()->can('training.manage')) {
+        $count = TrainingSession::whereNotIn('status', ['completed', 'cancelled'])->where('end_date', '<', now())->count();
+        if ($count > 0) {
+            $followUps[] = [
+                'label' => 'Training sessions',
+                'sub' => 'ended, mark as done',
+                'count' => $count,
+                'route' => route('training.index', ['ready_to_complete' => 1]),
+                'icon' => 'done',
             ];
         }
     }
@@ -91,6 +105,7 @@
         'payroll' => 'M9 7h6m-6 4h6m-6 4h3m-9 4h12a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v14a2 2 0 002 2z',
         'project' => 'M9 3v2m6-2v2M4 8h16M5 8h14a1 1 0 011 1v10a2 2 0 01-2 2H6a2 2 0 01-2-2V9a1 1 0 011-1z',
         'task' => 'M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z',
+        'done' => 'M5 13l4 4L19 7',
     ];
 @endphp
 

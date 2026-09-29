@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Hr\StoreEmployeeRequest;
 use App\Http\Requests\Hr\UpdateEmployeeRequest;
 use App\Models\Employee;
+use App\Services\ImageCompressor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class EmployeeController extends Controller
@@ -39,7 +41,10 @@ class EmployeeController extends Controller
 
     public function store(StoreEmployeeRequest $request): RedirectResponse
     {
-        Employee::create($request->validated());
+        Employee::create([
+            ...$request->safe()->except('signature'),
+            ...$this->withSignature($request, new Employee),
+        ]);
 
         return redirect()
             ->route('hr.index')
@@ -55,7 +60,10 @@ class EmployeeController extends Controller
 
     public function update(UpdateEmployeeRequest $request, Employee $employee): RedirectResponse
     {
-        $employee->update($request->validated());
+        $employee->update([
+            ...$request->safe()->except(['signature', 'remove_signature']),
+            ...$this->withSignature($request, $employee),
+        ]);
 
         return redirect()
             ->route('hr.index')
@@ -76,5 +84,29 @@ class EmployeeController extends Controller
         return redirect()
             ->route('hr.index')
             ->with('status', 'Employee deleted successfully.');
+    }
+
+    /** A new signature upload replaces the old file; the checkbox clears it without replacing it. */
+    private function withSignature(Request $request, Employee $employee): array
+    {
+        $file = $request->file('signature');
+
+        if ($file) {
+            $path = ImageCompressor::store($file, 'employee-signatures', 'public');
+
+            if ($employee->signature_path) {
+                Storage::disk('public')->delete($employee->signature_path);
+            }
+
+            return ['signature_path' => $path];
+        }
+
+        if ($request->boolean('remove_signature') && $employee->signature_path) {
+            Storage::disk('public')->delete($employee->signature_path);
+
+            return ['signature_path' => null];
+        }
+
+        return [];
     }
 }

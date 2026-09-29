@@ -8,6 +8,7 @@ use App\Http\Controllers\Portal\PortalLoginController;
 use App\Http\Controllers\Portal\PortalPasswordController;
 use App\Http\Controllers\Portal\PortalProjectController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicPortfolioController;
 use App\Http\Controllers\PublicSiteController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,12 @@ Route::get('/services', [PublicSiteController::class, 'services'])->name('servic
 Route::get('/portfolio', [PublicSiteController::class, 'portfolio'])->name('portfolio');
 Route::get('/contact', [PublicSiteController::class, 'contact'])->name('contact');
 Route::get('/thank-you', [PublicSiteController::class, 'thankYou'])->name('thank-you');
+
+// A customer's own showcase, reached from the QR code printed on their certificates.
+Route::middleware('throttle:60,1')->prefix('p')->name('customer-portfolio.')->group(function () {
+    Route::get('/{token}', [PublicPortfolioController::class, 'show'])->name('show');
+    Route::get('/projects/{project}/download', [PublicPortfolioController::class, 'download'])->name('projects.download');
+});
 
 Route::middleware('throttle:30,1')->prefix('customer-registration')->name('customer-registration.')->group(function () {
     Route::get('/done', [CustomerRegistrationController::class, 'done'])->name('done');
@@ -41,6 +48,7 @@ Route::prefix('portal')->name('portal.')->group(function () {
         Route::get('/', PortalDashboardController::class)->name('dashboard');
         Route::get('certificates', [PortalCertificateController::class, 'index'])->name('certificates.index');
         Route::get('certificates/{certificate}', [PortalCertificateController::class, 'show'])->name('certificates.show');
+        Route::get('certificates/{certificate}/download', [PortalCertificateController::class, 'download'])->name('certificates.download');
         Route::get('password', [PortalPasswordController::class, 'edit'])->name('password.edit');
         Route::put('password', [PortalPasswordController::class, 'update'])->name('password.update');
         Route::post('projects', [PortalProjectController::class, 'store'])->name('projects.store');

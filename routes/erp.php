@@ -198,6 +198,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::post('payments/{payment}/pay', [TrainingSessionPaymentController::class, 'pay'])->name('training.payments.pay');
         Route::post('payments/{payment}/cancel', [TrainingSessionPaymentController::class, 'cancel'])->name('training.payments.cancel');
         Route::get('payments/{payment}/proof', [TrainingSessionPaymentController::class, 'proof'])->name('training.payments.proof');
+        Route::post('{session}/complete', [TrainingSessionController::class, 'complete'])->name('training.complete');
     });
 
     Route::middleware('permission:training.view')->group(function () {

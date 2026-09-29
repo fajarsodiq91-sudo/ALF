@@ -26,6 +26,7 @@ class TrainingSessionController extends Controller
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when($request->filled('program_id'), fn ($query) => $query->where('training_program_id', $request->integer('program_id')))
             ->when($request->input('payment') === 'awaiting', fn ($query) => $query->whereHas('payments', fn ($payment) => $payment->whereNull('income_transaction_id')))
+            ->when($request->boolean('ready_to_complete'), fn ($query) => $query->whereNotIn('status', ['completed', 'cancelled'])->where('end_date', '<', now()))
             ->latest('start_date')
             ->get();
 
@@ -97,6 +98,21 @@ class TrainingSessionController extends Controller
         $session->delete();
 
         return redirect()->route('training.index')->with('status', 'Training session deleted successfully.');
+    }
+
+    /** One-click close-out once a session has run its course: marks it done and issues certificates. */
+    public function complete(TrainingSession $session): RedirectResponse
+    {
+        $this->authorize('training.manage');
+
+        if (in_array($session->status, ['completed', 'cancelled'], true)) {
+            return back()->with('error', 'This session is already finished.');
+        }
+
+        $session->update(['status' => 'completed']);
+        $certificates = CertificateIssuer::issueFor($session);
+
+        return redirect()->route('training.index')->with('status', 'Session marked as done.'.($certificates ? " {$certificates} certificate(s) issued." : ''));
     }
 
     /**

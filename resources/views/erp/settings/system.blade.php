@@ -9,6 +9,11 @@
                 @method('PUT')
 
                 @foreach (\App\Models\Setting::FIELDS as $key => $label)
+                    @if ($key === 'certificate_signer_name')
+                        <div class="border-t border-gray-100 pt-5">
+                            <p class="text-xs text-gray-500">Used to sign a learning certificate when its session has no instructor assigned.</p>
+                        </div>
+                    @endif
                     <div>
                         <label for="{{ $key }}" class="block text-sm font-medium text-gray-700">{{ $label }}</label>
                         @if ($key === 'company_address')

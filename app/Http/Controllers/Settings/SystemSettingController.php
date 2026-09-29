@@ -23,6 +23,8 @@ class SystemSettingController extends Controller
             'company_phone' => ['nullable', 'string', 'max:50'],
             'company_email' => ['nullable', 'email', 'max:255'],
             'company_npwp' => ['nullable', 'string', 'max:50'],
+            'certificate_signer_name' => ['nullable', 'string', 'max:255'],
+            'certificate_signer_title' => ['nullable', 'string', 'max:255'],
         ]);
 
         Setting::put($data);

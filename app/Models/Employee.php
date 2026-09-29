@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'employee_number', 'name', 'email', 'phone', 'position', 'department',
-    'employment_type', 'status', 'join_date', 'annual_leave_quota', 'address', 'notes',
+    'employment_type', 'status', 'join_date', 'annual_leave_quota', 'address', 'notes', 'signature_path',
 ])]
 class Employee extends Model
 {
@@ -29,6 +30,12 @@ class Employee extends Model
     {
         static::creating(function (Employee $employee) {
             $employee->employee_number ??= EmployeeNumberGenerator::next(now());
+        });
+
+        static::deleted(function (Employee $employee) {
+            if ($employee->signature_path) {
+                Storage::disk('public')->delete($employee->signature_path);
+            }
         });
     }
 
@@ -67,5 +74,11 @@ class Employee extends Model
     public function annualLeaveRemaining(int $year): int
     {
         return $this->annual_leave_quota - $this->annualLeaveUsed($year);
+    }
+
+    /** The scanned signature shown on certificates when this employee is the instructor. */
+    public function signatureUrl(): ?string
+    {
+        return $this->signature_path ? asset('storage/'.$this->signature_path) : null;
     }
 }
