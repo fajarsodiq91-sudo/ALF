@@ -1,6 +1,7 @@
 @php
     use App\Models\Customer;
     use App\Models\LeaveRequest;
+    use App\Models\MeetingRescheduleRequest;
     use App\Models\Payroll;
     use App\Models\Project;
     use App\Models\ProjectTask;
@@ -44,6 +45,17 @@
                 'count' => $count,
                 'route' => route('training.index', ['ready_to_complete' => 1]),
                 'icon' => 'done',
+            ];
+        }
+
+        $count = MeetingRescheduleRequest::where('status', 'pending')->count();
+        if ($count > 0) {
+            $followUps[] = [
+                'label' => 'Reschedule requests',
+                'sub' => 'awaiting review',
+                'count' => $count,
+                'route' => route('training.index', ['reschedule_pending' => 1]),
+                'icon' => 'calendar',
             ];
         }
     }

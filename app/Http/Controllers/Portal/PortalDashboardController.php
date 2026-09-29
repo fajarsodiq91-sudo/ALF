@@ -14,7 +14,7 @@ class PortalDashboardController extends Controller
 
         return view('portal.dashboard', [
             'customer' => $customer,
-            'sessions' => $customer->portalSessions()->with(['program', 'meetings', 'instructor', 'payments', 'participants'])->orderBy('start_date')->get(),
+            'sessions' => $customer->portalSessions()->with(['program', 'meetings.rescheduleRequests', 'instructor', 'payments', 'participants'])->orderBy('start_date')->get(),
             'projects' => $customer->projects()->latest()->get()->groupBy('training_session_id'),
         ]);
     }

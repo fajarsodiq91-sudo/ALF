@@ -3,15 +3,21 @@
 namespace App\Http\Controllers\Training;
 
 use App\Http\Controllers\Controller;
+use App\Mail\MeetingRescheduleApproved;
+use App\Mail\MeetingRescheduleRejected;
 use App\Models\Customer;
+use App\Models\MeetingRescheduleRequest;
 use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
-use App\Services\PaymentInvoices;
 use App\Services\BookedSlots;
 use App\Services\OperatingHours;
+use App\Services\PaymentInvoices;
 use App\Services\SessionPaymentPlan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class TrainingSessionMeetingController extends Controller
 {
@@ -74,5 +80,69 @@ class TrainingSessionMeetingController extends Controller
         SessionPaymentPlan::syncDueMeeting($meeting->session);
 
         return redirect()->route('training.edit', $meeting->training_session_id)->with('status', 'Meeting deleted.');
+    }
+
+    /** Approves a customer's reschedule request: moves the meeting and notifies them by email. */
+    public function approveReschedule(MeetingRescheduleRequest $rescheduleRequest): RedirectResponse
+    {
+        $this->authorize('training.manage');
+
+        if (! $rescheduleRequest->isPending()) {
+            return back()->with('error', 'This request was already reviewed.');
+        }
+
+        $meeting = $rescheduleRequest->meeting;
+        $originalLabel = $meeting->meeting_date->format('D, d M Y').' · '.($meeting->timeRange() ?? 'no time set');
+
+        $date = $rescheduleRequest->requested_date->toDateString();
+        $start = substr($rescheduleRequest->requested_start_time, 0, 5);
+        $end = substr($rescheduleRequest->requested_end_time, 0, 5);
+
+        if ($violation = OperatingHours::violation($date, $start, $end, $meeting->session->program?->session_minutes)) {
+            return back()->with('error', "Cannot approve: {$violation}");
+        }
+
+        if (BookedSlots::conflicts($date, $start, $end)) {
+            return back()->with('error', 'Cannot approve: '.BookedSlots::describe($date, $start, $end).' has since been booked elsewhere.');
+        }
+
+        $meeting->update(['meeting_date' => $date, 'start_time' => $start, 'end_time' => $end]);
+        $rescheduleRequest->update(['status' => 'approved', 'reviewed_by' => auth()->id(), 'reviewed_at' => now()]);
+
+        $message = 'Reschedule approved.';
+
+        try {
+            Mail::to($rescheduleRequest->customer->email)->send(new MeetingRescheduleApproved($rescheduleRequest, $originalLabel));
+            $message .= ' The customer has been notified by email.';
+        } catch (Throwable $exception) {
+            Log::error('Could not send the reschedule-approved email.', ['request_id' => $rescheduleRequest->id, 'error' => $exception->getMessage()]);
+            $message .= ' The email to the customer could NOT be sent, so please contact them manually.';
+        }
+
+        return redirect()->route('training.edit', $meeting->training_session_id)->with('status', $message);
+    }
+
+    /** Rejects a customer's reschedule request: the meeting keeps its current schedule. */
+    public function rejectReschedule(MeetingRescheduleRequest $rescheduleRequest): RedirectResponse
+    {
+        $this->authorize('training.manage');
+
+        if (! $rescheduleRequest->isPending()) {
+            return back()->with('error', 'This request was already reviewed.');
+        }
+
+        $rescheduleRequest->update(['status' => 'rejected', 'reviewed_by' => auth()->id(), 'reviewed_at' => now()]);
+
+        $message = 'Reschedule rejected.';
+
+        try {
+            Mail::to($rescheduleRequest->customer->email)->send(new MeetingRescheduleRejected($rescheduleRequest));
+            $message .= ' The customer has been notified by email.';
+        } catch (Throwable $exception) {
+            Log::error('Could not send the reschedule-rejected email.', ['request_id' => $rescheduleRequest->id, 'error' => $exception->getMessage()]);
+            $message .= ' The email to the customer could NOT be sent, so please contact them manually.';
+        }
+
+        return redirect()->route('training.edit', $rescheduleRequest->meeting->training_session_id)->with('status', $message);
     }
 }

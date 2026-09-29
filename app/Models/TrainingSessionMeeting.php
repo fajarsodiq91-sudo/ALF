@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['training_session_id', 'meeting_date', 'start_time', 'end_time', 'location', 'topic', 'is_completed', 'completed_at'])]
 class TrainingSessionMeeting extends Model
@@ -26,6 +27,11 @@ class TrainingSessionMeeting extends Model
     public function session(): BelongsTo
     {
         return $this->belongsTo(TrainingSession::class, 'training_session_id');
+    }
+
+    public function rescheduleRequests(): HasMany
+    {
+        return $this->hasMany(MeetingRescheduleRequest::class, 'training_session_meeting_id')->latest();
     }
 
     /** "09:00 – 12:00", "09:00" or null, from the stored HH:MM:SS times. */

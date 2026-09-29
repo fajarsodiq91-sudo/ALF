@@ -27,6 +27,7 @@ class TrainingSessionController extends Controller
             ->when($request->filled('program_id'), fn ($query) => $query->where('training_program_id', $request->integer('program_id')))
             ->when($request->input('payment') === 'awaiting', fn ($query) => $query->whereHas('payments', fn ($payment) => $payment->whereNull('income_transaction_id')))
             ->when($request->boolean('ready_to_complete'), fn ($query) => $query->whereNotIn('status', ['completed', 'cancelled'])->where('end_date', '<', now()))
+            ->when($request->boolean('reschedule_pending'), fn ($query) => $query->whereHas('meetings.rescheduleRequests', fn ($rescheduleRequest) => $rescheduleRequest->where('status', 'pending')))
             ->latest('start_date')
             ->get();
 
@@ -59,7 +60,7 @@ class TrainingSessionController extends Controller
     {
         $this->authorize('training.manage');
 
-        return view('erp.training.sessions.edit', [...$this->formData(), 'session' => $session->load(['meetings', 'payments.incomeTransaction', 'participants']), 'accounts' => Account::where('is_active', true)->orderBy('name')->get(), 'booked' => BookedSlots::keys()]);
+        return view('erp.training.sessions.edit', [...$this->formData(), 'session' => $session->load(['meetings.rescheduleRequests', 'payments.incomeTransaction', 'participants']), 'accounts' => Account::where('is_active', true)->orderBy('name')->get(), 'booked' => BookedSlots::keys()]);
     }
 
     public function update(SaveTrainingSessionRequest $request, TrainingSession $session): RedirectResponse

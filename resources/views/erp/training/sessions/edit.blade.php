@@ -192,6 +192,34 @@
                                 </td>
                             @endcan
                         </tr>
+                        @php $pendingReschedule = $meeting->rescheduleRequests->firstWhere('status', 'pending'); @endphp
+                        @if ($pendingReschedule)
+                            <tr class="bg-amber-50">
+                                <td colspan="6" class="px-4 py-3 text-sm">
+                                    <div class="flex flex-wrap items-center justify-between gap-3">
+                                        <div>
+                                            <span class="font-medium text-amber-800">Customer requested a reschedule</span>
+                                            <span class="text-amber-700">to {{ $pendingReschedule->requestedLabel() }}</span>
+                                            @if ($pendingReschedule->reason)
+                                                <span class="mt-0.5 block text-xs italic text-amber-600">&ldquo;{{ $pendingReschedule->reason }}&rdquo;</span>
+                                            @endif
+                                        </div>
+                                        @can('training.manage')
+                                            <div class="flex shrink-0 gap-2">
+                                                <form action="{{ route('training.reschedule-requests.approve', $pendingReschedule) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700">Approve</button>
+                                                </form>
+                                                <form action="{{ route('training.reschedule-requests.reject', $pendingReschedule) }}" method="POST" onsubmit="return confirm('Reject this reschedule request?');">
+                                                    @csrf
+                                                    <button type="submit" class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">Reject</button>
+                                                </form>
+                                            </div>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
                     @empty
                         <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">No meetings scheduled yet.</td></tr>
                     @endforelse

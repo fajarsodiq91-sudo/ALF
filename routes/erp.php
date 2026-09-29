@@ -195,6 +195,8 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::post('{session}/meetings', [TrainingSessionMeetingController::class, 'store'])->name('training.meetings.store');
         Route::patch('meetings/{meeting}/toggle', [TrainingSessionMeetingController::class, 'toggle'])->name('training.meetings.toggle');
         Route::delete('meetings/{meeting}', [TrainingSessionMeetingController::class, 'destroy'])->name('training.meetings.destroy');
+        Route::post('reschedule-requests/{rescheduleRequest}/approve', [TrainingSessionMeetingController::class, 'approveReschedule'])->name('training.reschedule-requests.approve');
+        Route::post('reschedule-requests/{rescheduleRequest}/reject', [TrainingSessionMeetingController::class, 'rejectReschedule'])->name('training.reschedule-requests.reject');
         Route::post('payments/{payment}/pay', [TrainingSessionPaymentController::class, 'pay'])->name('training.payments.pay');
         Route::post('payments/{payment}/cancel', [TrainingSessionPaymentController::class, 'cancel'])->name('training.payments.cancel');
         Route::get('payments/{payment}/proof', [TrainingSessionPaymentController::class, 'proof'])->name('training.payments.proof');

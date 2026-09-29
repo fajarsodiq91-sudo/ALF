@@ -12,6 +12,55 @@
             </div>
         </div>
 
+        @include('erp.partials.slot-picker', ['booked' => \App\Services\BookedSlots::keys($customer->id)])
+
+        <div x-data="rescheduleRequestForm()" @open-reschedule.window="show($event.detail)" @keydown.escape.window="close()" @click.self="close()"
+             x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <template x-if="open">
+                <form :action="actionUrl" method="POST" @submit="if (!window.meetingReady(m)) { $event.preventDefault(); alert('Choose a new date and time first.'); }" class="w-full max-w-sm space-y-4 rounded-xl bg-white p-5 shadow-2xl">
+                    @csrf
+                    <input type="hidden" name="training_session_meeting_id" :value="meetingId">
+                    <input type="hidden" name="requested_date" :value="m.meeting_date">
+                    <input type="hidden" name="requested_start_time" :value="m.start_time">
+                    <input type="hidden" name="requested_end_time" :value="m.end_time">
+                    <h4 class="text-base font-semibold text-gray-800">Request a reschedule</h4>
+                    <p class="text-sm text-gray-500">Current: <span x-text="current"></span></p>
+                    <div>
+                        <p class="text-sm" :class="m.meeting_date ? 'font-medium text-gray-800' : 'text-gray-400'" x-text="meetingLabel(m)"></p>
+                        <button type="button" @click="$dispatch('open-slot-picker', { meeting: m, siblings: [], minutes })" class="mt-2 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            Choose new date &amp; time
+                        </button>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600">Reason (optional)</label>
+                        <textarea name="reason" rows="2" maxlength="1000" class="mt-1 {{ $inputClass }}" placeholder="Why do you need to reschedule?"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" @click="close()" class="rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">Cancel</button>
+                        <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white shadow-sm">Submit request</button>
+                    </div>
+                </form>
+            </template>
+        </div>
+        <script>
+            function rescheduleRequestForm() {
+                return {
+                    open: false, meetingId: null, current: '', minutes: null,
+                    m: { meeting_date: '', start_time: '', end_time: '' },
+                    actionUrl: @js(route('portal.reschedule-requests.store')),
+                    show(detail) {
+                        this.meetingId = detail.meetingId;
+                        this.current = detail.current;
+                        this.minutes = detail.minutes;
+                        this.m = { meeting_date: '', start_time: '', end_time: '' };
+                        this.open = true;
+                    },
+                    close() { this.open = false; },
+                };
+            }
+        </script>
+
         @if (\App\Services\OperatingHours::schedule())
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6" x-data="{ open: false }">
                 <button type="button" @click="open = !open" :aria-expanded="open" class="flex w-full items-center justify-between text-left">
@@ -69,6 +118,7 @@
                     </div>
                 </div>
 
+                @php $canReschedule = $session->customer_id === $customer->id; @endphp
                 <div class="overflow-x-auto border-t border-gray-200">
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                         <thead class="bg-gray-50">
@@ -78,6 +128,9 @@
                                 <th class="px-4 py-2 text-left font-medium text-gray-500">Place</th>
                                 <th class="px-4 py-2 text-left font-medium text-gray-500">Topic</th>
                                 <th class="px-4 py-2 text-left font-medium text-gray-500">Status</th>
+                                @if ($canReschedule)
+                                    <th class="px-4 py-2 text-right font-medium text-gray-500">Reschedule</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
@@ -94,9 +147,38 @@
                                             <span class="inline-flex rounded-full bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-medium">Upcoming</span>
                                         @endif
                                     </td>
+                                    @if ($canReschedule)
+                                        <td class="px-4 py-2 text-right whitespace-nowrap">
+                                            @php $pendingReschedule = $meeting->rescheduleRequests->firstWhere('status', 'pending'); @endphp
+                                            @if ($meeting->is_completed || in_array($session->status, ['completed', 'cancelled']))
+                                                {{-- nothing to do for a finished meeting or session --}}
+                                            @elseif ($pendingReschedule)
+                                                <div class="inline-flex items-center gap-2">
+                                                    <span class="inline-flex rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 text-xs font-medium" title="Requested: {{ $pendingReschedule->requestedLabel() }}">Pending review</span>
+                                                    @unless (session()->has('portal_preview'))
+                                                        <form action="{{ route('portal.reschedule-requests.destroy', $pendingReschedule) }}" method="POST" onsubmit="return confirm('Cancel this reschedule request?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="text-xs text-gray-400 hover:text-red-600">Cancel</button>
+                                                        </form>
+                                                    @endunless
+                                                </div>
+                                            @elseif (session()->has('portal_preview'))
+                                                <span class="text-xs text-gray-400">Disabled in preview</span>
+                                            @else
+                                                <button type="button" x-data
+                                                        @click="$dispatch('open-reschedule', {
+                                                            meetingId: {{ $meeting->id }},
+                                                            current: @js($meeting->meeting_date->format('D, d M Y').' · '.($meeting->timeRange() ?? 'no time set')),
+                                                            minutes: {{ $session->program?->session_minutes ?? 'null' }},
+                                                        })"
+                                                        class="text-sm font-medium text-brand hover:text-brand-dark">Request reschedule</button>
+                                            @endif
+                                        </td>
+                                    @endif
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="px-4 py-4 text-center text-gray-400">The schedule will be shared soon.</td></tr>
+                                <tr><td colspan="{{ $canReschedule ? 6 : 5 }}" class="px-4 py-4 text-center text-gray-400">The schedule will be shared soon.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

@@ -123,6 +123,25 @@ class Customer extends Authenticatable
         return $this->hasMany(CustomerProject::class);
     }
 
+    public function rescheduleRequests(): HasMany
+    {
+        return $this->hasMany(MeetingRescheduleRequest::class);
+    }
+
+    /**
+     * Meeting ids of the customer's own (non-participant) sessions they may still request a reschedule for.
+     *
+     * @return list<int>
+     */
+    public function reschedulableMeetingIds(): array
+    {
+        return TrainingSessionMeeting::query()
+            ->whereHas('session', fn (Builder $query) => $query->where('customer_id', $this->id)->whereNotIn('status', ['completed', 'cancelled']))
+            ->where('is_completed', false)
+            ->pluck('id')
+            ->all();
+    }
+
     public function isAwaitingCustomer(): bool
     {
         return $this->registration_status === self::REGISTRATION_AWAITING;

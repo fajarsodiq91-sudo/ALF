@@ -7,6 +7,7 @@ use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Controllers\Portal\PortalLoginController;
 use App\Http\Controllers\Portal\PortalPasswordController;
 use App\Http\Controllers\Portal\PortalProjectController;
+use App\Http\Controllers\Portal\PortalRescheduleRequestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicPortfolioController;
 use App\Http\Controllers\PublicSiteController;
@@ -53,6 +54,8 @@ Route::prefix('portal')->name('portal.')->group(function () {
         Route::put('password', [PortalPasswordController::class, 'update'])->name('password.update');
         Route::post('projects', [PortalProjectController::class, 'store'])->name('projects.store');
         Route::get('projects/{project}/download', [PortalProjectController::class, 'download'])->name('projects.download');
+        Route::post('reschedule-requests', [PortalRescheduleRequestController::class, 'store'])->name('reschedule-requests.store');
+        Route::delete('reschedule-requests/{rescheduleRequest}', [PortalRescheduleRequestController::class, 'destroy'])->name('reschedule-requests.destroy');
         Route::post('logout', [PortalLoginController::class, 'destroy'])->name('logout');
     });
 });
