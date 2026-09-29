@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasProof;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,10 +11,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'repayment_number', 'loan_id', 'repayment_date', 'account_id',
     'amount', 'notes', 'created_by',
+    'proof_path', 'proof_original_name', 'proof_url',
 ])]
 class LoanRepayment extends Model
 {
-    use HasFactory;
+    use HasFactory, HasProof;
 
     protected function casts(): array
     {

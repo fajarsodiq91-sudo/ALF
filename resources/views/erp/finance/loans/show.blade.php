@@ -28,6 +28,7 @@
                     <dd class="text-2xl font-bold {{ $loan->isSettled() ? 'text-green-600' : 'text-orange-600' }}">Rp {{ number_format($loan->outstandingAmount(), 2, ',', '.') }}{{ $loan->isSettled() ? ' — settled' : '' }}</dd></div>
                 @if ($loan->description)<div class="col-span-2"><dt class="text-gray-500">Description</dt><dd class="text-gray-900">{{ $loan->description }}</dd></div>@endif
                 @if ($loan->notes)<div class="col-span-2"><dt class="text-gray-500">Notes</dt><dd class="text-gray-900">{{ $loan->notes }}</dd></div>@endif
+                <div class="col-span-2"><dt class="text-gray-500">Proof</dt><dd class="mt-1"><x-finance.proof-links :record="$loan" /></dd></div>
             </dl>
         </div>
 
@@ -41,6 +42,7 @@
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Account</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Amount</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Notes</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500">Proof</th>
                         @can('finance.manage')<th class="px-4 py-3"></th>@endcan
                     </tr>
                 </thead>
@@ -52,6 +54,7 @@
                             <td class="px-4 py-3 text-gray-800">{{ $repayment->account->name }}</td>
                             <td class="px-4 py-3 text-right font-medium">Rp {{ number_format($repayment->amount, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $repayment->notes ?: '—' }}</td>
+                            <td class="px-4 py-3"><x-finance.proof-links :record="$repayment" /></td>
                             @can('finance.manage')
                                 <td class="px-4 py-3 text-right">
                                     <form action="{{ route('finance.loans.repayments.destroy', $repayment) }}" method="POST" onsubmit="return confirm('Delete this repayment?');">
@@ -63,7 +66,7 @@
                             @endcan
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">No repayments yet.</td></tr>
+                        <tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">No repayments yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -73,7 +76,7 @@
             @unless ($loan->isSettled())
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
                     <h3 class="text-sm font-semibold text-gray-800 mb-4">Record Repayment</h3>
-                    <form action="{{ route('finance.loans.repayments.store', $loan) }}" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <form action="{{ route('finance.loans.repayments.store', $loan) }}" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         @csrf
                         <div>
                             <label for="repayment_date" class="block text-sm font-medium text-gray-700">Date</label>
@@ -102,6 +105,7 @@
                             <input type="text" name="notes" id="repayment_notes" value="{{ old('notes') }}"
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                         </div>
+                        <x-finance.proof-fields class="sm:col-span-3" />
                         <div class="sm:col-span-3">
                             <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">Record Repayment</button>
                         </div>

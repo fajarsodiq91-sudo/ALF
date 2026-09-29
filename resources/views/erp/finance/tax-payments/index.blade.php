@@ -21,6 +21,7 @@
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Period</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Account</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Reference</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500">Proof</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Amount</th>
                         @can('finance.manage')
                             <th class="px-4 py-3 text-right font-medium text-gray-500">Actions</th>
@@ -36,6 +37,7 @@
                             <td class="px-4 py-3 text-gray-500">{{ $payment->period }}</td>
                             <td class="px-4 py-3 text-gray-800">{{ $payment->account->name }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $payment->reference ?: '—' }}</td>
+                            <td class="px-4 py-3"><x-finance.proof-links :record="$payment" /></td>
                             <td class="px-4 py-3 text-right font-medium text-red-700">-Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
                             @can('finance.manage')
                                 <td class="px-4 py-3 text-right">
@@ -50,7 +52,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-6 text-center text-gray-400">No tax payments recorded yet.</td>
+                            <td colspan="9" class="px-4 py-6 text-center text-gray-400">No tax payments recorded yet.</td>
                         </tr>
                     @endforelse
                 </tbody>

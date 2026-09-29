@@ -23,6 +23,7 @@
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Subtotal</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Tax</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Total</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500">Proof</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">By</th>
                         @can('finance.manage')
                             <th class="px-4 py-3 text-right font-medium text-gray-500">Actions</th>
@@ -47,6 +48,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-right font-medium text-red-700">-Rp {{ number_format($transaction->amount, 0, ',', '.') }}</td>
+                            <td class="px-4 py-3"><x-finance.proof-links :record="$transaction" /></td>
                             <td class="px-4 py-3 text-gray-500 text-xs">{{ $transaction->createdBy->name }}</td>
                             @can('finance.manage')
                                 <td class="px-4 py-3 text-right">
@@ -61,7 +63,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-4 py-6 text-center text-gray-400">No expenses recorded yet.</td>
+                            <td colspan="11" class="px-4 py-6 text-center text-gray-400">No expenses recorded yet.</td>
                         </tr>
                     @endforelse
                 </tbody>

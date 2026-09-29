@@ -21,6 +21,7 @@
                             <th class="px-4 py-3 text-left font-medium text-gray-500">Account(s)</th>
                             <th class="px-4 py-3 text-left font-medium text-gray-500">Description</th>
                             <th class="px-4 py-3 text-right font-medium text-gray-500">Amount</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-500">Proof</th>
                             <th class="px-4 py-3 text-left font-medium text-gray-500">By</th>
                         </tr>
                     </thead>
@@ -72,6 +73,9 @@
                                     @else
                                         <span class="text-gray-600">Rp {{ number_format($transaction['amount'], 2, ',', '.') }}</span>
                                     @endif
+                                </td>
+                                <td class="px-4 py-3">
+                                    <x-finance.proof-links :record="$transaction['record']" />
                                 </td>
                                 <td class="px-4 py-3 text-gray-700">
                                     {{ $transaction['created_by'] ?? 'System' }}

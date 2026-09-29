@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasProof;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,10 +12,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 #[Fillable([
     'payment_number', 'payment_date', 'account_id', 'tax_type',
     'period', 'amount', 'reference', 'notes', 'created_by',
+    'proof_path', 'proof_original_name', 'proof_url',
 ])]
 class TaxPayment extends Model
 {
-    use HasFactory;
+    use HasFactory, HasProof;
 
     protected function casts(): array
     {

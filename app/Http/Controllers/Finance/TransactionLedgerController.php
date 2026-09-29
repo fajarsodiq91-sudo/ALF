@@ -8,7 +8,6 @@ use App\Models\IncomeTransaction;
 use App\Models\Loan;
 use App\Models\LoanRepayment;
 use App\Models\Transfer;
-use Illuminate\Support\Collection;
 
 class TransactionLedgerController extends Controller
 {
@@ -28,6 +27,7 @@ class TransactionLedgerController extends Controller
                 'description' => $t->source,
                 'amount' => $t->amount,
                 'created_by' => $t->createdBy?->name,
+                'record' => $t,
             ]);
 
         $expenses = ExpenseTransaction::query()
@@ -42,6 +42,7 @@ class TransactionLedgerController extends Controller
                 'description' => $t->payee,
                 'amount' => $t->amount,
                 'created_by' => $t->createdBy?->name,
+                'record' => $t,
             ]);
 
         $transfers = Transfer::query()
@@ -56,6 +57,7 @@ class TransactionLedgerController extends Controller
                 'description' => $t->description,
                 'amount' => $t->amount,
                 'created_by' => $t->createdBy?->name,
+                'record' => $t,
             ]);
 
         $loans = Loan::query()
@@ -66,10 +68,11 @@ class TransactionLedgerController extends Controller
                 'date' => $t->loan_date,
                 'number' => $t->loan_number,
                 'account' => $t->account?->name,
-                'description' => Loan::DIRECTIONS[$t->direction] . ' — ' . $t->party_name,
+                'description' => Loan::DIRECTIONS[$t->direction].' — '.$t->party_name,
                 'amount' => $t->amount,
                 'flow' => $t->disbursementSign(),
                 'created_by' => $t->createdBy?->name,
+                'record' => $t,
             ]);
 
         $repayments = LoanRepayment::query()
@@ -80,10 +83,11 @@ class TransactionLedgerController extends Controller
                 'date' => $t->repayment_date,
                 'number' => $t->repayment_number,
                 'account' => $t->account?->name,
-                'description' => 'Repayment of ' . $t->loan->loan_number . ' — ' . $t->loan->party_name,
+                'description' => 'Repayment of '.$t->loan->loan_number.' — '.$t->loan->party_name,
                 'amount' => $t->amount,
                 'flow' => -$t->loan->disbursementSign(),
                 'created_by' => $t->createdBy?->name,
+                'record' => $t,
             ]);
 
         $transactions = collect()

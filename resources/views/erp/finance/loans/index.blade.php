@@ -33,6 +33,7 @@
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Account</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Amount</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500">Outstanding</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500">Proof</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Status</th>
                         <th class="px-4 py-3 text-right font-medium text-gray-500"></th>
                     </tr>
@@ -47,6 +48,7 @@
                             <td class="px-4 py-3 text-gray-500">{{ $loan->account->name }}</td>
                             <td class="px-4 py-3 text-right text-gray-700">Rp {{ number_format($loan->amount, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right font-medium text-gray-900">Rp {{ number_format($loan->outstandingAmount(), 0, ',', '.') }}</td>
+                            <td class="px-4 py-3"><x-finance.proof-links :record="$loan" /></td>
                             <td class="px-4 py-3">
                                 @if ($loan->isSettled())
                                     <span class="inline-flex rounded-full bg-green-100 text-green-700 px-2 py-0.5 text-xs">Settled</span>
@@ -60,7 +62,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-4 py-6 text-center text-gray-400">No loans recorded yet.</td>
+                            <td colspan="10" class="px-4 py-6 text-center text-gray-400">No loans recorded yet.</td>
                         </tr>
                     @endforelse
                 </tbody>

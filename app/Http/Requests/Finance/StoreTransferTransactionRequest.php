@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Finance;
 
 use App\Rules\DifferentAccountsRule;
+use App\Services\TransactionProof;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTransferTransactionRequest extends FormRequest
@@ -18,9 +19,10 @@ class StoreTransferTransactionRequest extends FormRequest
             'transfer_date' => 'required|date',
             'amount' => 'required|decimal:0,2|min:0.01',
             'from_account_id' => 'required|exists:accounts,id',
-            'to_account_id' => ['required', 'exists:accounts,id', new DifferentAccountsRule()],
+            'to_account_id' => ['required', 'exists:accounts,id', new DifferentAccountsRule],
             'fee' => 'nullable|decimal:0,2|min:0',
             'description' => 'nullable|string|max:500',
+            ...TransactionProof::rules(),
         ];
     }
 }

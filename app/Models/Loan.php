@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasProof;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,10 +12,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'loan_number', 'direction', 'loan_date', 'account_id', 'party_name',
     'amount', 'description', 'notes', 'created_by',
+    'proof_path', 'proof_original_name', 'proof_url',
 ])]
 class Loan extends Model
 {
-    use HasFactory;
+    use HasFactory, HasProof;
 
     /** Owner takes money out of the company; owner must pay it back. */
     public const OWNER_BORROWS = 'owner_borrows';

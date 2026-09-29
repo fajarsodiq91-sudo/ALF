@@ -8,6 +8,7 @@ use App\Http\Requests\Finance\UpdateTransferTransactionRequest;
 use App\Models\Category;
 use App\Models\ExpenseTransaction;
 use App\Models\Transfer;
+use App\Services\TransactionProof;
 use Illuminate\Support\Facades\DB;
 
 class TransferTransactionController extends Controller
@@ -35,9 +36,10 @@ class TransferTransactionController extends Controller
     {
         DB::transaction(function () use ($request) {
             $transfer = Transfer::create([
-                ...$request->safe()->except('fee'),
+                ...$request->safe()->except(['fee', ...TransactionProof::FIELDS]),
+                ...TransactionProof::attributes($request, new Transfer),
                 'created_by' => auth()->id(),
-                'transfer_number' => 'TRF-' . date('YmdHis') . '-' . rand(1000, 9999),
+                'transfer_number' => 'TRF-'.date('YmdHis').'-'.rand(1000, 9999),
             ]);
 
             $this->syncFee($transfer, (float) $request->input('fee', 0));
@@ -56,7 +58,10 @@ class TransferTransactionController extends Controller
     public function update(UpdateTransferTransactionRequest $request, Transfer $transfer)
     {
         DB::transaction(function () use ($request, $transfer) {
-            $transfer->update($request->safe()->except('fee'));
+            $transfer->update([
+                ...$request->safe()->except(['fee', ...TransactionProof::FIELDS]),
+                ...TransactionProof::attributes($request, $transfer),
+            ]);
 
             $this->syncFee($transfer, (float) $request->input('fee', 0));
         });
@@ -110,7 +115,7 @@ class TransferTransactionController extends Controller
         ExpenseTransaction::create([
             ...$attributes,
             'transfer_id' => $transfer->id,
-            'transaction_number' => 'EXP-' . date('YmdHis') . '-' . rand(1000, 9999),
+            'transaction_number' => 'EXP-'.date('YmdHis').'-'.rand(1000, 9999),
             'created_by' => auth()->id(),
         ]);
     }

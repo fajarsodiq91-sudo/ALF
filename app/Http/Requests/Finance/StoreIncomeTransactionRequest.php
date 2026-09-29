@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Finance;
 
 use App\Rules\IncomeCategoryRule;
+use App\Services\TransactionProof;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreIncomeTransactionRequest extends FormRequest
@@ -19,11 +20,12 @@ class StoreIncomeTransactionRequest extends FormRequest
             'amount' => 'required|decimal:0,2|min:0.01',
             'tax_id' => 'nullable|exists:taxes,id',
             'account_id' => 'required|exists:accounts,id',
-            'category_id' => ['required', 'exists:categories,id', new IncomeCategoryRule()],
+            'category_id' => ['required', 'exists:categories,id', new IncomeCategoryRule],
             'source' => 'required|string|max:255',
             'description' => 'nullable|string|max:500',
             'payment_method' => 'required|string|max:100',
             'notes' => 'nullable|string|max:500',
+            ...TransactionProof::rules(),
         ];
     }
 }

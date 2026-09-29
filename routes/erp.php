@@ -12,6 +12,7 @@ use App\Http\Controllers\Finance\ReportController;
 use App\Http\Controllers\Finance\TaxController;
 use App\Http\Controllers\Finance\TaxPaymentController;
 use App\Http\Controllers\Finance\TransactionLedgerController;
+use App\Http\Controllers\Finance\TransactionProofController;
 use App\Http\Controllers\Finance\TransferTransactionController;
 use App\Http\Controllers\Hr\AttendanceController;
 use App\Http\Controllers\Hr\EmployeeController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\Training\TrainingProgramController;
 use App\Http\Controllers\Training\TrainingSessionController;
 use App\Http\Controllers\Training\TrainingSessionMeetingController;
 use App\Http\Controllers\Training\TrainingSessionPaymentController;
+use App\Services\TransactionProof;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/erp', '/erp/dashboard');
@@ -125,6 +127,8 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::delete('loan-repayments/{repayment}', [LoanRepaymentController::class, 'destroy'])->name('loans.repayments.destroy');
 
         Route::get('/transactions', [TransactionLedgerController::class, 'index'])->name('transactions');
+        Route::get('/proofs/{type}/{id}', [TransactionProofController::class, 'show'])
+            ->whereIn('type', array_keys(TransactionProof::TYPES))->whereNumber('id')->name('proofs.show');
 
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/', [ReportController::class, 'index'])->name('index');

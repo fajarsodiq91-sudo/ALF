@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\StoreLoanRepaymentRequest;
 use App\Models\Loan;
 use App\Models\LoanRepayment;
+use App\Services\TransactionProof;
 use Illuminate\Http\RedirectResponse;
 
 class LoanRepaymentController extends Controller
@@ -13,10 +14,11 @@ class LoanRepaymentController extends Controller
     public function store(StoreLoanRepaymentRequest $request, Loan $loan): RedirectResponse
     {
         LoanRepayment::create([
-            ...$request->validated(),
+            ...$request->safe()->except(TransactionProof::FIELDS),
+            ...TransactionProof::attributes($request, new LoanRepayment),
             'loan_id' => $loan->id,
             'created_by' => auth()->id(),
-            'repayment_number' => 'LR-' . date('YmdHis') . '-' . rand(1000, 9999),
+            'repayment_number' => 'LR-'.date('YmdHis').'-'.rand(1000, 9999),
         ]);
 
         return redirect()->route('finance.loans.show', $loan)->with('status', 'Repayment recorded.');

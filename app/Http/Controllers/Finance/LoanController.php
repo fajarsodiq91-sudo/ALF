@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\StoreLoanRequest;
 use App\Http\Requests\Finance\UpdateLoanRequest;
 use App\Models\Loan;
+use App\Services\TransactionProof;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -36,9 +37,10 @@ class LoanController extends Controller
     public function store(StoreLoanRequest $request): RedirectResponse
     {
         $loan = Loan::create([
-            ...$request->validated(),
+            ...$request->safe()->except(TransactionProof::FIELDS),
+            ...TransactionProof::attributes($request, new Loan),
             'created_by' => auth()->id(),
-            'loan_number' => 'LN-' . date('YmdHis') . '-' . rand(1000, 9999),
+            'loan_number' => 'LN-'.date('YmdHis').'-'.rand(1000, 9999),
         ]);
 
         return redirect()->route('finance.loans.show', $loan)->with('status', 'Loan recorded.');
@@ -62,7 +64,10 @@ class LoanController extends Controller
 
     public function update(UpdateLoanRequest $request, Loan $loan): RedirectResponse
     {
-        $loan->update($request->validated());
+        $loan->update([
+            ...$request->safe()->except(TransactionProof::FIELDS),
+            ...TransactionProof::attributes($request, $loan),
+        ]);
 
         return redirect()->route('finance.loans.show', $loan)->with('status', 'Loan updated.');
     }

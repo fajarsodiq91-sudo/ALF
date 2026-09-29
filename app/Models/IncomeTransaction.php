@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasProof;
+use Database\Factories\IncomeTransactionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,13 +12,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'transaction_number', 'transaction_date', 'account_id', 'category_id',
     'source', 'description', 'amount', 'payment_method',
-    'attachment_path', 'notes', 'created_by',
+    'notes', 'created_by',
     'subtotal', 'tax_id', 'tax_rate', 'tax_amount',
+    'proof_path', 'proof_original_name', 'proof_url',
 ])]
 class IncomeTransaction extends Model
 {
-    /** @use HasFactory<\Database\Factories\IncomeTransactionFactory> */
-    use HasFactory;
+    /** @use HasFactory<IncomeTransactionFactory> */
+    use HasFactory, HasProof;
 
     protected function casts(): array
     {

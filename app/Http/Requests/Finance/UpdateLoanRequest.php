@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Finance;
 
 use App\Models\Loan;
+use App\Services\TransactionProof;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -27,6 +28,7 @@ class UpdateLoanRequest extends FormRequest
             'amount' => ['required', 'decimal:0,2', "min:{$repaid}"],
             'description' => 'nullable|string|max:500',
             'notes' => 'nullable|string|max:500',
+            ...TransactionProof::rules(),
         ];
     }
 

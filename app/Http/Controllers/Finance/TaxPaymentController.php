@@ -8,6 +8,7 @@ use App\Http\Requests\Finance\UpdateTaxPaymentRequest;
 use App\Models\Category;
 use App\Models\ExpenseTransaction;
 use App\Models\TaxPayment;
+use App\Services\TransactionProof;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -37,9 +38,10 @@ class TaxPaymentController extends Controller
     {
         DB::transaction(function () use ($request) {
             $payment = TaxPayment::create([
-                ...$request->validated(),
+                ...$request->safe()->except(TransactionProof::FIELDS),
+                ...TransactionProof::attributes($request, new TaxPayment),
                 'created_by' => auth()->id(),
-                'payment_number' => 'TAX-' . date('YmdHis') . '-' . rand(1000, 9999),
+                'payment_number' => 'TAX-'.date('YmdHis').'-'.rand(1000, 9999),
             ]);
 
             $this->syncExpense($payment);
@@ -58,7 +60,10 @@ class TaxPaymentController extends Controller
     public function update(UpdateTaxPaymentRequest $request, TaxPayment $taxPayment): RedirectResponse
     {
         DB::transaction(function () use ($request, $taxPayment) {
-            $taxPayment->update($request->validated());
+            $taxPayment->update([
+                ...$request->safe()->except(TransactionProof::FIELDS),
+                ...TransactionProof::attributes($request, $taxPayment),
+            ]);
 
             $this->syncExpense($taxPayment);
         });
@@ -106,7 +111,7 @@ class TaxPaymentController extends Controller
         ExpenseTransaction::create([
             ...$attributes,
             'tax_payment_id' => $payment->id,
-            'transaction_number' => 'EXP-' . date('YmdHis') . '-' . rand(1000, 9999),
+            'transaction_number' => 'EXP-'.date('YmdHis').'-'.rand(1000, 9999),
             'created_by' => auth()->id(),
         ]);
     }

@@ -7,6 +7,7 @@ use App\Http\Requests\Finance\StoreIncomeTransactionRequest;
 use App\Http\Requests\Finance\UpdateIncomeTransactionRequest;
 use App\Models\IncomeTransaction;
 use App\Services\TaxCalculator;
+use App\Services\TransactionProof;
 
 class IncomeTransactionController extends Controller
 {
@@ -32,9 +33,10 @@ class IncomeTransactionController extends Controller
     public function store(StoreIncomeTransactionRequest $request)
     {
         $transaction = IncomeTransaction::create([
-            ...$this->withTax($request->validated()),
+            ...$this->withTax($request->safe()->except(TransactionProof::FIELDS)),
+            ...TransactionProof::attributes($request, new IncomeTransaction),
             'created_by' => auth()->id(),
-            'transaction_number' => 'INC-' . date('YmdHis') . '-' . rand(1000, 9999),
+            'transaction_number' => 'INC-'.date('YmdHis').'-'.rand(1000, 9999),
         ]);
 
         return redirect()->route('finance.income')->with('status', 'Income transaction recorded.');
@@ -49,7 +51,10 @@ class IncomeTransactionController extends Controller
 
     public function update(UpdateIncomeTransactionRequest $request, IncomeTransaction $income)
     {
-        $income->update($this->withTax($request->validated()));
+        $income->update([
+            ...$this->withTax($request->safe()->except(TransactionProof::FIELDS)),
+            ...TransactionProof::attributes($request, $income),
+        ]);
 
         return redirect()->route('finance.income')->with('status', 'Income transaction updated.');
     }

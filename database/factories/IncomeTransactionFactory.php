@@ -24,7 +24,6 @@ class IncomeTransactionFactory extends Factory
             'tax_amount' => 0,
             'amount' => fake()->randomFloat(2, 100_000, 20_000_000),
             'payment_method' => fake()->randomElement(['Cash', 'Bank Transfer', 'QRIS']),
-            'attachment_path' => null,
             'notes' => fake()->optional()->sentence(),
             'created_by' => User::factory(),
         ];

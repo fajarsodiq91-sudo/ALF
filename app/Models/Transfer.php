@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasProof;
+use Database\Factories\TransferFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,11 +13,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 #[Fillable([
     'transfer_number', 'transfer_date', 'from_account_id', 'to_account_id',
     'amount', 'description', 'created_by',
+    'proof_path', 'proof_original_name', 'proof_url',
 ])]
 class Transfer extends Model
 {
-    /** @use HasFactory<\Database\Factories\TransferFactory> */
-    use HasFactory;
+    /** @use HasFactory<TransferFactory> */
+    use HasFactory, HasProof;
 
     protected function casts(): array
     {

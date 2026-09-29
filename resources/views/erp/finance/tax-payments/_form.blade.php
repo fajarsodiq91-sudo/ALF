@@ -60,6 +60,8 @@
                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">{{ old('notes', $taxPayment->notes ?? '') }}</textarea>
         @error('notes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
+
+    <x-finance.proof-fields :record="$taxPayment" class="sm:col-span-2 border-t border-gray-100 pt-5" />
 </div>
 
 <div class="mt-6 flex items-center gap-3">

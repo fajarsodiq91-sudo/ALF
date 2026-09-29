@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Finance;
 
 use App\Models\Loan;
+use App\Services\TransactionProof;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreLoanRepaymentRequest extends FormRequest
@@ -23,6 +24,7 @@ class StoreLoanRepaymentRequest extends FormRequest
             'account_id' => 'required|exists:accounts,id',
             'amount' => ['required', 'decimal:0,2', 'min:0.01', "max:{$outstanding}"],
             'notes' => 'nullable|string|max:500',
+            ...TransactionProof::rules(),
         ];
     }
 

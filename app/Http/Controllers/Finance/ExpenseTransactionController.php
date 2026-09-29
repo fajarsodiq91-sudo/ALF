@@ -7,6 +7,7 @@ use App\Http\Requests\Finance\StoreExpenseTransactionRequest;
 use App\Http\Requests\Finance\UpdateExpenseTransactionRequest;
 use App\Models\ExpenseTransaction;
 use App\Services\TaxCalculator;
+use App\Services\TransactionProof;
 
 class ExpenseTransactionController extends Controller
 {
@@ -32,9 +33,10 @@ class ExpenseTransactionController extends Controller
     public function store(StoreExpenseTransactionRequest $request)
     {
         $transaction = ExpenseTransaction::create([
-            ...$this->withTax($request->validated()),
+            ...$this->withTax($request->safe()->except(TransactionProof::FIELDS)),
+            ...TransactionProof::attributes($request, new ExpenseTransaction),
             'created_by' => auth()->id(),
-            'transaction_number' => 'EXP-' . date('YmdHis') . '-' . rand(1000, 9999),
+            'transaction_number' => 'EXP-'.date('YmdHis').'-'.rand(1000, 9999),
         ]);
 
         return redirect()->route('finance.expenses')->with('status', 'Expense transaction recorded.');
@@ -49,7 +51,10 @@ class ExpenseTransactionController extends Controller
 
     public function update(UpdateExpenseTransactionRequest $request, ExpenseTransaction $expense)
     {
-        $expense->update($this->withTax($request->validated()));
+        $expense->update([
+            ...$this->withTax($request->safe()->except(TransactionProof::FIELDS)),
+            ...TransactionProof::attributes($request, $expense),
+        ]);
 
         return redirect()->route('finance.expenses')->with('status', 'Expense transaction updated.');
     }
