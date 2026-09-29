@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block direct access to sensitive files that live next to public/
+    # in this shared-hosting deployment (the whole repo is deployed here,
+    # not just the public/ folder, so this must stay in place).
+    RewriteRule ^(\.env(\..*)?|\.git(/.*)?|\.htaccess|composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|README\.md|CLAUDE\.md|AGENTS\.md|boost\.json|deploy\.sh|\.editorconfig|\.gitattributes|\.gitignore|\.npmrc|\.mcp\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js)$ - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules|_legacy_site|\.claude)(/.*)?$ - [F,L]
+
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
