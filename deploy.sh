@@ -37,6 +37,7 @@ rsync -avz --delete \
   --exclude='vendor' \
   --exclude='.phpunit.result.cache' \
   --exclude='tests' \
+  --exclude='storage/app/public' \
   --exclude='storage/logs/*' \
   --exclude='storage/framework/cache/data/*' \
   --exclude='storage/framework/sessions/*' \
