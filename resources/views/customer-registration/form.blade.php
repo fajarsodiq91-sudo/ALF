@@ -12,11 +12,11 @@
     <body class="font-sans antialiased text-gray-900 min-h-screen bg-gradient-to-br from-steel-100 via-white to-brand-50">
         @include('erp.partials.slot-picker', ['booked' => $booked])
         <script>
-            function registrationForm(initial, prices, standardPrices, discountLabels, counts, minutes, corporate, images, terms) {
+            function registrationForm(initial, prices, standardPrices, discountLabels, counts, minutes, corporate, images, terms, maxGroups) {
                 return {
-                    programs: initial.map(p => ({ payment_plan: 'full', ...p })),
+                    programs: initial.map(p => ({ payment_plan: 'full', group_size: 1, ...p })),
                     prices, standardPrices, discountLabels,
-                    counts, minutes, corporate, images, terms,
+                    counts, minutes, corporate, images, terms, maxGroups,
                     minutesOf(program) { return parseInt(this.minutes[program.training_program_id]) || null; },
                     corporateOf(program) { return !!this.corporate[program.training_program_id]; },
                     imagesOf(program) { return this.images[program.training_program_id] || []; },
@@ -31,11 +31,19 @@
                         while (program.meetings.length < n) { program.meetings.push({ meeting_date: '', start_time: '', end_time: '' }); }
                         program.meetings.splice(n);
                         if (!this.installmentAllowed(program)) { program.payment_plan = 'full'; }
+                        program.group_size = this.sizeOf(program);
                     },
-                    priceOf(program) { return parseFloat(this.prices[program.training_program_id]) || 0; },
+                    maxGroupOf(program) { return parseInt(this.maxGroups[program.training_program_id]) || 1; },
+                    sizeOf(program) { return Math.min(Math.max(parseInt(program.group_size) || 1, 1), this.maxGroupOf(program)); },
+                    /** Price of one person for the chosen group size (the price steps down as more people join). */
+                    perPersonOf(program) { return parseFloat((this.prices[program.training_program_id] || {})[this.sizeOf(program)]) || 0; },
+                    /** What the whole group pays for this program. */
+                    priceOf(program) { return this.perPersonOf(program) * this.sizeOf(program); },
                     standardPriceOf(program) { return parseFloat(this.standardPrices[program.training_program_id]) || 0; },
                     discountLabelOf(program) { return this.discountLabels[program.training_program_id] || null; },
-                    hasDiscount(program) { return this.discountLabelOf(program) !== null && this.standardPriceOf(program) > this.priceOf(program); },
+                    hasDiscount(program) { return this.discountLabelOf(program) !== null && this.standardPriceOf(program) > this.perPersonOf(program); },
+                    hasGroupRate(program) { return this.sizeOf(program) > 1; },
+                    hasSaving(program) { return this.standardPriceOf(program) * this.sizeOf(program) > this.priceOf(program); },
                     rupiah(amount) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount); },
                     half(program) { return Math.round(this.priceOf(program) / 2 * 100) / 100; },
                     totalFee() { return this.programs.reduce((sum, p) => sum + this.priceOf(p), 0); },
@@ -56,7 +64,7 @@
                 <h1 class="text-lg font-semibold text-gray-800">Customer Registration</h1>
                 <p class="mt-1 text-sm text-gray-500">Please fill in your details. Registration type: <span class="font-medium text-gray-700">{{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }}</span>.</p>
 
-                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" @submit="if (!allReady()) { $event.preventDefault(); attempted = true; }" x-data='registrationForm(@json(old("programs", [])), @json($prices), @json($standardPrices), @json($discountLabels), @json($meetingCounts), @json($sessionMinutes), @json($corporateFlags), @json($programImages), @json($programTerms))'>
+                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" @submit="if (!allReady()) { $event.preventDefault(); attempted = true; }" x-data='registrationForm(@json(old("programs", [])), @json($prices), @json($standardPrices), @json($discountLabels), @json($meetingCounts), @json($sessionMinutes), @json($corporateFlags), @json($programImages), @json($programTerms), @json($maxGroupSizes))'>
                     @csrf
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Name / Company Name <span class="text-red-600">*</span></label>
@@ -128,15 +136,25 @@
                                 <p class="mt-1 whitespace-pre-line text-xs text-amber-700" x-text="termsOf(program)"></p>
                             </div>
 
+                            <div x-show="maxGroupOf(program) > 1" x-cloak class="mt-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2">
+                                <label class="block text-xs font-semibold text-blue-800">Registering together? Number of people (including you)</label>
+                                <select :name="`programs[${i}][group_size]`" x-model.number="program.group_size" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                    <template x-for="n in maxGroupOf(program)" :key="n">
+                                        <option :value="n" x-text="n + (n === 1 ? ' person' : ' people') + ' — ' + rupiah((prices[program.training_program_id] || {})[n] || 0) + ' per person'"></option>
+                                    </template>
+                                </select>
+                                <p class="mt-1 text-xs text-blue-700">The more people, the lower the price per person. You pay for the whole group; after approval you get a link to share so each friend joins with their own customer ID and portal login.</p>
+                            </div>
+
                             <div x-show="priceOf(program) > 0" x-cloak class="mt-3 rounded-md bg-brand-50 px-3 py-3 text-sm">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-gray-600">Program fee</span>
+                                    <span class="text-gray-600" x-text="hasGroupRate(program) ? 'Program fee (' + sizeOf(program) + ' people × ' + rupiah(perPersonOf(program)) + ')' : 'Program fee'"></span>
                                     <span>
-                                        <span x-show="hasDiscount(program)" x-cloak class="mr-2 text-xs text-gray-400 line-through" x-text="rupiah(standardPriceOf(program))"></span>
+                                        <span x-show="hasSaving(program)" x-cloak class="mr-2 text-xs text-gray-400 line-through" x-text="rupiah(standardPriceOf(program) * sizeOf(program))"></span>
                                         <span class="font-semibold text-gray-900" x-text="rupiah(priceOf(program))"></span>
                                     </span>
                                 </div>
-                                <p x-show="hasDiscount(program)" x-cloak class="mt-1 text-xs font-medium text-green-600" x-text="'Promo: ' + discountLabelOf(program)"></p>
+                                <p x-show="discountLabelOf(program) !== null" x-cloak class="mt-1 text-xs font-medium text-green-600" x-text="'Promo: ' + discountLabelOf(program)"></p>
                                 <p class="mt-3 text-xs font-medium text-gray-600">How would you like to pay?</p>
                                 <label class="mt-1 flex items-start gap-2 text-gray-700">
                                     <input type="radio" :name="`programs[${i}][payment_plan]`" value="full" x-model="program.payment_plan" class="mt-1 text-brand focus:ring-brand">

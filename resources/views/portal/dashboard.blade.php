@@ -220,6 +220,8 @@
                         <p class="text-xs text-gray-500">Share this link with your employees. Each one fills in their name and email and gets their own portal login.</p>
                         @if ($session->participantLinkOpen())
                             <input type="text" readonly value="{{ route('participant.show', $session->participant_token) }}" onclick="this.select()" class="mt-2 {{ $inputClass }}">
+                            <div class="mt-3 inline-block rounded-md border border-gray-200 bg-white p-2 [&>svg]:h-40 [&>svg]:w-40">{!! \App\Services\QrCodeGenerator::svg(route('participant.show', $session->participant_token), 160) !!}</div>
+                            <p class="mt-1 text-xs text-gray-500">Or let them scan this QR code.</p>
                         @else
                             <p class="mt-2 rounded-md bg-gray-50 px-3 py-2 text-xs text-gray-500">The link is closed: the session is full or no longer open.</p>
                         @endif

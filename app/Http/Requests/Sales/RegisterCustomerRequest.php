@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Sales;
 
+use App\Models\Customer;
 use App\Models\TrainingProgram;
 use App\Services\BookedSlots;
 use App\Services\OperatingHours;
@@ -31,6 +32,7 @@ class RegisterCustomerRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:1000'],
             'programs' => ['nullable', 'array', 'max:5'],
             'programs.*.training_program_id' => ['required', Rule::exists(TrainingProgram::class, 'id')->where('is_active', true)],
+            'programs.*.group_size' => ['nullable', 'integer', 'min:1', 'max:50'],
             'programs.*.payment_plan' => ['nullable', Rule::in(array_keys(SessionPaymentPlan::PLANS))],
             'programs.*.meetings' => ['required', 'array', 'min:1', 'max:100'],
             'programs.*.meetings.*.meeting_date' => ['required', 'date', 'after_or_equal:today'],
@@ -70,8 +72,18 @@ class RegisterCustomerRequest extends FormRequest
             $catalog = TrainingProgram::whereIn('id', collect($this->input('programs', []))->pluck('training_program_id'))->get()->keyBy('id');
 
             $seen = [];
+            $isIndividual = Customer::findByValidRegistrationToken((string) $this->route('token'))?->customer_type === 'individual';
 
             foreach ($this->input('programs', []) as $i => $program) {
+                $groupSize = (int) ($program['group_size'] ?? 1);
+                $maxGroup = $isIndividual ? $catalog[$program['training_program_id']]->maxGroupSize() : 1;
+
+                if ($groupSize > $maxGroup) {
+                    $validator->errors()->add("programs.{$i}.group_size", "{$catalog[$program['training_program_id']]->name} can be taken by at most {$maxGroup} ".($maxGroup === 1 ? 'person' : 'people').' together.');
+
+                    continue;
+                }
+
                 $expected = $catalog[$program['training_program_id']]->duration_days;
                 $chosen = count($program['meetings']);
 
@@ -125,6 +137,7 @@ class RegisterCustomerRequest extends FormRequest
     {
         return collect($this->validated('programs', []))->map(fn ($program) => [
             'training_program_id' => (int) $program['training_program_id'],
+            ...(($program['group_size'] ?? 1) > 1 ? ['group_size' => (int) $program['group_size']] : []),
             'payment_plan' => SessionPaymentPlan::effective($program['payment_plan'] ?? SessionPaymentPlan::FULL, count($program['meetings']), TrainingProgram::find($program['training_program_id'])?->session_minutes),
             'meetings' => collect($program['meetings'])->map(fn ($meeting) => [
                 'meeting_date' => $meeting['meeting_date'],

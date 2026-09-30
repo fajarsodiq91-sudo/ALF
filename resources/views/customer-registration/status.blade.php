@@ -150,7 +150,7 @@
                                         </ul>
                                         @if ($entry['payments'])
                                             <div class="mt-1 rounded-md bg-brand-50 px-3 py-2 text-xs text-gray-600">
-                                                <div class="font-medium text-gray-700">Fee {{ $rupiah($entry['price']) }}</div>
+                                                <div class="font-medium text-gray-700">Fee {{ $rupiah($entry['price']) }}@if ($entry['group_size'] > 1) <span class="font-normal text-gray-500">({{ $entry['group_size'] }} people × {{ $rupiah($entry['per_person']) }})</span>@endif</div>
                                                 @foreach ($entry['payments'] as $payment)
                                                     <div>{{ $payment['label'] }}: {{ $rupiah($payment['amount']) }} — {{ $payment['when'] }}</div>
                                                 @endforeach

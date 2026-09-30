@@ -35,7 +35,9 @@ class CustomerController extends Controller
     public function index(Request $request): View
     {
         $customers = Customer::query()
-            ->whereNull('company_customer_id')
+            // A company's employees stay under the company; people who joined an individual's group are customers in their own right.
+            ->where(fn ($query) => $query->whereNull('company_customer_id')
+                ->orWhereHas('company', fn ($company) => $company->where('customer_type', 'individual')))
             ->when($request->input('status') === 'awaiting', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_AWAITING))
             ->when($request->input('status') === 'pending_approval', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_PENDING_APPROVAL))
             ->when($request->input('status') === 'rejected', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_REJECTED))

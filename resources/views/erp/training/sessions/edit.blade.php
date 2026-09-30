@@ -33,6 +33,8 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-600">Participant link (the company also sees it in its portal)</label>
                         <input type="text" readonly value="{{ route('participant.show', $session->participant_token) }}" onclick="this.select()" class="mt-1 {{ $inputClass }}">
+                        <div class="mt-3 inline-block rounded-md border border-gray-200 bg-white p-2 [&>svg]:h-40 [&>svg]:w-40">{!! \App\Services\QrCodeGenerator::svg(route('participant.show', $session->participant_token), 160) !!}</div>
+                        <p class="mt-1 text-xs text-gray-500">Scan to open the participant registration form.</p>
                     </div>
                 @else
                     <p class="rounded-md bg-gray-50 px-3 py-2 text-xs text-gray-500">The link is closed: the session is full, completed or cancelled.</p>

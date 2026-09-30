@@ -16,7 +16,7 @@ Once it is approved, you will receive another email with your customer ID and a 
     - {{ $meeting['label'] }}
 @endforeach
 @if ($entry['payments'])
-    - Fee {{ \App\Services\SessionPaymentPlan::rupiah($entry['price']) }}:
+    - Fee {{ \App\Services\SessionPaymentPlan::rupiah($entry['price']) }}@if ($entry['group_size'] > 1) ({{ $entry['group_size'] }} people × {{ \App\Services\SessionPaymentPlan::rupiah($entry['per_person']) }})@endif:
 @foreach ($entry['payments'] as $payment)
         - {{ $payment['label'] }} {{ \App\Services\SessionPaymentPlan::rupiah($payment['amount']) }} ({{ $payment['when'] }})
 @endforeach

@@ -11,6 +11,8 @@
             'delivery_mode' => array_key_first($modes) ?? 'onsite',
             'location' => '',
             'fee' => (string) $entry['price'],
+            'group_size' => $entry['group_size'],
+            'participant_limit' => $entry['group_size'] > 1 ? (string) $entry['group_size'] : '',
             'meetings' => collect($entry['meetings'])->map(fn ($meeting) => [
                 'meeting_date' => $meeting['date']->format('Y-m-d'),
                 'start_time' => $meeting['start'] ? substr($meeting['start'], 0, 5) : '',
@@ -19,7 +21,7 @@
                 'topic' => '',
             ])->all(),
         ])->all();
-        $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type, 'corporate' => (bool) $program->is_corporate, 'meetings' => $program->duration_days, 'minutes' => $program->session_minutes, 'price' => $program->finalPrice(), 'standardPrice' => (float) $program->standard_price, 'discountLabel' => $program->discountLabel()])->values();
+        $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type, 'corporate' => (bool) $program->is_corporate, 'meetings' => $program->duration_days, 'minutes' => $program->session_minutes, 'price' => $program->finalPrice(), 'standardPrice' => (float) $program->standard_price, 'discountLabel' => $program->discountLabel(), 'maxGroup' => $customer->customer_type === 'individual' ? $program->maxGroupSize() : 1, 'pricesBySize' => $program->pricesBySize()])->values();
         $inputClass = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm';
     @endphp
 
@@ -34,10 +36,24 @@
                     const item = this.catalog.find(c => String(c.id) === String(program.training_program_id));
                     return item ? item.minutes : null;
                 },
+                maxGroupOf(program) { return this.catalogItem(program)?.maxGroup || 1; },
+                /** Re-prices the program for the chosen group size and leaves one seat per friend who will join by link. */
+                applyGroupSize(program) {
+                    const item = this.catalogItem(program);
+                    if (!item) { return; }
+                    const size = Math.min(Math.max(parseInt(program.group_size) || 1, 1), this.maxGroupOf(program));
+                    program.group_size = size;
+                    program.fee = String(Math.round((item.pricesBySize[size] || 0) * size * 100) / 100);
+                    program.participant_limit = size > 1 ? String(size) : '';
+                },
                 catalogItem(program) { return this.catalog.find(c => String(c.id) === String(program.training_program_id)) || null; },
                 corporateOf(program) { return !!this.catalogItem(program)?.corporate; },
                 priceHint(program) {
                     const item = this.catalogItem(program);
+                    if (item && this.maxGroupOf(program) > 1) {
+                        const size = parseInt(program.group_size) || 1;
+                        return `${size} ${size === 1 ? 'person' : 'people'} × ${this.rupiah(item.pricesBySize[size] || 0)} = ${this.rupiah((item.pricesBySize[size] || 0) * size)}` + (item.discountLabel ? ` (promo: ${item.discountLabel})` : '');
+                    }
                     if (!item || !item.discountLabel) return null;
                     return `Promo: ${item.discountLabel} — standard ${this.rupiah(item.standardPrice)}, now ${this.rupiah(item.price)}`;
                 },
@@ -114,7 +130,7 @@
                 <p class="text-xs text-blue-700">These are pre-filled below. Adjust the dates, mode, place, and fee, or remove anything you cannot offer.</p>
                 <ul class="mt-2 space-y-1">
                     @foreach ($requested as $entry)
-                        <li><span class="font-medium">{{ $entry['program']->name }}</span> ({{ \App\Services\SessionPaymentPlan::rupiah($entry['price']) }}, {{ \App\Services\SessionPaymentPlan::PLANS[$entry['plan']] ?? $entry['plan'] }}): {{ collect($entry['meetings'])->pluck('label')->implode(' · ') }}</li>
+                        <li><span class="font-medium">{{ $entry['program']->name }}</span> ({{ \App\Services\SessionPaymentPlan::rupiah($entry['price']) }}@if ($entry['group_size'] > 1), {{ $entry['group_size'] }} people × {{ \App\Services\SessionPaymentPlan::rupiah($entry['per_person']) }}@endif, {{ \App\Services\SessionPaymentPlan::PLANS[$entry['plan']] ?? $entry['plan'] }}): {{ collect($entry['meetings'])->pluck('label')->implode(' · ') }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -187,10 +203,15 @@
                                 @endforeach
                             </select>
                         </div>
+                        <div class="sm:col-span-2" x-show="maxGroupOf(program) > 1" x-cloak>
+                            <label class="block text-sm font-medium text-gray-700">Group size (people paying together)</label>
+                            <input type="number" min="1" :max="maxGroupOf(program)" x-model.number="program.group_size" @input="applyGroupSize(program)" class="{{ $inputClass }}">
+                            <p class="mt-1 text-xs text-gray-500">Changing this re-prices the fee at the program's group rate and sets Max participants below to the same number. You can still adjust both by hand. The person above pays for everyone; each friend joins through the participant link and gets their own customer ID.</p>
+                        </div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Max participants (optional)</label>
                             <input type="number" min="1" max="1000" :name="`programs[${i}][participant_limit]`" x-model="program.participant_limit" class="{{ $inputClass }}">
-                            <p class="mt-1 text-xs text-gray-500">For corporate training: the company gets a link to let up to this many employees join and log in to the portal. Leave empty for none.</p>
+                            <p class="mt-1 text-xs text-gray-500">For corporate training or a group: the customer gets a link to let up to this many people join and log in to the portal with their own customer ID. Leave empty for none.</p>
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">Instructor (optional)</label>

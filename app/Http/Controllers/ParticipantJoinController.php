@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\TrainingSession;
+use App\Services\ImageCompressor;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 /** Employees of a corporate customer join a session through its link and get their own portal login. */
@@ -27,8 +29,16 @@ class ParticipantJoinController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
-        ]);
+            'phone' => ['required', 'string', 'max:50'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'address' => ['nullable', 'string', 'max:1000'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'terms_accepted' => [$session->program->terms ? 'accepted' : 'sometimes'],
+        ], ['terms_accepted.accepted' => 'Please confirm you agree to the terms & conditions of this program.']);
+
+        $photo = $request->file('photo');
+        $photoPath = $photo ? ImageCompressor::store($photo, 'customer-photos', 'public') : null;
+        $data = [...collect($data)->except(['photo', 'terms_accepted'])->all(), 'photo_path' => $photoPath, 'terms_accepted_at' => $request->boolean('terms_accepted') ? now() : null];
 
         try {
             $participant = DB::transaction(function () use ($session, $data) {
@@ -60,6 +70,10 @@ class ParticipantJoinController extends Controller
                 return $participant;
             });
         } catch (DomainException $exception) {
+            if ($photoPath) {
+                Storage::disk('public')->delete($photoPath);
+            }
+
             return back()->withInput()->withErrors(['name' => $exception->getMessage()]);
         }
 

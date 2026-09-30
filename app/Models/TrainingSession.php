@@ -86,6 +86,22 @@ class TrainingSession extends Model
         } elseif ($this->participant_limit === null && $this->participant_token !== null) {
             $this->forceFill(['participant_token' => null])->save();
         }
+
+        $this->seatIndividualOwner();
+    }
+
+    /**
+     * An individual who registered a group counts as the first participant: they already gave their
+     * details, so the link only has to gather the others. A company is not a person and takes no seat.
+     */
+    public function seatIndividualOwner(): void
+    {
+        if (! $this->acceptsParticipants() || $this->customer?->customer_type !== 'individual') {
+            return;
+        }
+
+        $this->participants()->syncWithoutDetaching([$this->customer_id]);
+        $this->update(['participants_count' => $this->participants()->count()]);
     }
 
     public function payments(): HasMany

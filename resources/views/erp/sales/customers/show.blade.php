@@ -45,7 +45,7 @@
                 <h3 class="text-sm font-semibold text-gray-800">Requested by the customer</h3>
                 <ul class="mt-2 space-y-1 text-sm text-gray-600">
                     @foreach ($customer->requestedProgramSummaries() as $entry)
-                        <li><span class="font-medium text-gray-800">{{ $entry['program']->name }}</span> ({{ \App\Services\SessionPaymentPlan::rupiah($entry['price']) }}, {{ \App\Services\SessionPaymentPlan::PLANS[$entry['plan']] ?? $entry['plan'] }}): {{ collect($entry['meetings'])->pluck('label')->implode(' · ') }}</li>
+                        <li><span class="font-medium text-gray-800">{{ $entry['program']->name }}</span> ({{ \App\Services\SessionPaymentPlan::rupiah($entry['price']) }}@if ($entry['group_size'] > 1), {{ $entry['group_size'] }} people × {{ \App\Services\SessionPaymentPlan::rupiah($entry['per_person']) }}@endif, {{ \App\Services\SessionPaymentPlan::PLANS[$entry['plan']] ?? $entry['plan'] }}): {{ collect($entry['meetings'])->pluck('label')->implode(' · ') }}</li>
                     @endforeach
                 </ul>
             </div>

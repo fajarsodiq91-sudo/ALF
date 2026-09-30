@@ -68,6 +68,34 @@
         <p class="mt-1 text-xs text-gray-500">Unlocks the corporate-only operating-hours slots (Master Data → Operating Hours) for customers booking this program.</p>
     </div>
 
+    <div class="sm:col-span-2 border-t border-gray-100 pt-5" x-data='{ tiers: @json(old("group_tiers", $program?->groupTiers() ?? [])) }'>
+        <h3 class="text-sm font-semibold text-gray-800">Group Pricing</h3>
+        <p class="mt-1 text-xs text-gray-500">Optional. Lets several individuals register together, each paying a lower price per person. The standard price above applies to 1 person; add a tier for every step where the price changes, e.g. from 2 people Rp 650.000, from 4 people Rp 500.000. Each person still gets their own customer ID.</p>
+        <div class="mt-3 max-w-xs">
+            <label for="group_max_size" class="block text-sm font-medium text-gray-700">Maximum people per group</label>
+            <input type="number" name="group_max_size" id="group_max_size" min="1" max="50" value="{{ old('group_max_size', $program->group_max_size ?? '') }}" placeholder="e.g. 5 — empty = no groups" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+            @error('group_max_size') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+        <div class="mt-3 space-y-2">
+            <template x-for="(tier, i) in tiers" :key="i">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm text-gray-600">From</span>
+                    <input type="number" min="2" :name="`group_tiers[${i}][min]`" x-model="tier.min" class="w-20 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                    <span class="text-sm text-gray-600">people: Rp</span>
+                    <input type="number" min="0" step="0.01" :name="`group_tiers[${i}][price]`" x-model="tier.price" class="w-36 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                    <span class="text-sm text-gray-600">per person</span>
+                    <button type="button" @click="tiers.splice(i, 1)" class="text-xs text-gray-400 hover:text-red-600">Remove</button>
+                </div>
+            </template>
+        </div>
+        <button type="button" @click="tiers.push({ min: '', price: '' })" class="mt-3 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">+ Add price tier</button>
+        @error('group_tiers') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        @foreach ($errors->get('group_tiers.*') as $messages)
+            @foreach ($messages as $message) <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @endforeach
+        @endforeach
+        <p class="mt-2 text-xs text-gray-400">A promo below is applied on top of the per-person price of each tier. Changes only affect new registrations.</p>
+    </div>
+
     <div class="sm:col-span-2 border-t border-gray-100 pt-5">
         <h3 class="text-sm font-semibold text-gray-800">Illustration Photos</h3>
         <p class="mt-1 text-xs text-gray-500">Shown to customers while they choose this program. JPG, PNG, or WebP, max 2 MB each, up to 10 photos.</p>

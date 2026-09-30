@@ -239,7 +239,7 @@ class Customer extends Authenticatable
      * The programs and preferred dates the customer picked while registering, with the
      * program records resolved. Programs that no longer exist are dropped.
      *
-     * @return list<array{program: TrainingProgram, plan: string, price: float, payments: list<array{label: string, amount: float, when: string}>, meetings: list<array{date: Carbon, start: ?string, end: ?string, label: string}>}>
+     * @return list<array{program: TrainingProgram, group_size: int, per_person: float, plan: string, price: float, payments: list<array{label: string, amount: float, when: string}>, meetings: list<array{date: Carbon, start: ?string, end: ?string, label: string}>}>
      */
     public function requestedProgramSummaries(): array
     {
@@ -250,10 +250,13 @@ class Customer extends Authenticatable
             ->filter(fn ($entry) => $programs->has($entry['training_program_id']))
             ->map(function ($entry) use ($programs) {
                 $program = $programs[$entry['training_program_id']];
-                $price = $program->finalPrice();
+                $groupSize = min(max(1, (int) ($entry['group_size'] ?? 1)), $program->maxGroupSize());
+                $price = $program->groupTotal($groupSize);
 
                 return [
                     'program' => $program,
+                    'group_size' => $groupSize,
+                    'per_person' => $program->pricePerPerson($groupSize),
                     'plan' => SessionPaymentPlan::effective($entry['payment_plan'] ?? SessionPaymentPlan::FULL, count($entry['meetings'] ?? []), $program->session_minutes),
                     'price' => $price,
                     'payments' => SessionPaymentPlan::preview($price, $entry['payment_plan'] ?? SessionPaymentPlan::FULL, count($entry['meetings'] ?? []) ?: null, $program->session_minutes),

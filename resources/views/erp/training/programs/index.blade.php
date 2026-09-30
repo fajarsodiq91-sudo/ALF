@@ -57,6 +57,9 @@
                                 @else
                                     <span class="text-gray-800">Rp {{ number_format((float) $program->standard_price, 0, ',', '.') }}</span>
                                 @endif
+                                @if ($program->allowsGroups() && $program->groupTiers())
+                                    <div class="mt-1 text-xs text-blue-700">Group (max {{ $program->maxGroupSize() }}): {{ collect($program->groupTiers())->map(fn ($t) => $t['min'].'+ = Rp '.number_format($t['price'], 0, ',', '.'))->implode(' · ') }}</div>
+                                @endif
                             </td>
                             <td class="px-4 py-3 text-right text-gray-500">{{ $program->sessions_count }}</td>
                             <td class="px-4 py-3">
