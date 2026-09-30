@@ -19,7 +19,7 @@ class OperatingHoursController extends Controller
 
         return view('erp.master-data.hours', [
             'groups' => MasterData::GROUPS,
-            'days' => OperatingHours::forWeekCalendar(),
+            'days' => OperatingHours::forWeekCalendar(null, true, false),
             'enforced' => OperatingHours::enforced(),
             'blocks' => BlockedSlot::where('date', '>=', today())->get()->mapWithKeys(fn (BlockedSlot $slot) => [$slot->key() => $slot->id])->all(),
         ]);

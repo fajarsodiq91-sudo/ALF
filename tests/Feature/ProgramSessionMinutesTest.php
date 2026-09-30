@@ -17,7 +17,8 @@ class ProgramSessionMinutesTest extends TestCase
         $monday = '2026-10-05';
 
         $this->assertNull(OperatingHours::violation($monday, '10:30', '11:30', 60));
-        $this->assertNull(OperatingHours::violation($monday, '09:00', '16:00', 420));
+        $this->assertNotNull(OperatingHours::violation($monday, '09:00', '16:00', 420)); // spans the 12:00-13:00 break
+        $this->assertNull(OperatingHours::violation($monday, '13:00', '16:00', 180));
         $this->assertNotNull(OperatingHours::violation($monday, '15:30', '16:30', 60)); // past closing
         $this->assertNotNull(OperatingHours::violation($monday, '10:00', '10:45', 60)); // wrong length
         $this->assertNotNull(OperatingHours::violation($monday, '10:10', '11:10', 60)); // off the 30-minute grid
@@ -37,6 +38,6 @@ class ProgramSessionMinutesTest extends TestCase
         OperatingHours::save([6 => [['09:00', '10:30'], ['13:00', '14:30'], ['09:00', '16:00']]], true);
 
         $this->assertSame([6 => [['09:00', '16:00', false]]], OperatingHours::schedule());
-        $this->assertNull(OperatingHours::violation('2026-10-10', '09:00', '16:00', 420)); // a Saturday
+        $this->assertNotNull(OperatingHours::violation('2026-10-10', '09:00', '16:00', 420)); // a Saturday, spans the break
     }
 }

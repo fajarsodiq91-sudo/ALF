@@ -80,8 +80,8 @@ class MeetingRescheduleRequestTest extends TestCase
         return [
             'training_session_meeting_id' => $meeting->id,
             'requested_date' => '2026-09-26',
-            'requested_start_time' => '10:40',
-            'requested_end_time' => '12:10',
+            'requested_start_time' => '10:30',
+            'requested_end_time' => '12:00',
             'reason' => 'Ada acara keluarga',
             ...$overrides,
         ];
@@ -200,7 +200,7 @@ class MeetingRescheduleRequestTest extends TestCase
         $customer = $this->customer('rahasia123');
         $meeting = $this->upcomingMeeting($customer);
         $this->upcomingMeeting(Customer::factory()->create(), meetingAttributes: [
-            'meeting_date' => '2026-09-26', 'start_time' => '10:40', 'end_time' => '12:10',
+            'meeting_date' => '2026-09-26', 'start_time' => '10:30', 'end_time' => '12:00',
         ]);
         $this->loginAs($customer);
 
@@ -272,8 +272,8 @@ class MeetingRescheduleRequestTest extends TestCase
             'training_session_meeting_id' => $meeting->id,
             'customer_id' => $customer->id,
             'requested_date' => '2026-09-26',
-            'requested_start_time' => '10:40',
-            'requested_end_time' => '12:10',
+            'requested_start_time' => '10:30',
+            'requested_end_time' => '12:00',
             'status' => 'pending',
         ]);
 
@@ -283,7 +283,7 @@ class MeetingRescheduleRequestTest extends TestCase
 
         $meeting->refresh();
         $this->assertSame('2026-09-26', $meeting->meeting_date->toDateString());
-        $this->assertSame('10:40', $meeting->start_time);
+        $this->assertSame('10:30', $meeting->start_time);
         $this->assertSame('approved', $request->fresh()->status);
         $this->assertNotNull($request->fresh()->reviewed_at);
 
@@ -299,13 +299,13 @@ class MeetingRescheduleRequestTest extends TestCase
             'training_session_meeting_id' => $meeting->id,
             'customer_id' => $customer->id,
             'requested_date' => '2026-09-26',
-            'requested_start_time' => '10:40',
-            'requested_end_time' => '12:10',
+            'requested_start_time' => '10:30',
+            'requested_end_time' => '12:00',
             'status' => 'pending',
         ]);
         // Someone else grabbed that slot after the request was submitted.
         $this->upcomingMeeting(Customer::factory()->create(), meetingAttributes: [
-            'meeting_date' => '2026-09-26', 'start_time' => '10:40', 'end_time' => '12:10',
+            'meeting_date' => '2026-09-26', 'start_time' => '10:30', 'end_time' => '12:00',
         ]);
 
         $this->actingAs($this->trainingManager())
@@ -378,8 +378,8 @@ class MeetingRescheduleRequestTest extends TestCase
         $request = MeetingRescheduleRequest::factory()->create([
             'training_session_meeting_id' => $meeting->id,
             'requested_date' => '2026-09-26',
-            'requested_start_time' => '10:40',
-            'requested_end_time' => '12:10',
+            'requested_start_time' => '10:30',
+            'requested_end_time' => '12:00',
             'reason' => 'Ada acara keluarga',
             'status' => 'pending',
         ]);

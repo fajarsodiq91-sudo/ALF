@@ -17,7 +17,7 @@ class OperatingHours
 
     private const ENFORCED_SETTING = 'operating_hours_enforced';
 
-    private const SATURDAY_SLOTS = [['09:00', '10:30', false], ['10:40', '12:10', false], ['13:00', '14:30', false], ['14:40', '16:00', false]];
+    private const SATURDAY_SLOTS = [['09:00', '10:30', false], ['10:30', '12:00', false], ['13:00', '14:30', false], ['14:30', '16:00', false]];
 
     private const EVENING_SLOT = [['20:00', '21:30', false]];
 
@@ -68,7 +68,7 @@ class OperatingHours
      */
     public static function slotsForDate(string $date, bool $corporate = false): array
     {
-        $slots = self::schedule()[Carbon::parse($date)->dayOfWeekIso] ?? [];
+        $slots = self::withoutBreak(self::schedule()[Carbon::parse($date)->dayOfWeekIso] ?? []);
 
         return self::filterSlots($slots, $corporate);
     }
@@ -80,6 +80,42 @@ class OperatingHours
     private static function filterSlots(array $slots, bool $corporate): array
     {
         return $corporate ? $slots : array_values(array_filter($slots, fn ($slot) => ! ($slot[2] ?? false)));
+    }
+
+    /** The daily lunch break: never bookable, even when an operating window spans it. */
+    public const BREAK_START = '12:00';
+
+    public const BREAK_END = '13:00';
+
+    /**
+     * Cuts the lunch break out of every slot; a slot spanning it is split in two.
+     *
+     * @param  list<array{0: string, 1: string, 2: bool}>  $slots
+     * @return list<array{0: string, 1: string, 2: bool}>
+     */
+    public static function withoutBreak(array $slots): array
+    {
+        $result = [];
+
+        foreach ($slots as $slot) {
+            [$start, $end] = $slot;
+
+            if ($end <= self::BREAK_START || $start >= self::BREAK_END) {
+                $result[] = $slot;
+
+                continue;
+            }
+
+            if ($start < self::BREAK_START) {
+                $result[] = [$start, self::BREAK_START, $slot[2] ?? false];
+            }
+
+            if ($end > self::BREAK_END) {
+                $result[] = [self::BREAK_END, $end, $slot[2] ?? false];
+            }
+        }
+
+        return $result;
     }
 
     /** Minutes between the start times a customer can pick inside an operating window. */
@@ -169,7 +205,7 @@ class OperatingHours
     public static function formatted(bool $corporate = false): array
     {
         return collect(self::schedule())
-            ->map(fn ($slots) => self::filterSlots($slots, $corporate))
+            ->map(fn ($slots) => self::filterSlots(self::withoutBreak($slots), $corporate))
             ->filter(fn ($slots) => $slots !== [])
             ->mapWithKeys(fn ($slots, $day) => [self::DAY_NAMES[$day] => self::describe($slots)])
             ->all();
@@ -190,7 +226,7 @@ class OperatingHours
             $days[$isoDay % 7] = array_map(fn ($slot) => [
                 'value' => $slot[0].'-'.$slot[1], 'start' => $slot[0], 'end' => $slot[1], 'label' => $slot[0].' – '.$slot[1],
                 'corporate' => (bool) ($slot[2] ?? false),
-            ], $slots);
+            ], self::withoutBreak($slots));
         }
 
         return ['enforced' => self::enforced(), 'step' => self::START_STEP_MINUTES, 'days' => $days];
@@ -202,12 +238,12 @@ class OperatingHours
      *
      * @return array<int, list<array{start: string, end: string, corporate: bool}>>
      */
-    public static function forWeekCalendar(?array $schedule = null, bool $corporate = true): array
+    public static function forWeekCalendar(?array $schedule = null, bool $corporate = true, bool $withBreak = true): array
     {
         $schedule ??= self::schedule();
 
         return collect(range(1, 7))->mapWithKeys(fn (int $day) => [
-            $day => collect(self::filterSlots($schedule[$day] ?? [], $corporate))
+            $day => collect(self::filterSlots($withBreak ? self::withoutBreak($schedule[$day] ?? []) : ($schedule[$day] ?? []), $corporate))
                 ->map(fn ($slot) => ['start' => $slot[0], 'end' => $slot[1], 'corporate' => (bool) ($slot[2] ?? false)])
                 ->values()->all(),
         ])->all();

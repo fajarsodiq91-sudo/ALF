@@ -55,12 +55,12 @@ class OperatingHoursTest extends TestCase
 
     public function test_default_schedule_matches_the_company_hours(): void
     {
-        $saturday = [['09:00', '10:30', false], ['10:40', '12:10', false], ['13:00', '14:30', false], ['14:40', '16:00', false]];
+        $saturday = [['09:00', '10:30', false], ['10:30', '12:00', false], ['13:00', '14:30', false], ['14:30', '16:00', false]];
 
         $this->assertSame([2 => [['20:00', '21:30', false]], 4 => [['20:00', '21:30', false]], 6 => $saturday, 7 => $saturday], OperatingHours::schedule());
         $this->assertTrue(OperatingHours::enforced());
         $this->assertSame('20:00 – 21:30', OperatingHours::formatted()['Tuesday']);
-        $this->assertSame('09:00 – 10:30, 10:40 – 12:10, 13:00 – 14:30, 14:40 – 16:00', OperatingHours::formatted()['Sunday']);
+        $this->assertSame('09:00 – 10:30, 10:30 – 12:00, 13:00 – 14:30, 14:30 – 16:00', OperatingHours::formatted()['Sunday']);
         $this->assertArrayNotHasKey('Monday', OperatingHours::formatted());
     }
 
@@ -68,15 +68,15 @@ class OperatingHoursTest extends TestCase
     {
         $this->assertNull(OperatingHours::violation('2026-10-06', '20:00', '21:30')); // Tuesday
         $this->assertNull(OperatingHours::violation('2026-10-08', '20:00:00', '21:30:00')); // Thursday, DB-style times
-        $this->assertNull(OperatingHours::violation('2026-10-10', '14:40', '16:00')); // Saturday, last slot
-        $this->assertNull(OperatingHours::violation('2026-10-11', '10:40', '12:10')); // Sunday
+        $this->assertNull(OperatingHours::violation('2026-10-10', '14:30', '16:00')); // Saturday, last slot
+        $this->assertNull(OperatingHours::violation('2026-10-11', '10:30', '12:00')); // Sunday
 
         $this->assertStringContainsString('not an operating day', OperatingHours::violation('2026-10-05', '20:00', '21:30')); // Monday
         $this->assertStringContainsString('not an operating day', OperatingHours::violation('2026-10-09', '20:00', '21:30')); // Friday
         $this->assertStringContainsString('Choose a time slot', OperatingHours::violation('2026-10-06', null, null));
         $this->assertStringContainsString('must be one of the Tuesday slots', OperatingHours::violation('2026-10-06', '19:00', '20:30'));
         $this->assertStringContainsString('20:00 – 21:30', OperatingHours::violation('2026-10-06', '20:00', '21:00'));
-        $this->assertStringContainsString('Saturday slots', OperatingHours::violation('2026-10-10', '10:30', '10:40')); // the break
+        $this->assertStringContainsString('Saturday slots', OperatingHours::violation('2026-10-10', '10:20', '10:20')); // the break
         $this->assertStringContainsString('Saturday slots', OperatingHours::violation('2026-10-10', '20:00', '21:30')); // evening slot is not Saturday's
     }
 
@@ -189,7 +189,7 @@ class OperatingHoursTest extends TestCase
 
         $this->get(route('portal.dashboard'))->assertOk()
             ->assertSee('Our operating hours')->assertSee('weekDayNames', false)
-            ->assertSee('"1":[]', false)->assertSee('"start":"20:00","end":"21:30"', false)->assertSee('"start":"14:40","end":"16:00"', false);
+            ->assertSee('"1":[]', false)->assertSee('"start":"20:00","end":"21:30"', false)->assertSee('"start":"14:30","end":"16:00"', false);
 
         Mail::fake();
         $pending = Customer::factory()->pendingApproval()->create();
@@ -201,7 +201,7 @@ class OperatingHoursTest extends TestCase
         Mail::assertSent(CustomerRegistrationApproved::class, function (CustomerRegistrationApproved $mail) {
             $mail->assertSeeInHtml('Our operating hours');
             $mail->assertSeeInHtml('Thursday');
-            $mail->assertSeeInHtml('10:40 – 12:10');
+            $mail->assertSeeInHtml('10:30 – 12:00');
 
             return true;
         });

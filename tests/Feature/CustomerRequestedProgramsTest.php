@@ -105,7 +105,7 @@ class CustomerRequestedProgramsTest extends TestCase
 
         $this->post(route('customer-registration.store', $token), $this->base(['programs' => [
             ['training_program_id' => $program->id, 'meetings' => [$this->slot('2026-10-06', '20:00', '21:30'), $this->slot('2026-10-10', '09:00', '10:30')]],
-            ['training_program_id' => $second->id, 'meetings' => [$this->slot('2026-10-11', '14:40', '16:00')]],
+            ['training_program_id' => $second->id, 'meetings' => [$this->slot('2026-10-11', '14:30', '16:00')]],
         ]]))->assertRedirect();
 
         $customer = Customer::firstOrFail();
@@ -115,7 +115,7 @@ class CustomerRequestedProgramsTest extends TestCase
                 ['meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30'],
                 ['meeting_date' => '2026-10-10', 'start_time' => '09:00', 'end_time' => '10:30'],
             ]],
-            ['training_program_id' => $second->id, 'payment_plan' => 'full', 'meetings' => [['meeting_date' => '2026-10-11', 'start_time' => '14:40', 'end_time' => '16:00']]],
+            ['training_program_id' => $second->id, 'payment_plan' => 'full', 'meetings' => [['meeting_date' => '2026-10-11', 'start_time' => '14:30', 'end_time' => '16:00']]],
         ], $customer->requested_programs);
         $this->assertSame(0, TrainingSession::count()); // nothing is scheduled until the company approves
 
@@ -177,7 +177,7 @@ class CustomerRequestedProgramsTest extends TestCase
         $token = $this->token();
 
         $this->post(route('customer-registration.store', $token), $this->base($this->choice($program, [
-            $this->slot('2026-10-10', '09:00', '10:30'), $this->slot('2026-10-10', '10:40', '12:10'),
+            $this->slot('2026-10-10', '09:00', '10:30'), $this->slot('2026-10-10', '10:30', '12:00'),
         ])))->assertSessionHasNoErrors();
     }
 
