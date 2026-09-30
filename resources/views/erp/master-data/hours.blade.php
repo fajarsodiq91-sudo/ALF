@@ -52,25 +52,27 @@
                         </ul>
                     @endif
 
-                    @foreach (\App\Services\OperatingHours::DAY_NAMES as $iso => $dayName)
-                        <div class="rounded-md border border-gray-200 p-3">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-gray-800">{{ $dayName }}</span>
-                                <button type="button" @click="days[{{ $iso }}].push({ start: '', end: '' })" class="text-sm font-medium text-brand hover:text-brand-dark">+ Add slot</button>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @foreach (\App\Services\OperatingHours::DAY_NAMES as $iso => $dayName)
+                            <div class="rounded-md border border-gray-200 p-2.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-gray-800">{{ $dayName }}</span>
+                                    <button type="button" @click="days[{{ $iso }}].push({ start: '', end: '' })" class="text-xs font-medium text-brand hover:text-brand-dark">+ Add slot</button>
+                                </div>
+                                <p x-show="days[{{ $iso }}].length === 0" class="mt-1 text-xs text-gray-400">Closed</p>
+                                <div class="mt-1.5 space-y-1.5">
+                                    <template x-for="(slot, i) in days[{{ $iso }}]" :key="i">
+                                        <div class="flex items-center gap-1">
+                                            <input type="time" required :name="`hours[{{ $iso }}][${i}][start]`" x-model="slot.start" class="{{ $timeInput }} w-full py-1 text-xs">
+                                            <span class="shrink-0 text-xs text-gray-400">–</span>
+                                            <input type="time" required :name="`hours[{{ $iso }}][${i}][end]`" x-model="slot.end" class="{{ $timeInput }} w-full py-1 text-xs">
+                                            <button type="button" @click="days[{{ $iso }}].splice(i, 1)" title="Remove slot" aria-label="Remove slot" class="shrink-0 text-gray-400 hover:text-red-600">&times;</button>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
-                            <p x-show="days[{{ $iso }}].length === 0" class="mt-1 text-xs text-gray-400">Closed</p>
-                            <div class="mt-2 space-y-2">
-                                <template x-for="(slot, i) in days[{{ $iso }}]" :key="i">
-                                    <div class="flex items-center gap-2">
-                                        <input type="time" required :name="`hours[{{ $iso }}][${i}][start]`" x-model="slot.start" class="{{ $timeInput }}">
-                                        <span class="text-gray-400">–</span>
-                                        <input type="time" required :name="`hours[{{ $iso }}][${i}][end]`" x-model="slot.end" class="{{ $timeInput }}">
-                                        <button type="button" @click="days[{{ $iso }}].splice(i, 1)" class="text-sm text-gray-400 hover:text-red-600">Remove</button>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
 
                     <label class="flex items-start gap-2 text-sm text-gray-700">
                         <input type="hidden" name="enforced" value="0">
