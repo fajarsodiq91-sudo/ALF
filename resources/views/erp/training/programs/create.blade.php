@@ -1,7 +1,7 @@
 <x-layouts.erp title="Add Program">
     <div class="max-w-2xl">
         <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
-            <form action="{{ route('training.programs.store') }}" method="POST">
+            <form action="{{ route('training.programs.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @include('erp.training.programs._form')
             </form>

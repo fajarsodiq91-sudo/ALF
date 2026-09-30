@@ -37,6 +37,7 @@ class RegisterCustomerRequest extends FormRequest
             'programs.*.meetings.*.start_time' => ['nullable', 'date_format:H:i'],
             'programs.*.meetings.*.end_time' => ['nullable', 'date_format:H:i', 'after:programs.*.meetings.*.start_time'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'terms_accepted' => [$this->filled('programs') ? 'accepted' : 'sometimes'],
         ];
     }
 
@@ -52,6 +53,7 @@ class RegisterCustomerRequest extends FormRequest
             'programs.*.meetings.min' => 'Pick at least one preferred date for each program.',
             'programs.*.meetings.*.meeting_date.required' => 'Please choose a date.',
             'programs.*.meetings.*.meeting_date.after_or_equal' => 'Preferred dates cannot be in the past.',
+            'terms_accepted.accepted' => 'Please confirm you agree to the terms & conditions of the program(s) you chose.',
         ];
     }
 

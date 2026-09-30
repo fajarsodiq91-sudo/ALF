@@ -48,6 +48,12 @@
         <textarea name="description" id="description" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">{{ old('description', $program->description ?? '') }}</textarea>
         @error('description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
+    <div class="sm:col-span-2">
+        <label for="terms" class="block text-sm font-medium text-gray-700">Terms &amp; Conditions</label>
+        <textarea name="terms" id="terms" rows="4" placeholder="e.g. cancellation policy, attendance requirements, materials/refund rules…" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">{{ old('terms', $program->terms ?? '') }}</textarea>
+        <p class="mt-1 text-xs text-gray-500">Shown to the customer for this program during registration; they must agree to it before submitting.</p>
+        @error('terms') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
     <div class="flex items-center gap-2">
         <input type="hidden" name="is_active" value="0">
         <input type="checkbox" name="is_active" id="is_active" value="1" @checked(old('is_active', $program->is_active ?? true)) class="rounded border-gray-300 text-brand focus:ring-brand">
@@ -60,6 +66,29 @@
             <label for="is_corporate" class="text-sm text-gray-700">Corporate training</label>
         </div>
         <p class="mt-1 text-xs text-gray-500">Unlocks the corporate-only operating-hours slots (Master Data → Operating Hours) for customers booking this program.</p>
+    </div>
+
+    <div class="sm:col-span-2 border-t border-gray-100 pt-5">
+        <h3 class="text-sm font-semibold text-gray-800">Illustration Photos</h3>
+        <p class="mt-1 text-xs text-gray-500">Shown to customers while they choose this program. JPG, PNG, or WebP, max 2 MB each, up to 10 photos.</p>
+
+        @if (($program->images ?? collect())->isNotEmpty())
+            <div class="mt-3 grid grid-cols-3 sm:grid-cols-5 gap-3">
+                @foreach ($program->images as $image)
+                    <label class="group relative block cursor-pointer overflow-hidden rounded-md ring-1 ring-gray-200">
+                        <img src="{{ $image->url() }}" alt="" class="h-24 w-full object-cover">
+                        <span class="absolute inset-0 flex items-start justify-end bg-black/0 p-1 transition-colors group-has-[:checked]:bg-red-900/40">
+                            <input type="checkbox" name="remove_images[]" value="{{ $image->id }}" class="h-4 w-4 rounded border-white bg-white/80 text-red-600 focus:ring-red-500">
+                        </span>
+                    </label>
+                @endforeach
+            </div>
+            <p class="mt-1 text-xs text-gray-400">Tick a photo to remove it when you save.</p>
+        @endif
+
+        <input type="file" name="images[]" multiple accept="image/png,image/jpeg,image/webp" class="mt-3 block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-brand hover:file:bg-red-100">
+        @error('images') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        @error('images.*') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
 
     <div class="sm:col-span-2 border-t border-gray-100 pt-5">

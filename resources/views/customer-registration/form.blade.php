@@ -12,13 +12,16 @@
     <body class="font-sans antialiased text-gray-900 min-h-screen bg-gradient-to-br from-steel-100 via-white to-brand-50">
         @include('erp.partials.slot-picker', ['booked' => $booked])
         <script>
-            function registrationForm(initial, prices, standardPrices, discountLabels, counts, minutes, corporate) {
+            function registrationForm(initial, prices, standardPrices, discountLabels, counts, minutes, corporate, images, terms) {
                 return {
                     programs: initial.map(p => ({ payment_plan: 'full', ...p })),
                     prices, standardPrices, discountLabels,
-                    counts, minutes, corporate,
+                    counts, minutes, corporate, images, terms,
                     minutesOf(program) { return parseInt(this.minutes[program.training_program_id]) || null; },
                     corporateOf(program) { return !!this.corporate[program.training_program_id]; },
+                    imagesOf(program) { return this.images[program.training_program_id] || []; },
+                    termsOf(program) { return this.terms[program.training_program_id] || null; },
+                    anyTermsToAgree() { return this.programs.some(p => this.termsOf(p)); },
                     countOf(program) { return parseInt(this.counts[program.training_program_id]) || 0; },
                     middleOf(program) { const n = this.countOf(program); return n < 2 ? 1 : Math.floor(n / 2) + 1; },
                     installmentAllowed(program) { return this.countOf(program) !== 1 || this.minutesOf(program) === 420; },
@@ -53,7 +56,7 @@
                 <h1 class="text-lg font-semibold text-gray-800">Customer Registration</h1>
                 <p class="mt-1 text-sm text-gray-500">Please fill in your details. Registration type: <span class="font-medium text-gray-700">{{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }}</span>.</p>
 
-                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" @submit="if (!allReady()) { $event.preventDefault(); attempted = true; }" x-data='registrationForm(@json(old("programs", [])), @json($prices), @json($standardPrices), @json($discountLabels), @json($meetingCounts), @json($sessionMinutes), @json($corporateFlags))'>
+                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" @submit="if (!allReady()) { $event.preventDefault(); attempted = true; }" x-data='registrationForm(@json(old("programs", [])), @json($prices), @json($standardPrices), @json($discountLabels), @json($meetingCounts), @json($sessionMinutes), @json($corporateFlags), @json($programImages), @json($programTerms))'>
                     @csrf
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Name / Company Name <span class="text-red-600">*</span></label>
@@ -111,6 +114,19 @@
                                 @endforeach
                             </select>
                             <p x-show="corporateOf(program)" x-cloak class="mt-1 text-xs font-medium text-purple-700">Corporate training — unlocks extra weekday time slots when you pick a date.</p>
+
+                            <div x-show="imagesOf(program).length" x-cloak class="mt-3 flex flex-wrap gap-2">
+                                <template x-for="(img, k) in imagesOf(program)" :key="k">
+                                    <a :href="img" target="_blank" rel="noopener">
+                                        <img :src="img" class="h-20 w-20 rounded-md object-cover ring-1 ring-gray-200 hover:ring-brand">
+                                    </a>
+                                </template>
+                            </div>
+
+                            <div x-show="termsOf(program)" x-cloak class="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+                                <p class="text-xs font-semibold text-amber-800">Terms &amp; Conditions of this program</p>
+                                <p class="mt-1 whitespace-pre-line text-xs text-amber-700" x-text="termsOf(program)"></p>
+                            </div>
 
                             <div x-show="priceOf(program) > 0" x-cloak class="mt-3 rounded-md bg-brand-50 px-3 py-3 text-sm">
                                 <div class="flex items-center justify-between">
@@ -193,6 +209,14 @@
                     <p class="mt-1 text-xs text-gray-500">JPG, PNG, or WebP, max 2 MB. Optional.</p>
                     @error('photo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
+
+                    <div x-show="programs.some(p => p.training_program_id)" x-cloak class="rounded-md border border-gray-200 bg-gray-50 p-3">
+                        <label class="flex items-start gap-2 text-sm text-gray-700">
+                            <input type="checkbox" name="terms_accepted" value="1" required class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
+                            <span>I have read and agree to the terms &amp; conditions of the program(s) selected above<span x-show="anyTermsToAgree()"> and shown next to each one</span>, as the agreement between myself and PT Alfajar Logic Futura.</span>
+                        </label>
+                        @error('terms_accepted') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                    </div>
 
                     <p x-show="attempted && !allReady()" x-cloak class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">Please choose a date and time on the calendar for every meeting.</p>
 

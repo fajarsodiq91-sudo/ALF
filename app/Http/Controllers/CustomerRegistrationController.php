@@ -27,7 +27,7 @@ class CustomerRegistrationController extends Controller
             return response()->view('customer-registration.invalid', [], 410);
         }
 
-        $programs = TrainingProgram::with('category')->where('is_active', true)->orderBy('name')->get();
+        $programs = TrainingProgram::with(['category', 'images'])->where('is_active', true)->orderBy('name')->get();
 
         $grouped = $programs->groupBy(fn ($program) => $program->category?->name ?? 'Lainnya')
             ->sortKeysUsing(fn ($a, $b) => match (true) {
@@ -47,6 +47,8 @@ class CustomerRegistrationController extends Controller
             'sessionMinutes' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->session_minutes]),
             'meetingCounts' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->duration_days]),
             'corporateFlags' => $programs->mapWithKeys(fn ($program) => [$program->id => (bool) $program->is_corporate]),
+            'programImages' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->images->map->url()]),
+            'programTerms' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->terms]),
         ]);
     }
 
@@ -64,8 +66,9 @@ class CustomerRegistrationController extends Controller
         try {
             $customer->photo_path = $photoPath;
             $customer->submitRegistration([
-                ...$request->safe()->except(['photo', 'programs']),
+                ...$request->safe()->except(['photo', 'programs', 'terms_accepted']),
                 'requested_programs' => $request->requestedPrograms() ?: null,
+                'terms_accepted_at' => $request->boolean('terms_accepted') ? now() : null,
             ]);
         } catch (Throwable $exception) {
             if ($photoPath) {

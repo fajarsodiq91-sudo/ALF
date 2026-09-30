@@ -188,7 +188,7 @@ class CustomerRegistrationStatusTest extends TestCase
         $this->actingAs($this->finance(), 'web')->post(route('sales.invite.store'), ['customer_type' => 'company']);
         $customer = Customer::firstOrFail();
         $this->post(route('customer-registration.store', $customer->registration_token), [
-            'name' => 'PT Pilih', 'email' => 'pilih@pt.test', 'phone' => '0812',
+            'name' => 'PT Pilih', 'email' => 'pilih@pt.test', 'phone' => '0812', 'terms_accepted' => '1',
             'programs' => [['training_program_id' => $program->id, 'payment_plan' => 'full', 'meetings' => [['meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30']]]],
         ]);
 

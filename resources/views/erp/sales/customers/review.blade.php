@@ -96,6 +96,13 @@
                 <div><dt class="text-gray-500">Email</dt><dd class="text-gray-800">{{ $customer->email }}</dd></div>
                 <div><dt class="text-gray-500">Phone</dt><dd class="text-gray-800">{{ $customer->phone ?: '—' }}</dd></div>
                 <div><dt class="text-gray-500">City</dt><dd class="text-gray-800">{{ $customer->city ?: '—' }}</dd></div>
+                <div><dt class="text-gray-500">Terms &amp; conditions</dt><dd class="text-gray-800">
+                    @if ($customer->terms_accepted_at)
+                        <span class="text-green-700">Accepted {{ $customer->terms_accepted_at->format('d M Y, H:i') }}</span>
+                    @else
+                        <span class="text-amber-700">Not accepted</span>
+                    @endif
+                </dd></div>
                 <div class="sm:col-span-2"><dt class="text-gray-500">Address</dt><dd class="text-gray-800">{{ $customer->address ?: '—' }}</dd></div>
             </dl>
             <p class="mt-3 text-xs text-gray-500">Need to correct something first? <a href="{{ route('sales.edit', $customer) }}" class="text-brand hover:text-brand-dark font-medium">Edit the details</a>.</p>

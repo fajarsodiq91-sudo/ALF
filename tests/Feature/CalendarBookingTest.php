@@ -136,7 +136,7 @@ class CalendarBookingTest extends TestCase
         $this->actingAs($this->finance(), 'web')->post(route('sales.invite.store'), ['customer_type' => 'company']);
         $invited = Customer::latest('id')->firstOrFail();
         $token = $invited->registration_token;
-        $base = ['name' => 'PT Rebutan', 'email' => 'r@pt.test', 'phone' => '0812'];
+        $base = ['name' => 'PT Rebutan', 'email' => 'r@pt.test', 'phone' => '0812', 'terms_accepted' => '1'];
 
         $this->post(route('customer-registration.store', $token), $base + ['programs' => [['training_program_id' => $program->id, 'meetings' => [$this->slot('2026-10-06', '20:00', '21:30')]]]])
             ->assertSessionHasErrors(['programs.0.meetings.0.meeting_date' => 'Tue, 06 Oct 2026, 20:00 – 21:30 has just been booked by someone else. Please choose another slot.']);
@@ -158,8 +158,8 @@ class CalendarBookingTest extends TestCase
             $tokens[] = Customer::latest('id')->firstOrFail()->registration_token;
         }
 
-        $this->post(route('customer-registration.store', $tokens[0]), ['name' => 'PT Pertama', 'email' => 'a@pt.test', 'phone' => '0812'] + $choice)->assertSessionHasNoErrors();
-        $this->post(route('customer-registration.store', $tokens[1]), ['name' => 'PT Kedua', 'email' => 'b@pt.test', 'phone' => '0812'] + $choice)->assertSessionHasErrors('programs.0.meetings.0.meeting_date');
+        $this->post(route('customer-registration.store', $tokens[0]), ['name' => 'PT Pertama', 'email' => 'a@pt.test', 'phone' => '0812', 'terms_accepted' => '1'] + $choice)->assertSessionHasNoErrors();
+        $this->post(route('customer-registration.store', $tokens[1]), ['name' => 'PT Kedua', 'email' => 'b@pt.test', 'phone' => '0812', 'terms_accepted' => '1'] + $choice)->assertSessionHasErrors('programs.0.meetings.0.meeting_date');
     }
 
     public function test_the_same_slot_twice_in_one_request_is_rejected(): void
@@ -169,7 +169,7 @@ class CalendarBookingTest extends TestCase
         $this->actingAs($this->finance(), 'web')->post(route('sales.invite.store'), ['customer_type' => 'company']);
         $token = Customer::firstOrFail()->registration_token;
 
-        $this->post(route('customer-registration.store', $token), ['name' => 'PT X', 'email' => 'x@pt.test', 'phone' => '0812', 'programs' => [
+        $this->post(route('customer-registration.store', $token), ['name' => 'PT X', 'email' => 'x@pt.test', 'phone' => '0812', 'terms_accepted' => '1', 'programs' => [
             ['training_program_id' => $a->id, 'meetings' => [$this->slot('2026-10-06', '20:00', '21:30')]],
             ['training_program_id' => $b->id, 'meetings' => [$this->slot('2026-10-06', '20:00', '21:30')]],
         ]])->assertSessionHasErrors('programs.1.meetings.0.meeting_date');

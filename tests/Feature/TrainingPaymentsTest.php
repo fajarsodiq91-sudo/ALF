@@ -366,7 +366,7 @@ class TrainingPaymentsTest extends TestCase
         $customer = Customer::firstOrFail();
 
         $this->post(route('customer-registration.store', $customer->registration_token), [
-            'name' => 'PT Cicil', 'email' => 'cicil@pt.test', 'phone' => '0812',
+            'name' => 'PT Cicil', 'email' => 'cicil@pt.test', 'phone' => '0812', 'terms_accepted' => '1',
             'programs' => [['training_program_id' => $program->id, 'payment_plan' => 'installment', 'meetings' => [
                 ['meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30'],
                 ['meeting_date' => '2026-10-08', 'start_time' => '20:00', 'end_time' => '21:30'],
@@ -394,10 +394,10 @@ class TrainingPaymentsTest extends TestCase
         $token = Customer::firstOrFail()->registration_token;
         $meeting = [['meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30']];
 
-        $this->post(route('customer-registration.store', $token), ['name' => 'PT X', 'email' => 'x@pt.test', 'phone' => '0812',
+        $this->post(route('customer-registration.store', $token), ['name' => 'PT X', 'email' => 'x@pt.test', 'phone' => '0812', 'terms_accepted' => '1',
             'programs' => [['training_program_id' => $program->id, 'payment_plan' => 'bayar_nanti', 'meetings' => $meeting]]])->assertSessionHasErrors('programs.0.payment_plan');
 
-        $this->post(route('customer-registration.store', $token), ['name' => 'PT X', 'email' => 'x@pt.test', 'phone' => '0812',
+        $this->post(route('customer-registration.store', $token), ['name' => 'PT X', 'email' => 'x@pt.test', 'phone' => '0812', 'terms_accepted' => '1',
             'programs' => [['training_program_id' => $program->id, 'meetings' => $meeting]]])->assertSessionHasNoErrors();
         $this->assertSame('full', Customer::firstOrFail()->requested_programs[0]['payment_plan']);
     }

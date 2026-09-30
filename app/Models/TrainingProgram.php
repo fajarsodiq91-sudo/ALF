@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'name', 'program_type', 'is_corporate', 'training_category_id', 'description', 'duration_days', 'session_minutes', 'standard_price', 'is_active',
+    'name', 'program_type', 'is_corporate', 'training_category_id', 'description', 'terms', 'duration_days', 'session_minutes', 'standard_price', 'is_active',
     'discount_type', 'discount_value', 'discount_expires_at',
 ])]
 class TrainingProgram extends Model
@@ -46,6 +46,12 @@ class TrainingProgram extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(TrainingCategory::class, 'training_category_id');
+    }
+
+    /** Illustration photos shown to customers while they choose a program, in display order. */
+    public function images(): HasMany
+    {
+        return $this->hasMany(TrainingProgramImage::class)->orderBy('sort_order')->orderBy('id');
     }
 
     /** Whether a promo is set up and its "active until" date has not passed yet. */

@@ -19,7 +19,7 @@ use Illuminate\Support\Str;
 
 #[Fillable([
     'name', 'customer_type', 'email', 'phone',
-    'city', 'address', 'is_active', 'notes', 'photo_path', 'requested_programs', 'company_customer_id',
+    'city', 'address', 'is_active', 'notes', 'photo_path', 'requested_programs', 'company_customer_id', 'terms_accepted_at',
 ])]
 class Customer extends Authenticatable
 {
@@ -69,6 +69,7 @@ class Customer extends Authenticatable
             'submitted_at' => 'datetime',
             'approved_at' => 'datetime',
             'rejected_at' => 'datetime',
+            'terms_accepted_at' => 'datetime',
         ];
     }
 

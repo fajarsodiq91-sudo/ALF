@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Training\SaveTrainingProgramRequest;
 use App\Models\TrainingCategory;
 use App\Models\TrainingProgram;
+use App\Models\TrainingProgramImage;
+use App\Services\ImageCompressor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -14,7 +16,7 @@ class TrainingProgramController extends Controller
     public function index(): View
     {
         return view('erp.training.programs.index', [
-            'programs' => TrainingProgram::with('category')->withCount('sessions')->orderBy('name')->get(),
+            'programs' => TrainingProgram::with(['category', 'images'])->withCount('sessions')->orderBy('name')->get(),
         ]);
     }
 
@@ -29,7 +31,13 @@ class TrainingProgramController extends Controller
 
     public function store(SaveTrainingProgramRequest $request): RedirectResponse
     {
-        TrainingProgram::create([...$request->validated(), 'is_active' => $request->boolean('is_active'), 'is_corporate' => $request->boolean('is_corporate')]);
+        $program = TrainingProgram::create([
+            ...$request->safe()->except(['images', 'remove_images']),
+            'is_active' => $request->boolean('is_active'),
+            'is_corporate' => $request->boolean('is_corporate'),
+        ]);
+
+        $this->addImages($program, $request);
 
         return redirect()->route('training.programs.index')->with('status', 'Program created successfully.');
     }
@@ -42,12 +50,19 @@ class TrainingProgramController extends Controller
             ->orWhere('id', $program->training_category_id)
             ->orderBy('name')->get();
 
-        return view('erp.training.programs.edit', ['program' => $program, 'categories' => $categories]);
+        return view('erp.training.programs.edit', ['program' => $program->load('images'), 'categories' => $categories]);
     }
 
     public function update(SaveTrainingProgramRequest $request, TrainingProgram $program): RedirectResponse
     {
-        $program->update([...$request->validated(), 'is_active' => $request->boolean('is_active'), 'is_corporate' => $request->boolean('is_corporate')]);
+        $program->update([
+            ...$request->safe()->except(['images', 'remove_images']),
+            'is_active' => $request->boolean('is_active'),
+            'is_corporate' => $request->boolean('is_corporate'),
+        ]);
+
+        $program->images()->whereIn('id', $request->input('remove_images', []))->get()->each->delete();
+        $this->addImages($program, $request);
 
         return redirect()->route('training.programs.index')->with('status', 'Program updated successfully.');
     }
@@ -61,8 +76,23 @@ class TrainingProgramController extends Controller
                 ->with('error', 'This program has sessions and cannot be deleted. Deactivate it instead.');
         }
 
+        $program->images->each->delete();
         $program->delete();
 
         return redirect()->route('training.programs.index')->with('status', 'Program deleted successfully.');
+    }
+
+    /** Stores newly uploaded illustration photos, appended after whatever the program already has. */
+    private function addImages(TrainingProgram $program, SaveTrainingProgramRequest $request): void
+    {
+        $next = $program->images()->max('sort_order') + 1;
+
+        foreach ($request->file('images', []) as $i => $image) {
+            TrainingProgramImage::create([
+                'training_program_id' => $program->id,
+                'path' => ImageCompressor::store($image, 'training-program-images', 'public'),
+                'sort_order' => $next + $i,
+            ]);
+        }
     }
 }

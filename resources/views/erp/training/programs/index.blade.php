@@ -27,6 +27,11 @@
                     @forelse ($programs as $program)
                         <tr>
                             <td class="px-4 py-3">
+                                <div class="flex items-start gap-2">
+                                @if ($program->images->isNotEmpty())
+                                    <img src="{{ $program->images->first()->url() }}" alt="" class="h-10 w-10 shrink-0 rounded-md object-cover ring-1 ring-gray-200">
+                                @endif
+                                <div>
                                 <div class="font-medium text-gray-800">
                                     {{ $program->name }}
                                     <span class="ml-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand">{{ \App\Services\MasterData::label('program_type', $program->program_type) }}</span>
@@ -40,6 +45,8 @@
                                 @if ($program->description)
                                     <div class="text-xs text-gray-500">{{ $program->description }}</div>
                                 @endif
+                                </div>
+                                </div>
                             </td>
                             <td class="px-4 py-3 text-right text-gray-500">{{ $program->duration_days }}</td>
                             <td class="px-4 py-3 text-right">

@@ -185,7 +185,7 @@ class TrainingProgramDiscountTest extends TestCase
         $token = $this->token();
 
         $this->post(route('customer-registration.store', $token), [
-            'name' => 'Budi', 'email' => 'budi@example.com', 'phone' => '0812',
+            'name' => 'Budi', 'email' => 'budi@example.com', 'phone' => '0812', 'terms_accepted' => '1',
             'programs' => [[
                 'training_program_id' => $program->id,
                 'meetings' => [['meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30']],
@@ -205,7 +205,7 @@ class TrainingProgramDiscountTest extends TestCase
         $token = $this->token();
 
         $this->post(route('customer-registration.store', $token), [
-            'name' => 'Budi', 'email' => 'budi@example.com', 'phone' => '0812',
+            'name' => 'Budi', 'email' => 'budi@example.com', 'phone' => '0812', 'terms_accepted' => '1',
             'programs' => [[
                 'training_program_id' => $program->id,
                 'meetings' => [['meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30']],

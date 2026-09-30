@@ -53,7 +53,7 @@ class CustomerRequestedProgramsTest extends TestCase
     /** @return array<string, mixed> */
     private function base(array $extra = []): array
     {
-        return ['name' => 'PT Pemilih', 'email' => 'pemilih@pt.test', 'phone' => '0812', ...$extra];
+        return ['name' => 'PT Pemilih', 'email' => 'pemilih@pt.test', 'phone' => '0812', 'terms_accepted' => '1', ...$extra];
     }
 
     /** @return array<string, mixed> */
