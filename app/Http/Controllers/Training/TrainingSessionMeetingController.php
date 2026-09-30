@@ -33,7 +33,7 @@ class TrainingSessionMeetingController extends Controller
             'topic' => ['nullable', 'string', 'max:255'],
         ]);
 
-        if ($violation = OperatingHours::violation($data['meeting_date'], $data['start_time'] ?? null, $data['end_time'] ?? null, $session->program?->session_minutes)) {
+        if ($violation = OperatingHours::violation($data['meeting_date'], $data['start_time'] ?? null, $data['end_time'] ?? null, $session->program?->session_minutes, $session->isCorporate())) {
             return back()->withInput()->withErrors(['meeting_date' => $violation]);
         }
 
@@ -98,7 +98,7 @@ class TrainingSessionMeetingController extends Controller
         $start = substr($rescheduleRequest->requested_start_time, 0, 5);
         $end = substr($rescheduleRequest->requested_end_time, 0, 5);
 
-        if ($violation = OperatingHours::violation($date, $start, $end, $meeting->session->program?->session_minutes)) {
+        if ($violation = OperatingHours::violation($date, $start, $end, $meeting->session->program?->session_minutes, $meeting->session->isCorporate())) {
             return back()->with('error', "Cannot approve: {$violation}");
         }
 

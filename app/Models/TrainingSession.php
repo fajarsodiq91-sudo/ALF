@@ -64,6 +64,12 @@ class TrainingSession extends Model
         return $this->participant_limit !== null && $this->participant_token !== null;
     }
 
+    /** Whether this session's program unlocks the corporate-only operating hours. */
+    public function isCorporate(): bool
+    {
+        return (bool) $this->program?->is_corporate;
+    }
+
     /** Open while there is room and the session is neither finished nor cancelled. */
     public function participantLinkOpen(): bool
     {

@@ -19,7 +19,7 @@
                 'topic' => '',
             ])->all(),
         ])->all();
-        $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type, 'meetings' => $program->duration_days, 'minutes' => $program->session_minutes, 'price' => $program->finalPrice(), 'standardPrice' => (float) $program->standard_price, 'discountLabel' => $program->discountLabel()])->values();
+        $catalog = $programs->map(fn ($program) => ['id' => $program->id, 'name' => $program->name, 'type' => $program->program_type, 'corporate' => (bool) $program->is_corporate, 'meetings' => $program->duration_days, 'minutes' => $program->session_minutes, 'price' => $program->finalPrice(), 'standardPrice' => (float) $program->standard_price, 'discountLabel' => $program->discountLabel()])->values();
         $inputClass = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm';
     @endphp
 
@@ -35,6 +35,7 @@
                     return item ? item.minutes : null;
                 },
                 catalogItem(program) { return this.catalog.find(c => String(c.id) === String(program.training_program_id)) || null; },
+                corporateOf(program) { return !!this.catalogItem(program)?.corporate; },
                 priceHint(program) {
                     const item = this.catalogItem(program);
                     if (!item || !item.discountLabel) return null;
@@ -114,7 +115,11 @@
 
         <details class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
             <summary class="cursor-pointer text-sm font-semibold text-gray-800">Operating hours</summary>
-            <div class="mt-3" x-data='{ days: @json(\App\Services\OperatingHours::forWeekCalendar()) }'>
+            <p class="mb-2 mt-3 flex items-center gap-3 text-xs text-gray-500">
+                <span class="inline-flex items-center gap-1"><span class="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-brand-light to-brand-dark"></span> Open to everyone</span>
+                <span class="inline-flex items-center gap-1"><span class="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-purple-500 to-purple-700"></span> Corporate training only</span>
+            </p>
+            <div x-data='{ days: @json(\App\Services\OperatingHours::forWeekCalendar()) }'>
                 @include('erp.partials.week-calendar')
             </div>
         </details>
@@ -159,6 +164,7 @@
                                     <option :value="item.id" :selected="String(item.id) === String(program.training_program_id)" x-text="item.name + (item.discountLabel ? ' — ' + item.discountLabel : '')"></option>
                                 </template>
                             </select>
+                            <p x-show="corporateOf(program)" x-cloak class="mt-1 text-xs font-medium text-purple-700">Corporate training — unlocks the corporate-only operating hours.</p>
                             <p x-show="catalog.filter(c => !program.program_type || c.type === program.program_type).length === 0" x-cloak class="mt-1 text-xs text-amber-700">
                                 No active program of this type yet.
                                 @can('training.manage')
@@ -222,9 +228,9 @@
                                 <div class="col-span-2 sm:col-span-6 flex flex-wrap items-center justify-between gap-2">
                                     <div>
                                         <p class="text-sm" :class="meeting.meeting_date ? 'font-medium text-gray-800' : 'text-gray-400'" x-text="meetingLabel(meeting)"></p>
-                                        <p x-show="hoursHint(meeting.meeting_date)" x-text="hoursHint(meeting.meeting_date)" x-cloak class="text-xs text-red-600"></p>
+                                        <p x-show="hoursHint(meeting.meeting_date, corporateOf(program))" x-text="hoursHint(meeting.meeting_date, corporateOf(program))" x-cloak class="text-xs text-red-600"></p>
                                     </div>
-                                    <button type="button" @click="$dispatch('open-slot-picker', { meeting, siblings: program.meetings, minutes: minutesOf(program) })" class="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50 hover:shadow"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> Choose on calendar</button>
+                                    <button type="button" @click="$dispatch('open-slot-picker', { meeting, siblings: program.meetings, minutes: minutesOf(program), corporate: corporateOf(program) })" class="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50 hover:shadow"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> Choose on calendar</button>
                                 </div>
                                 <template x-if="hours.enforced">
                                     <div class="hidden">

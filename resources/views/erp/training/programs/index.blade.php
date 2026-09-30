@@ -30,6 +30,9 @@
                                 <div class="font-medium text-gray-800">
                                     {{ $program->name }}
                                     <span class="ml-1 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand">{{ \App\Services\MasterData::label('program_type', $program->program_type) }}</span>
+                                    @if ($program->is_corporate)
+                                        <span class="ml-1 rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700">Corporate</span>
+                                    @endif
                                     @if ($program->category)
                                         <span class="ml-1 rounded-full bg-steel-100 px-2 py-0.5 text-xs font-medium text-steel-700">{{ $program->category->name }}</span>
                                     @endif

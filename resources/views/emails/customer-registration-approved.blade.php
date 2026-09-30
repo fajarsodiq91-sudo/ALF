@@ -44,7 +44,7 @@ Instructor: {{ $session->instructor->name }}
 Your program schedule will be shared soon.
 @endforelse
 
-@php $hours = \App\Services\OperatingHours::formatted(); @endphp
+@php $hours = \App\Services\OperatingHours::formatted($sessions->contains(fn ($s) => $s->isCorporate())); @endphp
 @if ($hours)
 ## Our operating hours
 

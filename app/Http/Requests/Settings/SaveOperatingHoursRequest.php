@@ -22,6 +22,7 @@ class SaveOperatingHoursRequest extends FormRequest
             'hours.*' => ['array'],
             'hours.*.*.start' => ['required', 'date_format:H:i'],
             'hours.*.*.end' => ['required', 'date_format:H:i', 'after:hours.*.*.start'],
+            'hours.*.*.corporate' => ['sometimes', 'boolean'],
             'enforced' => ['sometimes', 'boolean'],
         ];
     }

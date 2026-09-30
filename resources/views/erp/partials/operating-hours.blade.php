@@ -3,10 +3,11 @@
     window.operatingHours = @json(\App\Services\OperatingHours::forBrowser());
     window.dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-    /** Slots open on the weekday of a YYYY-MM-DD date. */
-    window.slotsFor = function (date) {
+    /** Slots open on the weekday of a YYYY-MM-DD date. Corporate-only slots need allowCorporate. */
+    window.slotsFor = function (date, allowCorporate) {
         if (!date) { return []; }
-        return window.operatingHours.days[new Date(date + 'T00:00:00').getDay()] || [];
+        const slots = window.operatingHours.days[new Date(date + 'T00:00:00').getDay()] || [];
+        return allowCorporate ? slots : slots.filter(s => !s.corporate);
     };
 
     window.toMin = t => { const [h, m] = String(t).split(':'); return parseInt(h, 10) * 60 + parseInt(m || 0, 10); };
@@ -23,8 +24,8 @@
     };
 
     /** What can be booked on a date: the whole windows, or (with a session length) start times inside them. */
-    window.candidateSlots = function (date, minutes) {
-        const windows = window.slotsFor(date);
+    window.candidateSlots = function (date, minutes, allowCorporate) {
+        const windows = window.slotsFor(date, allowCorporate);
         if (!minutes) { return windows; }
         const out = [];
         windows.forEach(w => {
@@ -37,9 +38,9 @@
     };
 
     /** A hint for the date, or '' when the date is fine (or unknown). */
-    window.hoursHint = function (date) {
+    window.hoursHint = function (date, allowCorporate) {
         if (!date || !window.operatingHours.enforced) { return ''; }
-        return window.slotsFor(date).length ? '' : window.dayNames[new Date(date + 'T00:00:00').getDay()] + ' is not an operating day.';
+        return window.slotsFor(date, allowCorporate).length ? '' : window.dayNames[new Date(date + 'T00:00:00').getDay()] + ' is not an operating day.';
     };
 
     /** Fills start and end from a "HH:MM-HH:MM" slot value, or clears them. */

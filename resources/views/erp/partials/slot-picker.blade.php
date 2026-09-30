@@ -1,7 +1,8 @@
 {{--
     Calendar pop-up for choosing a meeting slot. Green = available, red = booked by someone else.
-    Open it with: $dispatch('open-slot-picker', { meeting, siblings })  where `meeting` is the reactive
-    { meeting_date, start_time, end_time } object to fill and `siblings` are the other meetings of the same form.
+    Open it with: $dispatch('open-slot-picker', { meeting, siblings, minutes, corporate })  where `meeting` is the
+    reactive { meeting_date, start_time, end_time } object to fill, `siblings` are the other meetings of the same
+    form, and `corporate` (bool) opens the corporate-only slots — pass the program's/session's is_corporate flag.
     Expects $booked: the taken slot keys from App\Services\BookedSlots::keys().
 --}}
 @include('erp.partials.operating-hours')
@@ -25,12 +26,13 @@
 
     function slotPicker() {
         return {
-            open: false, meeting: null, siblings: [], cursor: new Date(), today: window.isoDate(new Date()), minutes: null, focus: null,
+            open: false, meeting: null, siblings: [], cursor: new Date(), today: window.isoDate(new Date()), minutes: null, focus: null, corporate: false,
 
             show(detail) {
                 this.meeting = detail.meeting;
                 this.siblings = detail.siblings || [];
                 this.minutes = detail.minutes ? parseInt(detail.minutes) : null;
+                this.corporate = !!detail.corporate;
                 this.focus = detail.meeting.meeting_date || null;
                 const start = detail.meeting.meeting_date ? new Date(detail.meeting.meeting_date + 'T00:00:00') : new Date();
                 this.cursor = new Date(start.getFullYear(), start.getMonth(), 1);
@@ -65,7 +67,7 @@
                         const iso = window.isoDate(day);
                         days.push({
                             iso, number: day.getDate(), inMonth: day.getMonth() === this.cursor.getMonth(), past: iso < this.today,
-                            open: window.slotsFor(iso).length > 0, slots: window.candidateSlots(iso, this.minutes).map(slot => ({ ...slot, state: this.stateOf(iso, slot) })),
+                            open: window.slotsFor(iso, this.corporate).length > 0, slots: window.candidateSlots(iso, this.minutes, this.corporate).map(slot => ({ ...slot, state: this.stateOf(iso, slot) })),
                         });
                     }
                     weeks.push(days);

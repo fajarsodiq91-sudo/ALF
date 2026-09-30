@@ -27,7 +27,7 @@
                     <p class="text-sm text-gray-500">Current: <span x-text="current"></span></p>
                     <div>
                         <p class="text-sm" :class="m.meeting_date ? 'font-medium text-gray-800' : 'text-gray-400'" x-text="meetingLabel(m)"></p>
-                        <button type="button" @click="$dispatch('open-slot-picker', { meeting: m, siblings: [], minutes })" class="mt-2 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50">
+                        <button type="button" @click="$dispatch('open-slot-picker', { meeting: m, siblings: [], minutes, corporate })" class="mt-2 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                             Choose new date &amp; time
                         </button>
@@ -46,13 +46,14 @@
         <script>
             function rescheduleRequestForm() {
                 return {
-                    open: false, meetingId: null, current: '', minutes: null,
+                    open: false, meetingId: null, current: '', minutes: null, corporate: false,
                     m: { meeting_date: '', start_time: '', end_time: '' },
                     actionUrl: @js(route('portal.reschedule-requests.store')),
                     show(detail) {
                         this.meetingId = detail.meetingId;
                         this.current = detail.current;
                         this.minutes = detail.minutes;
+                        this.corporate = !!detail.corporate;
                         this.m = { meeting_date: '', start_time: '', end_time: '' };
                         this.open = true;
                     },
@@ -73,7 +74,7 @@
                 <div x-show="open" x-cloak class="mt-3">
                     @include('erp.partials.availability-calendar', ['booked' => \App\Services\BookedSlots::keys($customer->id)])
                     <h3 class="mb-2 mt-6 text-xs font-semibold uppercase tracking-wide text-gray-500">Weekly hours</h3>
-                    <div x-data='{ days: @json(\App\Services\OperatingHours::forWeekCalendar()) }'>
+                    <div x-data='{ days: @json(\App\Services\OperatingHours::forWeekCalendar(null, $sessions->contains(fn ($s) => $s->isCorporate()))) }'>
                         @include('erp.partials.week-calendar')
                     </div>
                 </div>
@@ -173,6 +174,7 @@
                                                             meetingId: {{ $meeting->id }},
                                                             current: @js($meeting->meeting_date->format('D, d M Y').' · '.($meeting->timeRange() ?? 'no time set')),
                                                             minutes: {{ $session->program?->session_minutes ?? 'null' }},
+                                                            corporate: @js($session->isCorporate()),
                                                         })"
                                                         class="text-sm font-medium text-brand hover:text-brand-dark">Request reschedule</button>
                                             @endif

@@ -53,6 +53,14 @@
         <input type="checkbox" name="is_active" id="is_active" value="1" @checked(old('is_active', $program->is_active ?? true)) class="rounded border-gray-300 text-brand focus:ring-brand">
         <label for="is_active" class="text-sm text-gray-700">Active</label>
     </div>
+    <div class="sm:col-span-2">
+        <div class="flex items-center gap-2">
+            <input type="hidden" name="is_corporate" value="0">
+            <input type="checkbox" name="is_corporate" id="is_corporate" value="1" @checked(old('is_corporate', $program->is_corporate ?? false)) class="rounded border-gray-300 text-brand focus:ring-brand">
+            <label for="is_corporate" class="text-sm text-gray-700">Corporate training</label>
+        </div>
+        <p class="mt-1 text-xs text-gray-500">Unlocks the corporate-only operating-hours slots (Master Data → Operating Hours) for customers booking this program.</p>
+    </div>
 
     <div class="sm:col-span-2 border-t border-gray-100 pt-5">
         <h3 class="text-sm font-semibold text-gray-800">Promo / Discount</h3>

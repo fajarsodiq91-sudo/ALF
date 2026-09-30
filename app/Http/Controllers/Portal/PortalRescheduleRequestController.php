@@ -42,6 +42,7 @@ class PortalRescheduleRequestController extends Controller
             $data['requested_start_time'],
             $data['requested_end_time'],
             $meeting->session->program?->session_minutes,
+            $meeting->session->isCorporate(),
         );
 
         if ($violation) {

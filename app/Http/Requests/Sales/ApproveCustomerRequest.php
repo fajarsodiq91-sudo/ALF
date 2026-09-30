@@ -54,14 +54,15 @@ class ApproveCustomerRequest extends FormRequest
             $seen = [];
             $customerId = $this->route('customer')?->id;
 
-            $minutes = TrainingProgram::whereIn('id', collect($this->input('programs', []))->pluck('training_program_id'))->pluck('session_minutes', 'id');
+            $catalog = TrainingProgram::whereIn('id', collect($this->input('programs', []))->pluck('training_program_id'))->get()->keyBy('id');
 
             foreach ($this->input('programs', []) as $i => $program) {
                 foreach ($program['meetings'] ?? [] as $j => $meeting) {
                     $start = $meeting['start_time'] ?? null;
                     $end = $meeting['end_time'] ?? null;
                     $label = 'Meeting '.($j + 1).' of program '.($i + 1).': ';
-                    $violation = OperatingHours::violation($meeting['meeting_date'], $start, $end, $minutes[$program['training_program_id']] ?? null);
+                    $catalogProgram = $catalog[$program['training_program_id']] ?? null;
+                    $violation = OperatingHours::violation($meeting['meeting_date'], $start, $end, $catalogProgram?->session_minutes, (bool) $catalogProgram?->is_corporate);
 
                     if ($violation) {
                         $validator->errors()->add("programs.{$i}.meetings.{$j}.meeting_date", $label.$violation);

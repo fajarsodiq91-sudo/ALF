@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
-    'name', 'program_type', 'training_category_id', 'description', 'duration_days', 'session_minutes', 'standard_price', 'is_active',
+    'name', 'program_type', 'is_corporate', 'training_category_id', 'description', 'duration_days', 'session_minutes', 'standard_price', 'is_active',
     'discount_type', 'discount_value', 'discount_expires_at',
 ])]
 class TrainingProgram extends Model
@@ -34,6 +34,7 @@ class TrainingProgram extends Model
             'discount_value' => 'decimal:2',
             'discount_expires_at' => 'date',
             'is_active' => 'boolean',
+            'is_corporate' => 'boolean',
         ];
     }
 

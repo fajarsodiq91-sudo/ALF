@@ -55,9 +55,9 @@ class OperatingHoursTest extends TestCase
 
     public function test_default_schedule_matches_the_company_hours(): void
     {
-        $saturday = [['09:00', '10:30'], ['10:40', '12:10'], ['13:00', '14:30'], ['14:40', '16:00']];
+        $saturday = [['09:00', '10:30', false], ['10:40', '12:10', false], ['13:00', '14:30', false], ['14:40', '16:00', false]];
 
-        $this->assertSame([2 => [['20:00', '21:30']], 4 => [['20:00', '21:30']], 6 => $saturday, 7 => $saturday], OperatingHours::schedule());
+        $this->assertSame([2 => [['20:00', '21:30', false]], 4 => [['20:00', '21:30', false]], 6 => $saturday, 7 => $saturday], OperatingHours::schedule());
         $this->assertTrue(OperatingHours::enforced());
         $this->assertSame('20:00 – 21:30', OperatingHours::formatted()['Tuesday']);
         $this->assertSame('09:00 – 10:30, 10:40 – 12:10, 13:00 – 14:30, 14:40 – 16:00', OperatingHours::formatted()['Sunday']);
@@ -137,7 +137,7 @@ class OperatingHoursTest extends TestCase
             'enforced' => '1',
         ])->assertRedirect(route('masterdata.hours.edit'));
 
-        $this->assertSame([3 => [['13:00', '14:00'], ['18:00', '19:00']], 5 => [['09:00', '10:00']]], OperatingHours::schedule());
+        $this->assertSame([3 => [['13:00', '14:00', false], ['18:00', '19:00', false]], 5 => [['09:00', '10:00', false]]], OperatingHours::schedule());
         $this->actingAs($admin)->get(route('masterdata.hours.edit'))->assertSee('"start":"13:00"', false)->assertSee('"start":"18:00"', false);
         $this->assertNull(OperatingHours::violation('2026-10-07', '13:00', '14:00')); // Wednesday is open now
         $this->assertNotNull(OperatingHours::violation('2026-10-06', '20:00', '21:30')); // Tuesday closed now

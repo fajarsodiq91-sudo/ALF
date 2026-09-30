@@ -46,6 +46,7 @@ class CustomerRegistrationController extends Controller
             'booked' => BookedSlots::keys(),
             'sessionMinutes' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->session_minutes]),
             'meetingCounts' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->duration_days]),
+            'corporateFlags' => $programs->mapWithKeys(fn ($program) => [$program->id => (bool) $program->is_corporate]),
         ]);
     }
 

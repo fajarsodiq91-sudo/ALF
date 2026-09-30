@@ -1,7 +1,14 @@
 <x-layouts.erp title="Master Data — Operating Hours">
     @php
         $hoursErrors = collect($errors->keys())->filter(fn ($key) => str_starts_with($key, 'hours'))->flatMap(fn ($key) => $errors->get($key))->unique();
-        $initialDays = old('hours') ? array_replace(array_fill_keys(range(1, 7), []), old('hours')) : $days;
+        $initialDays = old('hours')
+            ? collect(array_replace(array_fill_keys(range(1, 7), []), old('hours')))
+                ->map(fn ($slots) => collect($slots)->map(fn ($slot) => [
+                    'start' => $slot['start'] ?? '',
+                    'end' => $slot['end'] ?? '',
+                    'corporate' => filter_var($slot['corporate'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                ])->values()->all())->all()
+            : $days;
         $timeInput = 'rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm';
     @endphp
 
@@ -27,6 +34,10 @@
                         <span class="text-sm font-medium text-brand" x-text="open ? 'Collapse ▲' : 'Expand ▼'"></span>
                     </button>
                     <div x-show="open" x-cloak class="mt-3">
+                        <p class="mb-2 flex items-center gap-3 text-xs text-gray-500">
+                            <span class="inline-flex items-center gap-1"><span class="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-brand-light to-brand-dark"></span> Open to everyone</span>
+                            <span class="inline-flex items-center gap-1"><span class="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-purple-500 to-purple-700"></span> Corporate training only</span>
+                        </p>
                         @include('erp.partials.week-calendar')
                     </div>
                 </div>
@@ -45,6 +56,7 @@
                     @method('PUT')
 
                     <h3 class="text-sm font-semibold text-gray-800">Edit slots</h3>
+                    <p class="text-xs text-gray-500">Tick "Corporate training only" on a slot to restrict it to sessions of a program marked as corporate training (see Training → Programs). It stays hidden from other bookings.</p>
 
                     @if ($hoursErrors->isNotEmpty())
                         <ul class="list-disc rounded-md border border-red-200 bg-red-50 py-2 pl-8 pr-4 text-sm text-red-700">
@@ -57,16 +69,23 @@
                             <div class="rounded-md border border-gray-200 p-2.5">
                                 <div class="flex items-center justify-between">
                                     <span class="text-sm font-medium text-gray-800">{{ $dayName }}</span>
-                                    <button type="button" @click="days[{{ $iso }}].push({ start: '', end: '' })" class="text-xs font-medium text-brand hover:text-brand-dark">+ Add slot</button>
+                                    <button type="button" @click="days[{{ $iso }}].push({ start: '', end: '', corporate: false })" class="text-xs font-medium text-brand hover:text-brand-dark">+ Add slot</button>
                                 </div>
                                 <p x-show="days[{{ $iso }}].length === 0" class="mt-1 text-xs text-gray-400">Closed</p>
                                 <div class="mt-1.5 space-y-1.5">
                                     <template x-for="(slot, i) in days[{{ $iso }}]" :key="i">
-                                        <div class="flex items-center gap-1">
-                                            <input type="time" required :name="`hours[{{ $iso }}][${i}][start]`" x-model="slot.start" class="{{ $timeInput }} w-full py-1 text-xs">
-                                            <span class="shrink-0 text-xs text-gray-400">–</span>
-                                            <input type="time" required :name="`hours[{{ $iso }}][${i}][end]`" x-model="slot.end" class="{{ $timeInput }} w-full py-1 text-xs">
-                                            <button type="button" @click="days[{{ $iso }}].splice(i, 1)" title="Remove slot" aria-label="Remove slot" class="shrink-0 text-gray-400 hover:text-red-600">&times;</button>
+                                        <div class="rounded border border-gray-100 p-1">
+                                            <div class="flex items-center gap-1">
+                                                <input type="time" required :name="`hours[{{ $iso }}][${i}][start]`" x-model="slot.start" class="{{ $timeInput }} w-full py-1 text-xs">
+                                                <span class="shrink-0 text-xs text-gray-400">–</span>
+                                                <input type="time" required :name="`hours[{{ $iso }}][${i}][end]`" x-model="slot.end" class="{{ $timeInput }} w-full py-1 text-xs">
+                                                <button type="button" @click="days[{{ $iso }}].splice(i, 1)" title="Remove slot" aria-label="Remove slot" class="shrink-0 text-gray-400 hover:text-red-600">&times;</button>
+                                            </div>
+                                            <label class="mt-1 flex items-center gap-1.5 text-[11px] text-gray-600">
+                                                <input type="hidden" :name="`hours[{{ $iso }}][${i}][corporate]`" :value="slot.corporate ? '1' : '0'">
+                                                <input type="checkbox" :checked="slot.corporate" @change="slot.corporate = $event.target.checked" class="h-3 w-3 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                                Corporate training only
+                                            </label>
                                         </div>
                                     </template>
                                 </div>

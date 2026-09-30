@@ -90,7 +90,7 @@ class RegisterCustomerRequest extends FormRequest
                 foreach ($program['meetings'] as $j => $meeting) {
                     $start = $meeting['start_time'] ?? null;
                     $end = $meeting['end_time'] ?? null;
-                    $violation = OperatingHours::violation($meeting['meeting_date'], $start, $end, $catalog[$program['training_program_id']]->session_minutes);
+                    $violation = OperatingHours::violation($meeting['meeting_date'], $start, $end, $catalog[$program['training_program_id']]->session_minutes, $catalog[$program['training_program_id']]->is_corporate);
 
                     if ($violation) {
                         $validator->errors()->add("programs.{$i}.meetings.{$j}.meeting_date", 'Program '.($i + 1).', date '.($j + 1).': '.$violation);

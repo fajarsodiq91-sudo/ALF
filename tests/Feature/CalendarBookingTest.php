@@ -265,7 +265,7 @@ class CalendarBookingTest extends TestCase
 
         $this->assertSame([1, 2, 3, 4, 5, 6, 7], array_keys($days));
         $this->assertSame([], $days[1]);
-        $this->assertSame([['start' => '20:00', 'end' => '21:30']], $days[2]);
+        $this->assertSame([['start' => '20:00', 'end' => '21:30', 'corporate' => false]], $days[2]);
         $this->assertCount(4, $days[7]);
     }
 

@@ -45,8 +45,9 @@
                     </template>
                     <span x-show="!days[i + 1].some(validSlot)" class="absolute inset-x-0 top-2 text-center text-[10px] uppercase tracking-wide text-gray-300">Closed</span>
                     <template x-for="(slot, k) in days[i + 1].filter(validSlot)" :key="k">
-                        <div class="absolute inset-x-1 flex items-center justify-center overflow-hidden rounded-md bg-gradient-to-b from-brand-light to-brand-dark px-0.5 text-center text-[10px] font-medium leading-tight text-white shadow-sm ring-1 ring-brand-dark/40"
-                             :style="slotStyle(slot, days)" :title="slot.start + ' – ' + slot.end">
+                        <div class="absolute inset-x-1 flex items-center justify-center overflow-hidden rounded-md px-0.5 text-center text-[10px] font-medium leading-tight text-white shadow-sm ring-1"
+                             :class="slot.corporate ? 'bg-gradient-to-b from-purple-500 to-purple-700 ring-purple-800/40' : 'bg-gradient-to-b from-brand-light to-brand-dark ring-brand-dark/40'"
+                             :style="slotStyle(slot, days)" :title="slot.start + ' – ' + slot.end + (slot.corporate ? ' (corporate training only)' : '')">
                             <span x-text="slot.start + '–' + slot.end"></span>
                         </div>
                     </template>

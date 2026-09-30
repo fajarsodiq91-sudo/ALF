@@ -37,7 +37,7 @@ class BlockSlotRequest extends FormRequest
                 return;
             }
 
-            if (! OperatingHours::windowContaining($this->input('date'), $this->input('start_time'), $this->input('end_time'))) {
+            if (! OperatingHours::windowContaining($this->input('date'), $this->input('start_time'), $this->input('end_time'), true)) {
                 $validator->errors()->add('date', 'The time must be inside the operating hours of that day.');
             } elseif (BookedSlots::conflicts($this->input('date'), $this->input('start_time'), $this->input('end_time'))) {
                 $validator->errors()->add('date', 'That time overlaps something already booked.');

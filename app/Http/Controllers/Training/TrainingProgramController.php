@@ -29,7 +29,7 @@ class TrainingProgramController extends Controller
 
     public function store(SaveTrainingProgramRequest $request): RedirectResponse
     {
-        TrainingProgram::create([...$request->validated(), 'is_active' => $request->boolean('is_active')]);
+        TrainingProgram::create([...$request->validated(), 'is_active' => $request->boolean('is_active'), 'is_corporate' => $request->boolean('is_corporate')]);
 
         return redirect()->route('training.programs.index')->with('status', 'Program created successfully.');
     }
@@ -47,7 +47,7 @@ class TrainingProgramController extends Controller
 
     public function update(SaveTrainingProgramRequest $request, TrainingProgram $program): RedirectResponse
     {
-        $program->update([...$request->validated(), 'is_active' => $request->boolean('is_active')]);
+        $program->update([...$request->validated(), 'is_active' => $request->boolean('is_active'), 'is_corporate' => $request->boolean('is_corporate')]);
 
         return redirect()->route('training.programs.index')->with('status', 'Program updated successfully.');
     }
