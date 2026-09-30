@@ -116,6 +116,16 @@
                         </div>
                     </a>
 
+                    <a href="{{ route('finance.reports.profit-loss') }}" class="block p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium text-gray-900">Profit &amp; Loss</p>
+                                <p class="text-sm text-gray-500">Revenue, costs, PPh Final and dividends by month</p>
+                            </div>
+                            <span class="text-gray-400">→</span>
+                        </div>
+                    </a>
+
                     <a href="{{ route('finance.reports.tax-summary') }}" class="block p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
                         <div class="flex items-center justify-between">
                             <div>

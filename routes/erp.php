@@ -140,6 +140,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             Route::get('/income-by-category', [ReportController::class, 'incomeByCategory'])->name('income-by-category');
             Route::get('/expense-by-category', [ReportController::class, 'expenseByCategory'])->name('expense-by-category');
             Route::get('/monthly-flow', [ReportController::class, 'monthlyFlow'])->name('monthly-flow');
+            Route::get('/profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss');
             Route::get('/tax-summary', [ReportController::class, 'taxSummary'])->name('tax-summary');
             Route::get('/account-balances', [ReportController::class, 'accountBalances'])->name('account-balances');
         });

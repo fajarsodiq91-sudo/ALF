@@ -22,6 +22,7 @@
                             <th rowspan="2" class="px-4 py-3 text-left font-medium text-gray-500 align-bottom">Month</th>
                             <th colspan="5" class="px-4 py-2 text-center font-medium text-gray-500 border-l border-gray-200">PPN (VAT)</th>
                             <th colspan="3" class="px-4 py-2 text-center font-medium text-gray-500 border-l border-gray-200">PPh withheld on expenses</th>
+                            <th colspan="3" class="px-4 py-2 text-center font-medium text-gray-500 border-l border-gray-200">PPh Final (accrued on income)</th>
                             <th rowspan="2" class="px-4 py-3 text-right font-medium text-gray-500 align-bottom border-l border-gray-200">PPh withheld on income (credit)</th>
                         </tr>
                         <tr>
@@ -31,6 +32,9 @@
                             <th class="px-4 py-2 text-right font-medium text-gray-500">Paid</th>
                             <th class="px-4 py-2 text-right font-medium text-gray-500">Outstanding</th>
                             <th class="px-4 py-2 text-right font-medium text-gray-500 border-l border-gray-200">Owed</th>
+                            <th class="px-4 py-2 text-right font-medium text-gray-500">Paid</th>
+                            <th class="px-4 py-2 text-right font-medium text-gray-500">Outstanding</th>
+                            <th class="px-4 py-2 text-right font-medium text-gray-500 border-l border-gray-200">Accrued</th>
                             <th class="px-4 py-2 text-right font-medium text-gray-500">Paid</th>
                             <th class="px-4 py-2 text-right font-medium text-gray-500">Outstanding</th>
                         </tr>
@@ -47,6 +51,9 @@
                                 <td class="px-4 py-3 text-right border-l border-gray-100">{{ $rp($row['wht_expense']) }}</td>
                                 <td class="px-4 py-3 text-right">{{ $rp($row['wht_paid']) }}</td>
                                 <td class="px-4 py-3 text-right font-semibold {{ $row['wht_outstanding'] > 0 ? 'text-red-600' : 'text-green-600' }}">{{ $rp($row['wht_outstanding']) }}</td>
+                                <td class="px-4 py-3 text-right border-l border-gray-100">{{ $rp($row['final_accrued']) }}</td>
+                                <td class="px-4 py-3 text-right">{{ $rp($row['final_paid']) }}</td>
+                                <td class="px-4 py-3 text-right font-semibold {{ $row['final_outstanding'] > 0 ? 'text-red-600' : 'text-green-600' }}">{{ $rp($row['final_outstanding']) }}</td>
                                 <td class="px-4 py-3 text-right border-l border-gray-100">{{ $rp($row['wht_income']) }}</td>
                             </tr>
                         @endforeach
@@ -60,11 +67,14 @@
                             <td class="px-4 py-3 text-right border-l border-gray-100">{{ $rp($data->sum('wht_expense')) }}</td>
                             <td class="px-4 py-3 text-right">{{ $rp($data->sum('wht_paid')) }}</td>
                             <td class="px-4 py-3 text-right">{{ $rp($data->sum('wht_outstanding')) }}</td>
+                            <td class="px-4 py-3 text-right border-l border-gray-100">{{ $rp($data->sum('final_accrued')) }}</td>
+                            <td class="px-4 py-3 text-right">{{ $rp($data->sum('final_paid')) }}</td>
+                            <td class="px-4 py-3 text-right">{{ $rp($data->sum('final_outstanding')) }}</td>
                             <td class="px-4 py-3 text-right border-l border-gray-100">{{ $rp($data->sum('wht_income')) }}</td>
                         </tr>
                     </tbody>
                 </table>
-                <p class="px-6 py-3 text-xs text-gray-400">PPN Payable = Output − Input; a negative outstanding amount is a credit. PPh withheld on income is a prepaid tax credit and is not remitted by the company.</p>
+                <p class="px-6 py-3 text-xs text-gray-400">PPN Payable = Output − Input; a negative outstanding amount is a credit. PPh withheld on income is a prepaid tax credit and is not remitted by the company. PPh Final is the company's own tax: income is received in full and the tax stays outstanding until paid (due the 15th of the following month).</p>
             @endif
         </div>
     </div>

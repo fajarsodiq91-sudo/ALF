@@ -29,7 +29,7 @@
             @foreach ($taxes as $tax)
                 <option value="{{ $tax->id }}" data-rate="{{ $tax->rate }}" data-type="{{ $tax->type }}"
                         @selected(old('tax_id', $transaction ? $transaction->tax_id : $defaultTaxId) == $tax->id)>
-                    {{ $tax->name }} — {{ $tax->type === 'vat' ? '+' : '−' }}{{ rtrim(rtrim($tax->rate, '0'), '.') }}%
+                    {{ $tax->name }} — {{ ['vat' => '+', 'final' => ''][$tax->type] ?? '−' }}{{ rtrim(rtrim($tax->rate, '0'), '.') }}%{{ $tax->type === 'final' ? ' (accrued)' : '' }}
                 </option>
             @endforeach
         </select>
@@ -121,6 +121,10 @@
             const rate = parseFloat(opt.dataset.rate) || 0;
             if (!opt.value || !base) { preview.textContent = ''; return; }
             const t = Math.round(base * rate) / 100;
+            if (opt.dataset.type === 'final') {
+                preview.textContent = 'Final tax accrued: Rp ' + fmt.format(t) + ' — received in full: Rp ' + fmt.format(base) + ' (tax stays owed until paid under Tax Payments)';
+                return;
+            }
             const total = opt.dataset.type === 'vat' ? base + t : base - t;
             preview.textContent = 'Tax: Rp ' + fmt.format(t) + ' — Total ' + (opt.dataset.type === 'vat' ? 'incl. tax' : 'after withholding') + ': Rp ' + fmt.format(total);
         }

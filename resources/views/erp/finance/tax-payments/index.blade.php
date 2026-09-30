@@ -33,7 +33,7 @@
                         <tr>
                             <td class="px-4 py-3 font-mono text-gray-600">{{ $payment->payment_number }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $payment->payment_date->format('Y-m-d') }}</td>
-                            <td class="px-4 py-3 text-gray-800">{{ $payment->tax_type === 'vat' ? 'PPN / VAT' : 'PPh / Withholding' }}</td>
+                            <td class="px-4 py-3 text-gray-800">{{ \App\Models\Tax::SHORT_LABELS[$payment->tax_type] ?? $payment->tax_type }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $payment->period }}</td>
                             <td class="px-4 py-3 text-gray-800">{{ $payment->account->name }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $payment->reference ?: '—' }}</td>

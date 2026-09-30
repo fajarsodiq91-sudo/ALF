@@ -88,7 +88,7 @@ class TaxPaymentController extends Controller
             ['is_active' => true, 'description' => 'Tax remitted to the tax office (PPN, PPh)'],
         );
 
-        $label = $payment->tax_type === 'vat' ? 'PPN' : 'PPh';
+        $label = ['vat' => 'PPN', 'final' => 'PPh Final'][$payment->tax_type] ?? 'PPh';
 
         $attributes = [
             'transaction_date' => $payment->payment_date,

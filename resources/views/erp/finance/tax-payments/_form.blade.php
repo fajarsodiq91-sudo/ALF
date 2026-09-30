@@ -7,6 +7,7 @@
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
             <option value="vat" @selected(old('tax_type', $taxPayment->tax_type ?? '') === 'vat')>PPN / VAT</option>
             <option value="withholding" @selected(old('tax_type', $taxPayment->tax_type ?? '') === 'withholding')>PPh / Withholding</option>
+            <option value="final" @selected(old('tax_type', $taxPayment->tax_type ?? '') === 'final')>PPh Final (UMKM)</option>
         </select>
         @error('tax_type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>

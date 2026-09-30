@@ -176,7 +176,7 @@ class DashboardController extends Controller
         ];
     }
 
-    /** VAT vs withholding tax actually paid, for the trailing 6 months. */
+    /** VAT, withholding and final tax actually paid, for the trailing 6 months. */
     private function getTaxPaymentsTrend(): array
     {
         $periods = collect(range(0, 5))->map(fn ($i) => now()->startOfMonth()->subMonths(5 - $i)->format('Y-m'));
@@ -195,8 +195,16 @@ class DashboardController extends Controller
             ->groupBy('period')
             ->pluck('total', 'period');
 
+        $finalPaid = TaxPayment::query()
+            ->where('tax_type', 'final')
+            ->whereIn('period', $periods)
+            ->selectRaw('period, SUM(amount) as total')
+            ->groupBy('period')
+            ->pluck('total', 'period');
+
         return [
             'labels' => $periods->map(fn ($p) => Carbon::createFromFormat('!Y-m', $p)->format('M Y'))->values(),
+            'final' => $periods->map(fn ($p) => (float) ($finalPaid[$p] ?? 0))->values(),
             'vat' => $periods->map(fn ($p) => (float) ($vatPaid[$p] ?? 0))->values(),
             'withholding' => $periods->map(fn ($p) => (float) ($whtPaid[$p] ?? 0))->values(),
         ];

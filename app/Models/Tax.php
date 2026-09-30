@@ -16,9 +16,18 @@ class Tax extends Model
 
     public const TYPE_WITHHOLDING = 'withholding';
 
+    public const TYPE_FINAL = 'final';
+
     public const TYPES = [
         self::TYPE_VAT => 'PPN / VAT (added to amount)',
         self::TYPE_WITHHOLDING => 'PPh / Withholding (deducted from amount)',
+        self::TYPE_FINAL => 'PPh Final (paid by the company, accrued — income is recorded in full)',
+    ];
+
+    public const SHORT_LABELS = [
+        self::TYPE_VAT => 'PPN / VAT',
+        self::TYPE_WITHHOLDING => 'PPh / Withholding',
+        self::TYPE_FINAL => 'PPh Final',
     ];
 
     public const DEFAULT_INCOME_SETTING = 'default_income_tax_id';

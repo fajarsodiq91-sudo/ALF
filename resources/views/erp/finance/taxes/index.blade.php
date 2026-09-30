@@ -28,7 +28,7 @@
                     @forelse ($taxes as $tax)
                         <tr>
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $tax->name }}</td>
-                            <td class="px-4 py-3 text-gray-500">{{ $tax->type === 'vat' ? 'PPN / VAT' : 'PPh / Withholding' }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ \App\Models\Tax::SHORT_LABELS[$tax->type] ?? $tax->type }}</td>
                             <td class="px-4 py-3 text-right text-gray-800">{{ rtrim(rtrim($tax->rate, '0'), '.') }}%</td>
                             <td class="px-4 py-3">
                                 @if ($tax->is_active)

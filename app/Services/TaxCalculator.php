@@ -8,7 +8,7 @@ class TaxCalculator
 {
     /**
      * Returns the fields to persist on a transaction given the pre-tax amount.
-     * VAT is added to the amount; withholding tax is deducted from it.
+     * VAT is added to the amount; withholding tax is deducted from it; final tax leaves it unchanged (accrued as a liability).
      *
      * @return array{subtotal: string, tax_id: ?int, tax_rate: ?string, tax_amount: string, amount: string}
      */
@@ -28,7 +28,12 @@ class TaxCalculator
         }
 
         $taxAmount = round($subtotal * (float) $tax->rate / 100, 2);
-        $total = $tax->type === Tax::TYPE_VAT ? $subtotal + $taxAmount : $subtotal - $taxAmount;
+        // Final tax is the company's own liability: the full amount is received and the tax is accrued, not deducted.
+        $total = match ($tax->type) {
+            Tax::TYPE_VAT => $subtotal + $taxAmount,
+            Tax::TYPE_FINAL => $subtotal,
+            default => $subtotal - $taxAmount,
+        };
 
         return [
             'subtotal' => number_format($subtotal, 2, '.', ''),

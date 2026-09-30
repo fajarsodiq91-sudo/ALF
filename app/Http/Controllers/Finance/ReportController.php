@@ -7,8 +7,9 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\ExpenseTransaction;
 use App\Models\IncomeTransaction;
+use App\Models\Tax;
 use App\Models\TaxPayment;
-use App\Models\Transfer;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
@@ -104,6 +105,70 @@ class ReportController extends Controller
         return view('erp.finance.reports.monthly-flow', compact('data'));
     }
 
+    /**
+     * Profit and loss on an accrual footing: revenue before tax, operating costs, and
+     * PPh Final accrued on income. Tax payments only settle liabilities and dividends
+     * are a distribution of profit, so neither counts as an operating cost.
+     */
+    public function profitLoss()
+    {
+        $this->authorize('finance.view');
+
+        $year = (int) request('year', now()->year);
+        $dateFormat = DB::getDriverName() === 'sqlite' ? "strftime('%Y-%m', transaction_date)" : "DATE_FORMAT(transaction_date, '%Y-%m')";
+
+        $revenue = IncomeTransaction::query()
+            ->whereYear('transaction_date', $year)
+            ->selectRaw("{$dateFormat} as month, SUM(subtotal) as total")
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $finalTax = IncomeTransaction::query()
+            ->join('taxes', 'taxes.id', '=', 'tax_id')
+            ->where('taxes.type', Tax::TYPE_FINAL)
+            ->whereYear('transaction_date', $year)
+            ->selectRaw("{$dateFormat} as month, SUM(tax_amount) as total")
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $dividendCategories = Category::where('type', 'expense')->where('name', OwnerDrawController::CATEGORIES['dividend'][0])->select('id');
+
+        // Input VAT is a cost for a company that is not PKP, so it stays in; withholding is part of the gross cost.
+        $operating = ExpenseTransaction::query()
+            ->leftJoin('taxes', 'taxes.id', '=', 'expense_transactions.tax_id')
+            ->whereNull('expense_transactions.tax_payment_id')
+            ->whereNotIn('expense_transactions.category_id', $dividendCategories)
+            ->whereYear('transaction_date', $year)
+            ->selectRaw("{$dateFormat} as month, SUM(expense_transactions.subtotal + CASE WHEN taxes.type = 'vat' THEN expense_transactions.tax_amount ELSE 0 END) as total")
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $dividends = ExpenseTransaction::query()
+            ->whereIn('category_id', $dividendCategories)
+            ->whereYear('transaction_date', $year)
+            ->selectRaw("{$dateFormat} as month, SUM(subtotal) as total")
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $data = collect()
+            ->merge($revenue->keys())->merge($operating->keys())->merge($finalTax->keys())->merge($dividends->keys())
+            ->unique()->sort()->values()
+            ->map(function ($month) use ($revenue, $operating, $finalTax, $dividends) {
+                $row = [
+                    'month' => $month,
+                    'revenue' => (float) ($revenue[$month] ?? 0),
+                    'operating' => (float) ($operating[$month] ?? 0),
+                    'final_tax' => (float) ($finalTax[$month] ?? 0),
+                    'dividends' => (float) ($dividends[$month] ?? 0),
+                ];
+                $row['profit'] = $row['revenue'] - $row['operating'] - $row['final_tax'];
+
+                return $row;
+            });
+
+        return view('erp.finance.reports.profit-loss', compact('data', 'year'));
+    }
+
     public function taxSummary()
     {
         $this->authorize('finance.view');
@@ -121,6 +186,7 @@ class ReportController extends Controller
         $vatIn = $collect(ExpenseTransaction::class, 'vat');
         $whtIncome = $collect(IncomeTransaction::class, 'withholding');
         $whtExpense = $collect(ExpenseTransaction::class, 'withholding');
+        $finalAccrued = $collect(IncomeTransaction::class, 'final');
 
         $paid = fn (string $type) => TaxPayment::query()
             ->where('tax_type', $type)
@@ -130,13 +196,15 @@ class ReportController extends Controller
 
         $vatPaid = $paid('vat');
         $whtPaid = $paid('withholding');
+        $finalPaid = $paid('final');
 
         $data = collect()
             ->merge($vatOut->keys())->merge($vatIn->keys())
             ->merge($whtIncome->keys())->merge($whtExpense->keys())
             ->merge($vatPaid->keys())->merge($whtPaid->keys())
+            ->merge($finalAccrued->keys())->merge($finalPaid->keys())
             ->unique()->sort()->values()
-            ->map(function ($month) use ($vatOut, $vatIn, $whtIncome, $whtExpense, $vatPaid, $whtPaid) {
+            ->map(function ($month) use ($vatOut, $vatIn, $whtIncome, $whtExpense, $vatPaid, $whtPaid, $finalAccrued, $finalPaid) {
                 $vatPayable = (float) ($vatOut[$month] ?? 0) - (float) ($vatIn[$month] ?? 0);
                 $whtOwed = (float) ($whtExpense[$month] ?? 0);
 
@@ -151,6 +219,9 @@ class ReportController extends Controller
                     'wht_expense' => $whtOwed,
                     'wht_paid' => (float) ($whtPaid[$month] ?? 0),
                     'wht_outstanding' => $whtOwed - (float) ($whtPaid[$month] ?? 0),
+                    'final_accrued' => (float) ($finalAccrued[$month] ?? 0),
+                    'final_paid' => (float) ($finalPaid[$month] ?? 0),
+                    'final_outstanding' => (float) ($finalAccrued[$month] ?? 0) - (float) ($finalPaid[$month] ?? 0),
                 ];
             });
 
@@ -166,7 +237,7 @@ class ReportController extends Controller
         return view('erp.finance.reports.account-balances', compact('balances'));
     }
 
-    private function calculateAccountBalances(): \Illuminate\Support\Collection
+    private function calculateAccountBalances(): Collection
     {
         $accounts = Account::query()
             ->with('incomeTransactions', 'expenseTransactions', 'transfersOut', 'transfersIn', 'loans', 'loanRepayments.loan')
@@ -179,7 +250,7 @@ class ReportController extends Controller
             $incoming = $account->transfersIn->sum('amount');
 
             $loans = $account->loanEffect();
-                $balance = $account->opening_balance + $income - $expense + $incoming - $outgoing + $loans;
+            $balance = $account->opening_balance + $income - $expense + $incoming - $outgoing + $loans;
 
             return [
                 'account' => $account->name,

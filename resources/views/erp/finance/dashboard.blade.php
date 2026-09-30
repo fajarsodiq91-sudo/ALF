@@ -269,6 +269,7 @@
                     datasets: [
                         { label: 'VAT', data: chartData.taxPayments.vat, backgroundColor: '#2a78d6' },
                         { label: 'Withholding', data: chartData.taxPayments.withholding, backgroundColor: '#eb6834' },
+                        { label: 'Final', data: chartData.taxPayments.final, backgroundColor: '#2f9e6b' },
                     ],
                 },
                 options: {

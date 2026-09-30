@@ -35,7 +35,7 @@
                         <option value="">No automatic tax</option>
                         @foreach (\App\Models\Tax::where('is_active', true)->orderBy('type')->orderBy('name')->get() as $tax)
                             <option value="{{ $tax->id }}" @selected(old('default_income_tax_id', $values['default_income_tax_id'] ?? '') == $tax->id)>
-                                {{ $tax->name }} — {{ $tax->type === 'vat' ? '+' : '−' }}{{ rtrim(rtrim($tax->rate, '0'), '.') }}%
+                                {{ $tax->name }} — {{ ['vat' => '+', 'final' => ''][$tax->type] ?? '−' }}{{ rtrim(rtrim($tax->rate, '0'), '.') }}%
                             </option>
                         @endforeach
                     </select>

@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\Finance;
 
+use App\Models\Tax;
 use App\Rules\ExpenseCategoryRule;
 use App\Services\TransactionProof;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreExpenseTransactionRequest extends FormRequest
 {
@@ -18,7 +20,7 @@ class StoreExpenseTransactionRequest extends FormRequest
         return [
             'transaction_date' => 'required|date',
             'amount' => 'required|decimal:0,2|min:0.01',
-            'tax_id' => 'nullable|exists:taxes,id',
+            'tax_id' => ['nullable', Rule::exists('taxes', 'id')->where(fn ($query) => $query->where('type', '!=', Tax::TYPE_FINAL))],
             'account_id' => 'required|exists:accounts,id',
             'category_id' => ['required', 'exists:categories,id', new ExpenseCategoryRule],
             'payee' => 'required|string|max:255',

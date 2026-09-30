@@ -42,7 +42,7 @@
                             <td class="px-4 py-3 text-right text-gray-500">
                                 @if ($transaction->tax)
                                     {{ $transaction->tax->name }}<br>
-                                    <span class="text-xs">{{ $transaction->tax->type === 'vat' ? '+' : '−' }}Rp {{ number_format($transaction->tax_amount, 0, ',', '.') }}</span>
+                                    <span class="text-xs">{{ ['vat' => '+', 'final' => ''][$transaction->tax->type] ?? '−' }}Rp {{ number_format($transaction->tax_amount, 0, ',', '.') }}{{ $transaction->tax->type === 'final' ? ' accrued' : '' }}</span>
                                 @else
                                     —
                                 @endif

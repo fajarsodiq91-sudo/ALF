@@ -18,7 +18,7 @@
     </div>
 
     <div class="sm:col-span-2">
-        @php $taxes = \App\Models\Tax::where('is_active', true)->orderBy('type')->orderBy('name')->get(); @endphp
+        @php $taxes = \App\Models\Tax::where('is_active', true)->where('type', '!=', 'final')->orderBy('type')->orderBy('name')->get(); @endphp
         <label for="tax_id" class="block text-sm font-medium text-gray-700">Tax</label>
         <select name="tax_id" id="tax_id"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
