@@ -122,7 +122,7 @@
                     }
 
                     if ($entry['type'] === 'meeting') {
-                        $entry['url'] = route('training.edit', $entry['session_id']);
+                        $entry['url'] = route('training.edit', ['session' => $entry['session_id'], 'focus' => 'details']);
                     }
 
                     return $entry;
