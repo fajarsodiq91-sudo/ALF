@@ -18,14 +18,17 @@
     </div>
 
     <div class="sm:col-span-2">
-        @php $taxes = \App\Models\Tax::where('is_active', true)->orderBy('type')->orderBy('name')->get(); @endphp
+        @php
+            $taxes = \App\Models\Tax::where('is_active', true)->orderBy('type')->orderBy('name')->get();
+            $defaultTaxId = \App\Models\Tax::defaultForIncome()?->id;
+        @endphp
         <label for="tax_id" class="block text-sm font-medium text-gray-700">Tax</label>
         <select name="tax_id" id="tax_id"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
             <option value="" data-rate="0" data-type="">No tax</option>
             @foreach ($taxes as $tax)
                 <option value="{{ $tax->id }}" data-rate="{{ $tax->rate }}" data-type="{{ $tax->type }}"
-                        @selected(old('tax_id', $transaction->tax_id ?? '') == $tax->id)>
+                        @selected(old('tax_id', $transaction ? $transaction->tax_id : $defaultTaxId) == $tax->id)>
                     {{ $tax->name }} — {{ $tax->type === 'vat' ? '+' : '−' }}{{ rtrim(rtrim($tax->rate, '0'), '.') }}%
                 </option>
             @endforeach

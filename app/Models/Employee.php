@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'employee_number', 'name', 'email', 'phone', 'position', 'department',
-    'employment_type', 'status', 'join_date', 'annual_leave_quota', 'address', 'notes', 'signature_path',
+    'employment_type', 'status', 'join_date', 'annual_leave_quota', 'address', 'notes', 'signature_path', 'photo_path',
 ])]
 class Employee extends Model
 {
@@ -33,8 +33,10 @@ class Employee extends Model
         });
 
         static::deleted(function (Employee $employee) {
-            if ($employee->signature_path) {
-                Storage::disk('public')->delete($employee->signature_path);
+            foreach ([$employee->signature_path, $employee->photo_path] as $path) {
+                if ($path) {
+                    Storage::disk('public')->delete($path);
+                }
             }
         });
     }
@@ -80,5 +82,16 @@ class Employee extends Model
     public function signatureUrl(): ?string
     {
         return $this->signature_path ? asset('storage/'.$this->signature_path) : null;
+    }
+
+    public function photoUrl(): ?string
+    {
+        return $this->photo_path ? asset('storage/'.$this->photo_path) : null;
+    }
+
+    /** Up to two initials, shown when there is no photo. */
+    public function initials(): string
+    {
+        return collect(preg_split('/\s+/', trim($this->name)))->filter()->take(2)->map(fn ($word) => mb_strtoupper(mb_substr($word, 0, 1)))->implode('');
     }
 }

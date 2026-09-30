@@ -41,6 +41,7 @@
                             <x-erp.nav-link :href="route('finance.tax-payments')" :active="request()->routeIs('finance.tax-payments*')" nested>Tax Payments</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.income')" :active="request()->routeIs('finance.income')" nested>Income</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.expenses')" :active="request()->routeIs('finance.expenses')" nested>Expenses</x-erp.nav-link>
+                            <x-erp.nav-link :href="route('finance.owner-draws.create')" :active="request()->routeIs('finance.owner-draws*')" nested>Owner Draw</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.transfers')" :active="request()->routeIs('finance.transfers')" nested>Transfers</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.loans')" :active="request()->routeIs('finance.loans*')" nested>Loans</x-erp.nav-link>
                             <x-erp.nav-link :href="route('finance.transactions')" :active="request()->routeIs('finance.transactions')" nested>Transactions</x-erp.nav-link>

@@ -16,9 +16,11 @@ class ProjectTaskFactory extends Factory
         return [
             'project_id' => Project::factory(),
             'title' => fake()->sentence(3),
-            'assignee_id' => null,
-            'due_date' => null,
+            'description' => null,
             'status' => 'todo',
+            'priority' => 'medium',
+            'start_date' => null,
+            'due_date' => null,
         ];
     }
 }

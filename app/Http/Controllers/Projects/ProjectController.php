@@ -51,7 +51,7 @@ class ProjectController extends Controller
 
     public function show(Project $project): View
     {
-        $project->load(['customer', 'projectManager', 'tasks.assignee']);
+        $project->load(['customer', 'projectManager', 'tasks.assignees']);
         $project->loadCount(['tasks', 'tasks as done_tasks_count' => fn ($query) => $query->where('status', 'done')]);
 
         return view('erp.projects.show', [

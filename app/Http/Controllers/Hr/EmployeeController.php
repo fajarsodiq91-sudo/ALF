@@ -43,8 +43,9 @@ class EmployeeController extends Controller
     public function store(StoreEmployeeRequest $request): RedirectResponse
     {
         Employee::create([
-            ...$request->safe()->except('signature'),
-            ...$this->withSignature($request, new Employee),
+            ...$request->safe()->except(['signature', 'photo']),
+            ...$this->withUpload($request, new Employee, 'signature', 'signature_path', 'employee-signatures'),
+            ...$this->withUpload($request, new Employee, 'photo', 'photo_path', 'employee-photos'),
         ]);
 
         return redirect()
@@ -62,8 +63,9 @@ class EmployeeController extends Controller
     public function update(UpdateEmployeeRequest $request, Employee $employee): RedirectResponse
     {
         $employee->update([
-            ...$request->safe()->except(['signature', 'remove_signature']),
-            ...$this->withSignature($request, $employee),
+            ...$request->safe()->except(['signature', 'remove_signature', 'photo', 'remove_photo']),
+            ...$this->withUpload($request, $employee, 'signature', 'signature_path', 'employee-signatures'),
+            ...$this->withUpload($request, $employee, 'photo', 'photo_path', 'employee-photos'),
         ]);
 
         return redirect()
@@ -87,25 +89,25 @@ class EmployeeController extends Controller
             ->with('status', 'Employee deleted successfully.');
     }
 
-    /** A new signature upload replaces the old file; the checkbox clears it without replacing it. */
-    private function withSignature(Request $request, Employee $employee): array
+    /** A new upload replaces the old file; the "remove_<field>" checkbox clears it without replacing it. */
+    private function withUpload(Request $request, Employee $employee, string $field, string $column, string $directory): array
     {
-        $file = $request->file('signature');
+        $file = $request->file($field);
 
         if ($file) {
-            $path = ImageCompressor::store($file, 'employee-signatures', 'public');
+            $path = ImageCompressor::store($file, $directory, 'public');
 
-            if ($employee->signature_path) {
-                Storage::disk('public')->delete($employee->signature_path);
+            if ($employee->{$column}) {
+                Storage::disk('public')->delete($employee->{$column});
             }
 
-            return ['signature_path' => $path];
+            return [$column => $path];
         }
 
-        if ($request->boolean('remove_signature') && $employee->signature_path) {
-            Storage::disk('public')->delete($employee->signature_path);
+        if ($request->boolean('remove_'.$field) && $employee->{$column}) {
+            Storage::disk('public')->delete($employee->{$column});
 
-            return ['signature_path' => null];
+            return [$column => null];
         }
 
         return [];

@@ -21,6 +21,16 @@ class Tax extends Model
         self::TYPE_WITHHOLDING => 'PPh / Withholding (deducted from amount)',
     ];
 
+    public const DEFAULT_INCOME_SETTING = 'default_income_tax_id';
+
+    /** The tax applied automatically to new income, chosen in System Settings. */
+    public static function defaultForIncome(): ?self
+    {
+        $id = Setting::get(self::DEFAULT_INCOME_SETTING);
+
+        return $id ? static::where('is_active', true)->find($id) : null;
+    }
+
     protected function casts(): array
     {
         return [

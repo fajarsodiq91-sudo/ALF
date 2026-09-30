@@ -28,6 +28,21 @@
                     </div>
                 @endforeach
 
+                <div class="border-t border-gray-100 pt-5">
+                    <label for="default_income_tax_id" class="block text-sm font-medium text-gray-700">Default income tax</label>
+                    <select name="default_income_tax_id" id="default_income_tax_id"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                        <option value="">No automatic tax</option>
+                        @foreach (\App\Models\Tax::where('is_active', true)->orderBy('type')->orderBy('name')->get() as $tax)
+                            <option value="{{ $tax->id }}" @selected(old('default_income_tax_id', $values['default_income_tax_id'] ?? '') == $tax->id)>
+                                {{ $tax->name }} — {{ $tax->type === 'vat' ? '+' : '−' }}{{ rtrim(rtrim($tax->rate, '0'), '.') }}%
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">Applied automatically to every new income, including customer training payments. It can still be changed per income entry.</p>
+                    @error('default_income_tax_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
                 <div>
                     <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">Save Settings</button>
                 </div>

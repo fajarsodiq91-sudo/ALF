@@ -177,6 +177,31 @@ class EmployeesTest extends TestCase
         Storage::disk('public')->assertMissing($newPath);
     }
 
+    public function test_a_profile_photo_can_be_uploaded_replaced_and_removed(): void
+    {
+        $user = $this->userWithRole('Finance');
+
+        $this->actingAs($user)->post(route('hr.store'), $this->payload([
+            'photo' => UploadedFile::fake()->createWithContent('me.png', $this->pngBytes()),
+        ]))->assertRedirect(route('hr.index'));
+
+        $employee = Employee::firstWhere('name', $this->payload()['name']);
+        Storage::disk('public')->assertExists($employee->photo_path);
+        $this->assertNotNull($employee->photoUrl());
+        $oldPath = $employee->photo_path;
+
+        $this->actingAs($user)->put(route('hr.update', $employee), $this->payload([
+            'photo' => UploadedFile::fake()->createWithContent('new.png', $this->pngBytes()),
+        ]))->assertRedirect(route('hr.index'));
+        $employee->refresh();
+        Storage::disk('public')->assertMissing($oldPath);
+        Storage::disk('public')->assertExists($employee->photo_path);
+
+        $this->actingAs($user)->put(route('hr.update', $employee), $this->payload(['remove_photo' => '1']));
+        $this->assertNull($employee->fresh()->photo_path);
+        $this->assertSame('SR', $employee->initials());
+    }
+
     public function test_deleting_an_employee_deletes_their_signature_file(): void
     {
         $user = $this->userWithRole('Finance');

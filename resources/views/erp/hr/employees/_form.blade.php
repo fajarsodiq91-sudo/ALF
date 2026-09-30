@@ -70,6 +70,22 @@
         @error('notes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
     <div class="sm:col-span-2 border-t border-gray-100 pt-5">
+        <label for="photo" class="block text-sm font-medium text-gray-700">Profile Photo</label>
+        @if ($employee?->photoUrl())
+            <div class="mt-2 flex items-center gap-3">
+                <x-erp.avatar :employee="$employee" size="h-16 w-16" />
+                <label class="inline-flex items-center gap-1 text-xs text-gray-500">
+                    <input type="checkbox" name="remove_photo" value="1" @checked(old('remove_photo')) class="rounded border-gray-300 text-brand focus:ring-brand">
+                    Remove photo
+                </label>
+            </div>
+        @endif
+        <input type="file" name="photo" id="photo" accept="image/png,image/jpeg,image/webp"
+               class="mt-2 block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-200">
+        <p class="mt-1 text-xs text-gray-500">Shown next to the name when the employee is assigned to a project task. JPG, PNG or WebP, max 2 MB.</p>
+        @error('photo') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+    <div class="sm:col-span-2 border-t border-gray-100 pt-5">
         <label for="signature" class="block text-sm font-medium text-gray-700">Signature (for certificates)</label>
         <input type="file" name="signature" id="signature" accept="image/png,image/jpeg,image/webp"
                class="mt-1 block w-full text-sm text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-200">

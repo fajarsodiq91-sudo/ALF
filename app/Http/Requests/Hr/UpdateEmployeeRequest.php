@@ -32,6 +32,8 @@ class UpdateEmployeeRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:1000'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'signature' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_photo' => ['nullable', 'boolean'],
             'remove_signature' => ['nullable', 'boolean'],
         ];
     }

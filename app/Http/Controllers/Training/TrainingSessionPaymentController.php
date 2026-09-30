@@ -7,9 +7,11 @@ use App\Http\Requests\Training\PayTrainingSessionPaymentRequest;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\IncomeTransaction;
+use App\Models\Tax;
 use App\Models\TrainingSessionPayment;
 use App\Services\ImageCompressor;
 use App\Services\PaymentInvoices;
+use App\Services\TaxCalculator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -57,9 +59,7 @@ class TrainingSessionPaymentController extends Controller
                 'category_id' => $category->id,
                 'source' => $session->customer?->name ?? 'Public batch',
                 'description' => trim("{$session->program->name} — {$payment->label}".($session->customer?->customer_code ? " (customer {$session->customer->customer_code})" : '')),
-                'subtotal' => $payment->amount,
-                'tax_amount' => 0,
-                'amount' => $payment->amount,
+                ...TaxCalculator::apply($payment->amount, Tax::defaultForIncome()?->id),
                 'payment_method' => $request->input('payment_method'),
                 'created_by' => $request->user()->id,
             ]);

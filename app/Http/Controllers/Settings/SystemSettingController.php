@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Models\Tax;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -25,6 +26,7 @@ class SystemSettingController extends Controller
             'company_npwp' => ['nullable', 'string', 'max:50'],
             'certificate_signer_name' => ['nullable', 'string', 'max:255'],
             'certificate_signer_title' => ['nullable', 'string', 'max:255'],
+            Tax::DEFAULT_INCOME_SETTING => ['nullable', 'exists:taxes,id'],
         ]);
 
         Setting::put($data);

@@ -40,76 +40,82 @@
             </dl>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-x-auto">
-            <div class="px-4 py-3 border-b border-gray-200 text-sm font-semibold text-gray-800">Tasks</div>
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left font-medium text-gray-500">Task</th>
-                        <th class="px-4 py-3 text-left font-medium text-gray-500">Assignee</th>
-                        <th class="px-4 py-3 text-left font-medium text-gray-500">Due</th>
-                        <th class="px-4 py-3 text-left font-medium text-gray-500">Status</th>
-                        @can('projects.manage')
-                            <th class="px-4 py-3 text-right font-medium text-gray-500">Actions</th>
-                        @endcan
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse ($project->tasks as $task)
-                        <tr>
-                            <td class="px-4 py-3 {{ $task->status === 'done' ? 'text-gray-400 line-through' : 'font-medium text-gray-800' }}">{{ $task->title }}</td>
-                            <td class="px-4 py-3 text-gray-500">{{ $task->assignee?->name ?? '—' }}</td>
-                            <td class="px-4 py-3 text-gray-500">{{ $task->due_date?->format('d M Y') ?? '—' }}</td>
-                            <td class="px-4 py-3">
-                                @can('projects.manage')
-                                    <form action="{{ route('projects.tasks.update', $task) }}" method="POST">
-                                        @csrf
-                                        @method('PATCH')
-                                        <select name="status" onchange="this.form.submit()" class="rounded-md border-gray-300 py-1 text-xs shadow-sm focus:border-brand focus:ring-brand">
-                                            @foreach (\App\Models\ProjectTask::STATUSES as $value => $label)
-                                                <option value="{{ $value }}" @selected($task->status === $value)>{{ $label }}</option>
-                                            @endforeach
-                                        </select>
-                                    </form>
-                                @else
-                                    <span class="text-gray-500">{{ \App\Models\ProjectTask::STATUSES[$task->status] ?? $task->status }}</span>
-                                @endcan
-                            </td>
-                            @can('projects.manage')
-                                <td class="px-4 py-3 text-right">
-                                    <form action="{{ route('projects.tasks.destroy', $task) }}" method="POST" class="inline" onsubmit="return confirm('Delete this task?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-gray-400 hover:text-red-600 font-medium">Delete</button>
-                                    </form>
-                                </td>
-                            @endcan
-                        </tr>
-                    @empty
-                        <tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">No tasks yet.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+        @php
+            $priorityStyles = ['low' => 'bg-gray-100 text-gray-600', 'medium' => 'bg-blue-100 text-blue-700', 'high' => 'bg-amber-100 text-amber-700', 'urgent' => 'bg-red-100 text-red-700'];
+        @endphp
 
-            @can('projects.manage')
-                <form action="{{ route('projects.tasks.store', $project) }}" method="POST" class="flex flex-wrap items-start gap-3 border-t border-gray-200 bg-gray-50 px-4 py-3">
-                    @csrf
-                    <div>
-                        <input type="text" name="title" value="{{ old('title') }}" placeholder="New task title" required
-                               class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-                        @error('title') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            @foreach (\App\Models\ProjectTask::STATUSES as $statusValue => $statusLabel)
+                @php $columnTasks = $project->tasks->where('status', $statusValue); @endphp
+                <div class="rounded-lg bg-gray-100 p-3">
+                    <div class="mb-3 flex items-center justify-between px-1 text-sm font-semibold text-gray-700">
+                        <span>{{ $statusLabel }}</span>
+                        <span class="rounded-full bg-white px-2 py-0.5 text-xs text-gray-500">{{ $columnTasks->count() }}</span>
                     </div>
-                    <select name="assignee_id" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-                        <option value="">Unassigned</option>
-                        @foreach ($employees as $employee)
-                            <option value="{{ $employee->id }}" @selected((int) old('assignee_id') === $employee->id)>{{ $employee->name }}</option>
-                        @endforeach
-                    </select>
-                    <input type="date" name="due_date" value="{{ old('due_date') }}" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-                    <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">Add Task</button>
-                </form>
-            @endcan
+                    <div class="space-y-3">
+                        @forelse ($columnTasks as $task)
+                            <div class="rounded-md border border-gray-200 bg-white p-3 shadow-sm">
+                                <div class="flex items-start justify-between gap-2">
+                                    <p class="text-sm font-medium {{ $task->status === 'done' ? 'text-gray-400 line-through' : 'text-gray-800' }}">{{ $task->title }}</p>
+                                    <span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium {{ $priorityStyles[$task->priority] ?? $priorityStyles['medium'] }}">{{ \App\Models\ProjectTask::PRIORITIES[$task->priority] ?? $task->priority }}</span>
+                                </div>
+                                @if ($task->description)
+                                    <p class="mt-1 text-xs text-gray-500">{{ \Illuminate\Support\Str::limit($task->description, 100) }}</p>
+                                @endif
+                                <div class="mt-2 flex flex-wrap gap-1">
+                                    @forelse ($task->assignees as $assignee)
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-brand/10 py-0.5 pl-0.5 pr-2 text-xs text-gray-700" title="{{ $assignee->email ?? 'No email' }}"><x-erp.avatar :employee="$assignee" size="h-5 w-5" />{{ $assignee->name }}</span>
+                                    @empty
+                                        <span class="text-xs text-gray-400">Unassigned</span>
+                                    @endforelse
+                                </div>
+                                <p class="mt-2 text-xs {{ $task->isOverdue() ? 'font-medium text-red-600' : 'text-gray-500' }}">
+                                    @if ($task->start_date || $task->due_date)
+                                        {{ $task->start_date?->format('d M') ?? '…' }} → {{ $task->due_date?->format('d M Y') ?? '…' }}@if ($task->isOverdue()) (overdue)@endif
+                                    @else
+                                        No dates
+                                    @endif
+                                </p>
+                                @can('projects.manage')
+                                    <div class="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-2">
+                                        <form action="{{ route('projects.tasks.status', $task) }}" method="POST">
+                                            @csrf
+                                            @method('PATCH')
+                                            <select name="status" onchange="this.form.submit()" class="rounded-md border-gray-300 py-1 text-xs shadow-sm focus:border-brand focus:ring-brand">
+                                                @foreach (\App\Models\ProjectTask::STATUSES as $value => $label)
+                                                    <option value="{{ $value }}" @selected($task->status === $value)>{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                        </form>
+                                        <div class="flex items-center gap-3 text-xs font-medium">
+                                            <a href="{{ route('projects.tasks.edit', $task) }}" class="text-brand hover:text-brand-dark">Edit</a>
+                                            <form action="{{ route('projects.tasks.destroy', $task) }}" method="POST" onsubmit="return confirm('Delete this task?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-gray-400 hover:text-red-600">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @endcan
+                            </div>
+                        @empty
+                            <p class="px-1 py-4 text-center text-xs text-gray-400">No tasks.</p>
+                        @endforelse
+                    </div>
+                </div>
+            @endforeach
         </div>
+
+        @can('projects.manage')
+            <details class="bg-white rounded-lg shadow-md border border-gray-200 p-4" {{ $errors->any() ? 'open' : '' }}>
+                <summary class="cursor-pointer text-sm font-semibold text-gray-800">+ Add task</summary>
+                <form action="{{ route('projects.tasks.store', $project) }}" method="POST" class="mt-4 space-y-4">
+                    @csrf
+                    @include('erp.projects._task-form', ['task' => null])
+                    <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">Add task &amp; notify assignees</button>
+                </form>
+            </details>
+        @endcan
 
         <a href="{{ route('projects.index') }}" class="inline-block text-sm text-gray-500 hover:text-gray-700">&larr; Back to projects</a>
     </div>

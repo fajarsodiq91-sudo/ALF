@@ -8,6 +8,7 @@ use App\Http\Controllers\Finance\ExpenseTransactionController;
 use App\Http\Controllers\Finance\IncomeTransactionController;
 use App\Http\Controllers\Finance\LoanController;
 use App\Http\Controllers\Finance\LoanRepaymentController;
+use App\Http\Controllers\Finance\OwnerDrawController;
 use App\Http\Controllers\Finance\ReportController;
 use App\Http\Controllers\Finance\TaxController;
 use App\Http\Controllers\Finance\TaxPaymentController;
@@ -23,8 +24,8 @@ use App\Http\Controllers\Projects\ProjectTaskController;
 use App\Http\Controllers\Sales\CustomerController;
 use App\Http\Controllers\Sales\CustomerPortalPreviewController;
 use App\Http\Controllers\Sales\CustomerProjectController;
-use App\Http\Controllers\Settings\BlockedSlotController;
 use App\Http\Controllers\Settings\AgreementController;
+use App\Http\Controllers\Settings\BlockedSlotController;
 use App\Http\Controllers\Settings\MasterDataController;
 use App\Http\Controllers\Settings\OperatingHoursController;
 use App\Http\Controllers\Settings\RoleController;
@@ -106,6 +107,9 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'destroy' => 'expenses.destroy',
         ]);
 
+        Route::get('owner-draws/create', [OwnerDrawController::class, 'create'])->name('owner-draws.create');
+        Route::post('owner-draws', [OwnerDrawController::class, 'store'])->name('owner-draws.store');
+
         Route::resource('transfers', TransferTransactionController::class)->except(['show'])->names([
             'index' => 'transfers',
             'create' => 'transfers.create',
@@ -149,7 +153,9 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     Route::middleware('permission:projects.view')->group(function () {
         Route::resource('projects', ProjectController::class)->names('projects');
         Route::post('projects/{project}/tasks', [ProjectTaskController::class, 'store'])->name('projects.tasks.store');
-        Route::patch('project-tasks/{task}', [ProjectTaskController::class, 'update'])->name('projects.tasks.update');
+        Route::get('project-tasks/{task}/edit', [ProjectTaskController::class, 'edit'])->name('projects.tasks.edit');
+        Route::put('project-tasks/{task}', [ProjectTaskController::class, 'update'])->name('projects.tasks.update');
+        Route::patch('project-tasks/{task}/status', [ProjectTaskController::class, 'updateStatus'])->name('projects.tasks.status');
         Route::delete('project-tasks/{task}', [ProjectTaskController::class, 'destroy'])->name('projects.tasks.destroy');
     });
 
