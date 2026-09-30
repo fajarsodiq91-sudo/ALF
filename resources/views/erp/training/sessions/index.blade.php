@@ -101,5 +101,11 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($sessions->hasPages())
+            <div class="mt-4">
+                {{ $sessions->links() }}
+            </div>
+        @endif
     </div>
 </x-layouts.erp>

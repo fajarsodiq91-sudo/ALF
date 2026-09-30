@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between mb-4">
             <p class="text-sm text-gray-500">
                 Daftar customer PT Alfajar Logic Futura.
-                <span class="font-medium text-gray-800">{{ $customers->count() }}</span> customer.
+                <span class="font-medium text-gray-800">{{ $customers->total() }}</span> customer.
             </p>
             @can('sales.manage')
                 <a href="{{ route('sales.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">
@@ -110,5 +110,11 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($customers->hasPages())
+            <div class="mt-4">
+                {{ $customers->links() }}
+            </div>
+        @endif
     </div>
 </x-layouts.erp>

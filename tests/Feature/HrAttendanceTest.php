@@ -72,4 +72,26 @@ class HrAttendanceTest extends TestCase
         $this->assertCount(2, $response->viewData('records'));
         $this->assertSame(1, $response->viewData('recap')[$employee->id]['absent']);
     }
+
+    public function test_raw_list_paginates_while_the_recap_still_covers_the_whole_month(): void
+    {
+        $employee = Employee::factory()->create(['name' => 'Rina Wijaya']);
+
+        foreach (range(1, 31) as $day) {
+            AttendanceRecord::factory()->create([
+                'employee_id' => $employee->id,
+                'attendance_date' => sprintf('2026-03-%02d', $day),
+                'status' => 'present',
+            ]);
+        }
+
+        $response = $this->actingAs($this->userWithRole('Finance'))->get(route('hr.attendance.index', ['month' => '2026-03']));
+
+        $response->assertOk();
+        $records = $response->viewData('records');
+        $this->assertTrue($records->hasPages());
+        $this->assertSame(31, $records->total());
+        // The recap counts every day of the month, not just the page of raw records shown.
+        $this->assertSame(31, $response->viewData('recap')[$employee->id]['present']);
+    }
 }

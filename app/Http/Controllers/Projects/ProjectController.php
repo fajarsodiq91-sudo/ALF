@@ -26,7 +26,8 @@ class ProjectController extends Controller
                 $query->where(fn ($inner) => $inner->where('name', 'like', $term)->orWhere('code', 'like', $term));
             })
             ->latest('start_date')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
         return view('erp.projects.index', ['projects' => $projects]);
     }

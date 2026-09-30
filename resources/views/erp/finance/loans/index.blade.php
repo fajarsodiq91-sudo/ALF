@@ -68,5 +68,11 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($loans->hasPages())
+            <div class="mt-4">
+                {{ $loans->links() }}
+            </div>
+        @endif
     </div>
 </x-layouts.erp>

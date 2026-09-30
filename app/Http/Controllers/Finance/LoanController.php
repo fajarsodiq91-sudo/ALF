@@ -16,13 +16,15 @@ class LoanController extends Controller
     {
         $this->authorize('finance.view');
 
+        // Outstanding totals cover every loan, not just the page being shown.
+        $allLoans = Loan::with('repayments')->get();
+        $owedToOwner = $allLoans->where('direction', Loan::COMPANY_BORROWS)->sum(fn (Loan $l) => $l->outstandingAmount());
+        $owedByOwner = $allLoans->where('direction', Loan::OWNER_BORROWS)->sum(fn (Loan $l) => $l->outstandingAmount());
+
         $loans = Loan::query()
             ->with(['account', 'repayments', 'createdBy'])
             ->latest('loan_date')
-            ->get();
-
-        $owedToOwner = $loans->where('direction', Loan::COMPANY_BORROWS)->sum(fn (Loan $l) => $l->outstandingAmount());
-        $owedByOwner = $loans->where('direction', Loan::OWNER_BORROWS)->sum(fn (Loan $l) => $l->outstandingAmount());
+            ->paginate(20);
 
         return view('erp.finance.loans.index', compact('loans', 'owedToOwner', 'owedByOwner'));
     }

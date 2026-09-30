@@ -103,5 +103,11 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($leaves->hasPages())
+            <div class="mt-4">
+                {{ $leaves->links() }}
+            </div>
+        @endif
     </div>
 </x-layouts.erp>

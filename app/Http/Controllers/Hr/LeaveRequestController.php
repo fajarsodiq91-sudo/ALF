@@ -21,7 +21,8 @@ class LeaveRequestController extends Controller
             ->with('employee')
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->latest('start_date')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
         $employees = Employee::where('status', '!=', 'resigned')->orderBy('name')->get();
         $used = LeaveRequest::where('leave_type', LeaveRequest::ANNUAL)

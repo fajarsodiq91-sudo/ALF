@@ -14,7 +14,7 @@ class CustomerPortalPreviewController extends Controller
     public function index(): View
     {
         return view('erp.customer-portal.index', [
-            'customers' => Customer::registered()->withCount('sessions')->orderBy('name')->get(),
+            'customers' => Customer::registered()->withCount('sessions')->orderBy('name')->paginate(20),
             'loginUrl' => route('portal.login'),
         ]);
     }

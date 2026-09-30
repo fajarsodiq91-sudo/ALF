@@ -178,4 +178,25 @@ class FinanceTransactionLedgerTest extends TestCase
         $earlyPos = strpos($content, 'Early');
         $this->assertLessThan($earlyPos, $latePos);
     }
+
+    public function test_ledger_paginates_across_all_transaction_types(): void
+    {
+        $account = Account::factory()->create();
+        $category = Category::factory()->create(['type' => 'income']);
+
+        foreach (range(1, 30) as $i) {
+            IncomeTransaction::factory()->create([
+                'account_id' => $account->id,
+                'category_id' => $category->id,
+                'transaction_date' => now()->subDays($i),
+                'source' => 'Income no'.str_pad((string) $i, 2, '0', STR_PAD_LEFT),
+            ]);
+        }
+
+        $page1 = $this->actingAs($this->financeUser())->get(route('finance.transactions'));
+        $page1->assertOk()->assertSee('Income no01')->assertDontSee('Income no30');
+
+        $page2 = $this->actingAs($this->financeUser())->get(route('finance.transactions', ['page' => 2]));
+        $page2->assertOk()->assertSee('Income no30')->assertDontSee('Income no01');
+    }
 }

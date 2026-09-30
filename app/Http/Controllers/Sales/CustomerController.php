@@ -50,7 +50,8 @@ class CustomerController extends Controller
             })
             ->orderByRaw('name is null desc')
             ->orderBy('name')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
         return view('erp.sales.customers.index', ['customers' => $customers]);
     }

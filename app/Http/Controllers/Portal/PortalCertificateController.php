@@ -14,7 +14,7 @@ class PortalCertificateController extends Controller
 {
     public function index(Request $request): View
     {
-        $certificates = Certificate::where('customer_id', $request->user('customer')->id)->with('session.program')->latest('issued_at')->latest('id')->get();
+        $certificates = Certificate::where('customer_id', $request->user('customer')->id)->with('session.program')->latest('issued_at')->latest('id')->paginate(20);
 
         return view('portal.certificates.index', ['certificates' => $certificates]);
     }

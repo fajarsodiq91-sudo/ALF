@@ -85,6 +85,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if ($transactions->hasPages())
+                <div class="mt-4">
+                    {{ $transactions->links() }}
+                </div>
+            @endif
         @endif
     </div>
 </x-layouts.erp>

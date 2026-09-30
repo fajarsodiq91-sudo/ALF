@@ -21,14 +21,13 @@ class AssetController extends Controller
                 $term = '%'.$request->string('q').'%';
                 $query->where(fn ($inner) => $inner->where('name', 'like', $term)->orWhere('asset_code', 'like', $term));
             })
-            ->orderBy('asset_code')
-            ->get();
+            ->orderBy('asset_code');
 
-        $totalValue = $assets->where('status', '!=', 'disposed')->sum('purchase_cost');
+        $totalValue = (float) (clone $assets)->where('status', '!=', 'disposed')->sum('purchase_cost');
 
         return view('erp.assets.index', [
-            'assets' => $assets,
-            'totalValue' => (float) $totalValue,
+            'assets' => $assets->paginate(20)->withQueryString(),
+            'totalValue' => $totalValue,
         ]);
     }
 

@@ -27,7 +27,8 @@ class EmployeeController extends Controller
                     ->orWhere('department', 'like', $term));
             })
             ->orderBy('name')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
         return view('erp.hr.employees.index', ['employees' => $employees]);
     }

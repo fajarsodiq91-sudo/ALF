@@ -21,20 +21,28 @@ class TrainingSessionController extends Controller
 {
     public function index(Request $request): View
     {
+        $filters = function ($query) use ($request) {
+            $query
+                ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+                ->when($request->filled('program_id'), fn ($query) => $query->where('training_program_id', $request->integer('program_id')))
+                ->when($request->input('payment') === 'awaiting', fn ($query) => $query->whereHas('payments', fn ($payment) => $payment->whereNull('income_transaction_id')))
+                ->when($request->boolean('ready_to_complete'), fn ($query) => $query->whereNotIn('status', ['completed', 'cancelled'])->where('end_date', '<', now()))
+                ->when($request->boolean('reschedule_pending'), fn ($query) => $query->whereHas('meetings.rescheduleRequests', fn ($rescheduleRequest) => $rescheduleRequest->where('status', 'pending')));
+        };
+
+        $totalFee = (float) TrainingSession::query()->tap($filters)->where('status', '!=', 'cancelled')->sum('fee');
+
         $sessions = TrainingSession::query()
             ->with(['program', 'customer', 'instructor'])
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
-            ->when($request->filled('program_id'), fn ($query) => $query->where('training_program_id', $request->integer('program_id')))
-            ->when($request->input('payment') === 'awaiting', fn ($query) => $query->whereHas('payments', fn ($payment) => $payment->whereNull('income_transaction_id')))
-            ->when($request->boolean('ready_to_complete'), fn ($query) => $query->whereNotIn('status', ['completed', 'cancelled'])->where('end_date', '<', now()))
-            ->when($request->boolean('reschedule_pending'), fn ($query) => $query->whereHas('meetings.rescheduleRequests', fn ($rescheduleRequest) => $rescheduleRequest->where('status', 'pending')))
+            ->tap($filters)
             ->latest('start_date')
-            ->get();
+            ->paginate(20)
+            ->withQueryString();
 
         return view('erp.training.sessions.index', [
             'sessions' => $sessions,
             'programs' => TrainingProgram::orderBy('name')->get(),
-            'totalFee' => (float) $sessions->where('status', '!=', 'cancelled')->sum('fee'),
+            'totalFee' => $totalFee,
         ]);
     }
 

@@ -18,5 +18,11 @@
                 <p class="p-8 text-center text-sm text-gray-500">No certificate yet. It appears here once your learning session is completed.</p>
             @endforelse
         </div>
+
+        @if ($certificates->hasPages())
+            <div>
+                {{ $certificates->links() }}
+            </div>
+        @endif
     </div>
 </x-layouts.portal>

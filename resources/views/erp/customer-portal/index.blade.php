@@ -53,5 +53,11 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($customers->hasPages())
+            <div>
+                {{ $customers->links() }}
+            </div>
+        @endif
     </div>
 </x-layouts.erp>

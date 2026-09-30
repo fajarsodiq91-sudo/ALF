@@ -34,7 +34,7 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($recap as $employeeId => $counts)
                         <tr>
-                            <td class="px-4 py-3 font-medium text-gray-800">{{ $records->firstWhere('employee_id', $employeeId)->employee->name }}</td>
+                            <td class="px-4 py-3 font-medium text-gray-800">{{ $employees->firstWhere('id', $employeeId)?->name ?? '—' }}</td>
                             @foreach (\App\Models\AttendanceRecord::STATUSES as $value => $label)
                                 <td class="px-4 py-3 text-right text-gray-500">{{ $counts[$value] ?? 0 }}</td>
                             @endforeach
@@ -87,5 +87,11 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($records->hasPages())
+            <div class="mt-4">
+                {{ $records->links() }}
+            </div>
+        @endif
     </div>
 </x-layouts.erp>

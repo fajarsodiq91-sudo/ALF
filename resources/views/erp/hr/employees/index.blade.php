@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between mb-4">
             <p class="text-sm text-gray-500">
                 Daftar karyawan PT Alfajar Logic Futura.
-                <span class="font-medium text-gray-800">{{ $employees->count() }}</span> karyawan.
+                <span class="font-medium text-gray-800">{{ $employees->total() }}</span> karyawan.
             </p>
             @can('hr.manage')
                 <a href="{{ route('hr.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">
@@ -84,5 +84,11 @@
                 </tbody>
             </table>
         </div>
+
+        @if ($employees->hasPages())
+            <div class="mt-4">
+                {{ $employees->links() }}
+            </div>
+        @endif
     </div>
 </x-layouts.erp>

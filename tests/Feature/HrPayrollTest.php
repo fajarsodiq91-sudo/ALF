@@ -127,4 +127,50 @@ class HrPayrollTest extends TestCase
             'account_id' => $account->id, 'paid_date' => '2026-03-28', 'payment_method' => 'Cash',
         ])->assertForbidden();
     }
+
+    public function test_index_paginates_and_the_total_covers_every_page(): void
+    {
+        $finance = $this->userWithRole('Finance');
+
+        foreach (range(1, 25) as $i) {
+            $employee = Employee::factory()->create(['name' => 'Employee '.str_pad((string) $i, 2, '0', STR_PAD_LEFT)]);
+            Payroll::factory()->create(['employee_id' => $employee->id, 'period' => '2026-03', 'net_salary' => 1000]);
+        }
+
+        $response = $this->actingAs($finance)->get(route('hr.payroll.index', ['period' => '2026-03']));
+
+        $response->assertOk()
+            ->assertSee('Employee 01')
+            ->assertDontSee('Employee 25')
+            ->assertSee('Rp 25.000'); // total net across all 25, not just the page shown
+    }
+
+    public function test_index_sorts_by_employee_name_across_pages(): void
+    {
+        $finance = $this->userWithRole('Finance');
+        $zed = Employee::factory()->create(['name' => 'Zed Zulkarnain']);
+        $anna = Employee::factory()->create(['name' => 'Anna Aditya']);
+        Payroll::factory()->create(['employee_id' => $zed->id, 'period' => '2026-03']);
+        Payroll::factory()->create(['employee_id' => $anna->id, 'period' => '2026-03']);
+
+        $response = $this->actingAs($finance)->get(route('hr.payroll.index', ['period' => '2026-03']));
+
+        $response->assertOk();
+        $content = $response->getContent();
+        $this->assertLessThan(strpos($content, 'Zed Zulkarnain'), strpos($content, 'Anna Aditya'));
+    }
+
+    public function test_filtering_by_status_without_a_period_does_not_load_every_payroll_unbounded(): void
+    {
+        $finance = $this->userWithRole('Finance');
+
+        foreach (range(1, 25) as $i) {
+            Payroll::factory()->create(['period' => sprintf('2026-%02d', ($i % 12) + 1), 'status' => Payroll::DRAFT]);
+        }
+
+        $response = $this->actingAs($finance)->get(route('hr.payroll.index', ['status' => Payroll::DRAFT]));
+
+        $response->assertOk();
+        $this->assertTrue($response->viewData('payrolls')->hasPages());
+    }
 }

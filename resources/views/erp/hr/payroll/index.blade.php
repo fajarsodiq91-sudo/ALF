@@ -113,5 +113,11 @@
                 @endforelse
             </table>
         </div>
+
+        @if ($payrolls->hasPages())
+            <div class="mt-4">
+                {{ $payrolls->links() }}
+            </div>
+        @endif
     </div>
 </x-layouts.erp>

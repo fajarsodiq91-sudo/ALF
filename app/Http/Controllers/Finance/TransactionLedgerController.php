@@ -8,10 +8,15 @@ use App\Models\IncomeTransaction;
 use App\Models\Loan;
 use App\Models\LoanRepayment;
 use App\Models\Transfer;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class TransactionLedgerController extends Controller
 {
-    public function index()
+    private const PER_PAGE = 25;
+
+    public function index(Request $request)
     {
         $this->authorize('finance.view');
 
@@ -90,7 +95,7 @@ class TransactionLedgerController extends Controller
                 'record' => $t,
             ]);
 
-        $transactions = collect()
+        $all = collect()
             ->merge($income)
             ->merge($expenses)
             ->merge($transfers)
@@ -98,6 +103,15 @@ class TransactionLedgerController extends Controller
             ->merge($repayments)
             ->sortByDesc('date')
             ->values();
+
+        $page = Paginator::resolveCurrentPage();
+        $transactions = new LengthAwarePaginator(
+            $all->forPage($page, self::PER_PAGE)->values(),
+            $all->count(),
+            self::PER_PAGE,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()],
+        );
 
         return view('erp.finance.ledger.index', compact('transactions'));
     }

@@ -24,16 +24,26 @@ class PayrollController extends Controller
             ? $request->input('period')
             : ($request->filled('status') ? null : now()->format('Y-m'));
 
-        $payrolls = Payroll::with('employee')
-            ->when($period, fn ($query) => $query->where('period', $period))
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
-            ->get()
-            ->sortBy('employee.name');
+        // Column names are qualified because paginating joins the employees table, which also has a "status" column.
+        $filters = fn ($query) => $query
+            ->when($period, fn ($query) => $query->where('payrolls.period', $period))
+            ->when($request->filled('status'), fn ($query) => $query->where('payrolls.status', $request->string('status')));
+
+        $totalNet = (float) Payroll::query()->tap($filters)->sum('net_salary');
+
+        $payrolls = Payroll::query()
+            ->with('employee')
+            ->tap($filters)
+            ->join('employees', 'employees.id', '=', 'payrolls.employee_id')
+            ->orderBy('employees.name')
+            ->select('payrolls.*')
+            ->paginate(20)
+            ->withQueryString();
 
         return view('erp.hr.payroll.index', [
             'payrolls' => $payrolls,
             'period' => $period,
-            'totalNet' => (float) $payrolls->sum('net_salary'),
+            'totalNet' => $totalNet,
             'accounts' => Account::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
