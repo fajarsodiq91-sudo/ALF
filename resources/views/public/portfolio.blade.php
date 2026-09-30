@@ -1,65 +1,41 @@
+@use('App\Services\SiteContent')
 @extends('layouts.public')
 
-@section('title', 'Portfolio | PT Alfajar Logic Futura')
-@section('description', 'Selected analytics, development, and training work delivered by PT Alfajar Logic Futura.')
+@section('title', SiteContent::text('portfolio.meta_title'))
+@section('description', SiteContent::text('portfolio.meta_description'))
 
 @section('content')
   <section class="page-hero">
     <div class="container">
-      <p class="eyebrow">Portfolio</p>
-      <h1>Selected work that reflects our delivery quality.</h1>
-      <p>A sample of engagements across analytics, development, and training.</p>
+      <p class="eyebrow">{{ SiteContent::text('portfolio.hero_eyebrow') }}</p>
+      <h1>{{ SiteContent::text('portfolio.hero_title') }}</h1>
+      <p>{{ SiteContent::multiline('portfolio.hero_text') }}</p>
     </div>
   </section>
 
   <section class="section" id="portfolio">
     <div class="container">
       <div class="filter-bar reveal" role="tablist" aria-label="Portfolio filters">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="analytics">Analytics</button>
-        <button class="filter-btn" data-filter="development">Development</button>
-        <button class="filter-btn" data-filter="training">Training</button>
+        <button class="filter-btn active" data-filter="all">{{ SiteContent::text('portfolio.filter_all') }}</button>
+        @foreach ($categories as $code => $label)
+          <button class="filter-btn" data-filter="{{ $code }}">{{ $label }}</button>
+        @endforeach
       </div>
       <div class="portfolio-grid">
-        <article class="portfolio-card reveal" data-category="analytics">
-          <img src="{{ asset('assets/images/portfolio-1.png') }}" alt="Business intelligence dashboard project" loading="lazy" />
-          <div class="portfolio-card__content">
-            <h3>Enterprise BI Platform</h3>
-            <p>Modern dashboards and performance tracking for manufacturing operations.</p>
-          </div>
-        </article>
-        <article class="portfolio-card reveal" data-category="development">
-          <img src="{{ asset('assets/images/portfolio-2.png') }}" alt="Custom web application project" loading="lazy" />
-          <div class="portfolio-card__content">
-            <h3>Client Portal Web App</h3>
-            <p>Secure portal for service workflows, reporting, and user collaboration.</p>
-          </div>
-        </article>
-        <article class="portfolio-card reveal" data-category="training">
-          <img src="{{ asset('assets/images/portfolio-3.png') }}" alt="Corporate training program project" loading="lazy" />
-          <div class="portfolio-card__content">
-            <h3>Power BI Upskilling Program</h3>
-            <p>Training initiative designed to accelerate analyst adoption across teams.</p>
-          </div>
-        </article>
-        <article class="portfolio-card reveal" data-category="development">
-          <img src="{{ asset('assets/images/portfolio-4.png') }}" alt="ERP system interface project" loading="lazy" />
-          <div class="portfolio-card__content">
-            <h3>ERP Architecture Design</h3>
-            <p>Scalable architecture plan for future-ready enterprise operations.</p>
-          </div>
-        </article>
+        @foreach ($projects as $project)
+          <article class="portfolio-card reveal" data-category="{{ $project->category }}">
+            @if ($project->imageUrl())
+              <img src="{{ $project->imageUrl() }}" alt="{{ $project->title }}" loading="lazy" />
+            @endif
+            <div class="portfolio-card__content">
+              <h3>{{ $project->title }}</h3>
+              <p>{{ $project->body }}</p>
+            </div>
+          </article>
+        @endforeach
       </div>
     </div>
   </section>
 
-  <section class="cta">
-    <div class="container cta__wrap reveal">
-      <div>
-        <p class="eyebrow eyebrow--light">Ready to Move Forward?</p>
-        <h2>Ready to Transform Your Business?</h2>
-      </div>
-      <a class="btn btn--light" href="{{ route('contact') }}">Contact Us</a>
-    </div>
-  </section>
+  @include('public._cta')
 @endsection

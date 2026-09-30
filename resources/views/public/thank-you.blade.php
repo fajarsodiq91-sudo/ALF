@@ -1,10 +1,11 @@
+@use('App\Services\SiteContent')
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Thank You | PT Alfajar Logic Futura</title>
-    <link rel="icon" type="image/png" href="{{ asset('assets/icons/alf.png') }}" />
+    <title>{{ SiteContent::text('thank-you.meta_title') }}</title>
+    <link rel="icon" href="{{ SiteContent::image('global.favicon') }}" />
     <style>
       body {
         margin: 0;
@@ -32,9 +33,9 @@
   </head>
   <body>
     <div class="card">
-      <h1>Thank You!</h1>
-      <p>Your message has been sent successfully. We will get back to you shortly.</p>
-      <p><a href="{{ route('home') }}">Back to homepage</a></p>
+      <h1>{{ SiteContent::text('thank-you.title') }}</h1>
+      <p>{{ SiteContent::multiline('thank-you.message') }}</p>
+      <p><a href="{{ route('home') }}">{{ SiteContent::text('thank-you.link_label') }}</a></p>
     </div>
   </body>
 </html>

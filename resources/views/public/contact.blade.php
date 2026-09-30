@@ -1,14 +1,15 @@
+@use('App\Services\SiteContent')
 @extends('layouts.public')
 
-@section('title', 'Contact | PT Alfajar Logic Futura')
-@section('description', 'Get in touch with PT Alfajar Logic Futura for consulting, analytics, development, or training needs.')
+@section('title', SiteContent::text('contact.meta_title'))
+@section('description', SiteContent::text('contact.meta_description'))
 
 @section('content')
   <section class="page-hero">
     <div class="container">
-      <p class="eyebrow">Contact</p>
-      <h1>Let&rsquo;s build something extraordinary together.</h1>
-      <p>We are ready to support your next phase of innovation, capability growth, and digital excellence.</p>
+      <p class="eyebrow">{{ SiteContent::text('contact.hero_eyebrow') }}</p>
+      <h1>{{ SiteContent::text('contact.hero_title') }}</h1>
+      <p>{{ SiteContent::multiline('contact.hero_text') }}</p>
     </div>
   </section>
 
@@ -16,34 +17,34 @@
     <div class="container contact-grid">
       <div class="contact-info reveal">
         <ul class="contact-list">
-          <li><strong>Address:</strong> Karawang, Indonesia</li>
-          <li><strong>Email:</strong> admin@alfajarlogic.com</li>
-          <li><strong>WhatsApp:</strong> +62 821-2529-8452</li>
-          <li><strong>LinkedIn:</strong> linkedin.com/company/alfajarlogic</li>
-          <li><strong>Instagram:</strong> @alfajarlogic</li>
+          <li><strong>Address:</strong> {{ SiteContent::text('global.contact_address') }}</li>
+          <li><strong>Email:</strong> {{ SiteContent::text('global.contact_email') }}</li>
+          <li><strong>WhatsApp:</strong> {{ SiteContent::text('global.contact_whatsapp') }}</li>
+          <li><strong>LinkedIn:</strong> {{ SiteContent::text('global.contact_linkedin') }}</li>
+          <li><strong>Instagram:</strong> {{ SiteContent::text('global.contact_instagram') }}</li>
         </ul>
         <div class="map-wrapper">
           <iframe
             class="map-frame"
-            src="https://www.google.com/maps?q=Karawang%20Indonesia&z=13&output=embed"
+            src="{{ SiteContent::mapEmbedUrl() }}"
             title="Location on Google Maps"
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
             allowfullscreen
           ></iframe>
-          <a class="map-link" href="https://maps.app.goo.gl/jYmt5gCG6o9EQJj19" target="_blank" rel="noopener noreferrer">
-            Open in Google Maps
+          <a class="map-link" href="{{ SiteContent::text('global.map_link') }}" target="_blank" rel="noopener noreferrer">
+            {{ SiteContent::text('contact.map_link_label') }}
           </a>
         </div>
       </div>
       <form
         class="contact-form reveal reveal--right"
         id="contactForm"
-        action="https://formsubmit.co/admin@alfajarlogic.com"
+        action="https://formsubmit.co/{{ SiteContent::text('global.form_email') }}"
         method="POST"
         accept-charset="UTF-8"
       >
-        <input type="hidden" name="_subject" value="New inquiry from alfajarlogic.com" />
+        <input type="hidden" name="_subject" value="{{ SiteContent::text('contact.form_subject') }}" />
         <input type="hidden" name="_captcha" value="0" />
         <input type="hidden" name="_template" value="table" />
         <input type="hidden" name="_next" value="{{ route('thank-you') }}" />
@@ -67,7 +68,7 @@
           Message
           <textarea id="contact-message" name="message" rows="5" placeholder="Tell us about your goals" required></textarea>
         </label>
-        <button class="btn btn--primary" type="submit">Send Message</button>
+        <button class="btn btn--primary" type="submit">{{ SiteContent::text('contact.form_button') }}</button>
         <p class="form-status" role="status" aria-live="polite"></p>
       </form>
     </div>

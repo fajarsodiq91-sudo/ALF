@@ -25,4 +25,28 @@
        ])>
         Agreement
     </a>
+
+    <p class="px-1 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">Website pages</p>
+    @foreach (\App\Services\SiteContent::PAGES as $key => $definition)
+        <a href="{{ route('masterdata.site.page.edit', $key) }}"
+           @class([
+               'block rounded-md px-3 py-2 text-sm transition',
+               'bg-gradient-to-br from-brand-light to-brand-dark text-white shadow-sm' => $active === 'site-page:'.$key,
+               'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:shadow-sm' => $active !== 'site-page:'.$key,
+           ])>
+            {{ $definition['label'] }}
+        </a>
+    @endforeach
+
+    <p class="px-1 pt-4 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">Website lists</p>
+    @foreach (\App\Models\SiteItem::TYPES as $key => $definition)
+        <a href="{{ route('masterdata.site.items.index', $key) }}"
+           @class([
+               'block rounded-md px-3 py-2 text-sm transition',
+               'bg-gradient-to-br from-brand-light to-brand-dark text-white shadow-sm' => $active === 'site-list:'.$key,
+               'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:shadow-sm' => $active !== 'site-list:'.$key,
+           ])>
+            {{ $definition['label'] }}
+        </a>
+    @endforeach
 </nav>

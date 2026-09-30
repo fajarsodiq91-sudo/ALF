@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
 use App\Models\MasterDataItem;
+use App\Models\SiteItem;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use Illuminate\Support\Collection;
@@ -64,6 +65,13 @@ class MasterData
             'description' => 'How training sessions are delivered.',
             'model' => TrainingSession::class,
             'column' => 'delivery_mode',
+            'protected' => [],
+        ],
+        'portfolio_category' => [
+            'label' => 'Portfolio Category',
+            'description' => 'Categories of the public website portfolio. Each one becomes a filter button on the Portfolio page.',
+            'model' => SiteItem::class,
+            'column' => 'category',
             'protected' => [],
         ],
     ];

@@ -29,6 +29,8 @@ use App\Http\Controllers\Settings\BlockedSlotController;
 use App\Http\Controllers\Settings\MasterDataController;
 use App\Http\Controllers\Settings\OperatingHoursController;
 use App\Http\Controllers\Settings\RoleController;
+use App\Http\Controllers\Settings\SiteItemController;
+use App\Http\Controllers\Settings\SitePageController;
 use App\Http\Controllers\Settings\SystemSettingController;
 use App\Http\Controllers\Settings\UserController;
 use App\Http\Controllers\Training\TrainingCategoryController;
@@ -37,6 +39,8 @@ use App\Http\Controllers\Training\TrainingSessionController;
 use App\Http\Controllers\Training\TrainingSessionMeetingController;
 use App\Http\Controllers\Training\TrainingSessionPaymentController;
 use App\Http\Controllers\TutorialController;
+use App\Models\SiteItem;
+use App\Services\SiteContent;
 use App\Services\TransactionProof;
 use App\Services\Tutorial;
 use Illuminate\Support\Facades\Route;
@@ -257,6 +261,21 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::put('master-data/agreement', [AgreementController::class, 'update'])->name('masterdata.agreement.update');
         Route::post('master-data/blocked-slots', [BlockedSlotController::class, 'store'])->name('masterdata.blocked.store');
         Route::delete('master-data/blocked-slots/{blockedSlot}', [BlockedSlotController::class, 'destroy'])->name('masterdata.blocked.destroy');
+
+        // Public company site: fixed text and images per page.
+        Route::get('master-data/website/pages/{page}', [SitePageController::class, 'edit'])->whereIn('page', SiteContent::pageKeys())->name('masterdata.site.page.edit');
+        Route::put('master-data/website/pages/{page}', [SitePageController::class, 'update'])->whereIn('page', SiteContent::pageKeys())->name('masterdata.site.page.update');
+
+        // ...and its repeating content (service cards, testimonials, portfolio, …), one list per type.
+        Route::prefix('master-data/website/lists/{type}')->where(['type' => implode('|', SiteItem::types()), 'item' => '[0-9]+'])
+            ->name('masterdata.site.items.')->group(function () {
+                Route::get('/', [SiteItemController::class, 'index'])->name('index');
+                Route::get('/create', [SiteItemController::class, 'create'])->name('create');
+                Route::post('/', [SiteItemController::class, 'store'])->name('store');
+                Route::get('/{item}/edit', [SiteItemController::class, 'edit'])->name('edit');
+                Route::put('/{item}', [SiteItemController::class, 'update'])->name('update');
+                Route::delete('/{item}', [SiteItemController::class, 'destroy'])->name('destroy');
+            });
         Route::resource('master-data', MasterDataController::class)->only(['index', 'store', 'update', 'destroy'])
             ->parameters(['master-data' => 'masterDataItem'])->names('masterdata');
     });

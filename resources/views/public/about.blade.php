@@ -1,18 +1,15 @@
+@use('App\Services\SiteContent')
 @extends('layouts.public')
 
-@section('title', 'About Us | PT Alfajar Logic Futura')
-@section('description', 'PT Alfajar Logic Futura\'s vision, mission, values, and company timeline.')
+@section('title', SiteContent::text('about.meta_title'))
+@section('description', SiteContent::text('about.meta_description'))
 
 @section('content')
   <section class="page-hero">
     <div class="container">
-      <p class="eyebrow">About Company</p>
-      <h1>Strategic technology and human capability development for the modern enterprise.</h1>
-      <p>
-        We combine deep technical expertise with practical business understanding to accelerate
-        digital maturity for private companies, state-owned enterprises, government agencies,
-        schools, universities, SMEs, and manufacturing industries.
-      </p>
+      <p class="eyebrow">{{ SiteContent::text('about.hero_eyebrow') }}</p>
+      <h1>{{ SiteContent::text('about.hero_title') }}</h1>
+      <p>{{ SiteContent::multiline('about.hero_text') }}</p>
     </div>
   </section>
 
@@ -21,40 +18,34 @@
       <div class="about__content reveal">
         <div class="about__cards">
           <article>
-            <h3>Vision</h3>
-            <p>To become a trusted innovation partner that transforms organizations into intelligent, data-driven enterprises.</p>
+            <h3>{{ SiteContent::text('about.vision_title') }}</h3>
+            <p>{{ SiteContent::multiline('about.vision_text') }}</p>
           </article>
           <article>
-            <h3>Mission</h3>
-            <p>To deliver secure, scalable, and measurable digital solutions that improve decision-making and performance.</p>
+            <h3>{{ SiteContent::text('about.mission_title') }}</h3>
+            <p>{{ SiteContent::multiline('about.mission_text') }}</p>
           </article>
           <article>
-            <h3>Values</h3>
-            <p>Integrity, innovation, excellence, collaboration, and continuous learning guide every engagement.</p>
+            <h3>{{ SiteContent::text('about.values_title') }}</h3>
+            <p>{{ SiteContent::multiline('about.values_text') }}</p>
           </article>
         </div>
       </div>
       <div class="about__sidebar reveal reveal--right">
-        <img src="{{ asset('assets/images/about-illustration.png') }}" alt="Technology innovation illustration" loading="lazy" />
-        <div class="timeline">
-          <h3>Company Timeline</h3>
-          <ul>
-            <li><strong>2018</strong> Founded with a focus on analytics and enterprise solutions.</li>
-            <li><strong>2020</strong> Expanded into training and AI-powered consulting.</li>
-            <li><strong>2024</strong> Delivered enterprise-grade digital transformation programs.</li>
-          </ul>
-        </div>
+        <img src="{{ SiteContent::image('about.image') }}" alt="{{ SiteContent::text('about.image_alt') }}" loading="lazy" />
+        @if ($timeline->isNotEmpty())
+          <div class="timeline">
+            <h3>{{ SiteContent::text('about.timeline_title') }}</h3>
+            <ul>
+              @foreach ($timeline as $milestone)
+                <li><strong>{{ $milestone->title }}</strong> {{ $milestone->body }}</li>
+              @endforeach
+            </ul>
+          </div>
+        @endif
       </div>
     </div>
   </section>
 
-  <section class="cta">
-    <div class="container cta__wrap reveal">
-      <div>
-        <p class="eyebrow eyebrow--light">Ready to Move Forward?</p>
-        <h2>Ready to Transform Your Business?</h2>
-      </div>
-      <a class="btn btn--light" href="{{ route('contact') }}">Contact Us</a>
-    </div>
-  </section>
+  @include('public._cta')
 @endsection
