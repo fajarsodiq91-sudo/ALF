@@ -104,7 +104,9 @@
                             @if ($session->materials_url)
                                 <a href="{{ $session->materials_url }}" target="_blank" rel="noopener noreferrer" class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 hover:shadow-md transition">Learning materials</a>
                             @endif
-                            @if ($session->certificate_url)
+                            @if ($certificate = $certificates->get($session->id))
+                                <a href="{{ route('portal.certificates.show', $certificate) }}" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:shadow-md transition">Certificate</a>
+                            @elseif ($session->certificate_url)
                                 <a href="{{ $session->certificate_url }}" target="_blank" rel="noopener noreferrer" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:shadow-md transition">Certificate</a>
                             @endif
                         </div>

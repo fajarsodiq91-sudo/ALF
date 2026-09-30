@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'training_program_id', 'customer_id', 'instructor_id', 'start_date', 'end_date',
@@ -95,5 +95,10 @@ class TrainingSession extends Model
     public function meetings(): HasMany
     {
         return $this->hasMany(TrainingSessionMeeting::class)->orderBy('meeting_date')->orderBy('start_time');
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
     }
 }

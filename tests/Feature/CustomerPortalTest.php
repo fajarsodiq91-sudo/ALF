@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Certificate;
 use App\Models\Customer;
 use App\Models\CustomerProject;
 use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
 use App\Models\User;
+use App\Services\CertificateIssuer;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -163,6 +165,26 @@ class CustomerPortalTest extends TestCase
 
         $session->update(['certificate_url' => 'https://drive.test/sertifikat']);
         $this->get(route('portal.dashboard'))->assertSee('https://drive.test/sertifikat');
+    }
+
+    public function test_dashboard_links_to_the_real_certificate_once_the_session_is_marked_done(): void
+    {
+        $customer = $this->customer('rahasia123');
+        $session = TrainingSession::factory()->create(['customer_id' => $customer->id, 'status' => 'completed']);
+        CertificateIssuer::issueFor($session);
+        $certificate = Certificate::where('training_session_id', $session->id)->firstOrFail();
+        $this->loginAs($customer);
+
+        // The auto-issued certificate is used, not a manually pasted link the staff never filled in.
+        $this->get(route('portal.dashboard'))->assertOk()
+            ->assertSee(route('portal.certificates.show', $certificate), false)
+            ->assertDontSee('drive.test');
+
+        // Once staff also pastes a manual link, the real certificate still takes priority.
+        $session->update(['certificate_url' => 'https://drive.test/sertifikat']);
+        $this->get(route('portal.dashboard'))
+            ->assertSee(route('portal.certificates.show', $certificate), false)
+            ->assertDontSee('drive.test');
     }
 
     public function test_customer_uploads_a_project_file_or_link(): void
