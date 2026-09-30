@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Hr\SubmitLeaveRequest;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Services\StaffNotifier;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -79,9 +80,7 @@ class LeaveRequestController extends Controller
             }
         }
 
-        $this->review($leave, 'approved');
-
-        return redirect()->route('hr.leaves.index')->with('status', 'Leave request approved.');
+        return $this->reviewed('Leave request approved.', $this->review($leave, 'approved'));
     }
 
     public function reject(LeaveRequest $leave): RedirectResponse
@@ -92,9 +91,7 @@ class LeaveRequestController extends Controller
             return redirect()->route('hr.leaves.index')->with('error', 'Only pending requests can be rejected.');
         }
 
-        $this->review($leave, 'rejected');
-
-        return redirect()->route('hr.leaves.index')->with('status', 'Leave request rejected.');
+        return $this->reviewed('Leave request rejected.', $this->review($leave, 'rejected'));
     }
 
     public function destroy(LeaveRequest $leave): RedirectResponse
@@ -106,12 +103,24 @@ class LeaveRequestController extends Controller
         return redirect()->route('hr.leaves.index')->with('status', 'Leave request deleted.');
     }
 
-    private function review(LeaveRequest $leave, string $status): void
+    /** Records the decision and emails the employee; returns whether that email went out. */
+    private function review(LeaveRequest $leave, string $status): bool
     {
         $leave->update([
             'status' => $status,
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
         ]);
+
+        return StaffNotifier::leaveReviewed($leave);
+    }
+
+    private function reviewed(string $message, bool $notified): RedirectResponse
+    {
+        $back = redirect()->route('hr.leaves.index');
+
+        return $notified
+            ? $back->with('status', "{$message} The employee was notified by email.")
+            : $back->with('error', "{$message} The employee could NOT be notified by email (no email address on file, or the mail settings need checking).");
     }
 }

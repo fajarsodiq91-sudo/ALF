@@ -7,6 +7,7 @@ use App\Models\MeetingRescheduleRequest;
 use App\Models\TrainingSessionMeeting;
 use App\Services\BookedSlots;
 use App\Services\OperatingHours;
+use App\Services\StaffNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -53,7 +54,7 @@ class PortalRescheduleRequestController extends Controller
             return back()->with('error', BookedSlots::describe($data['requested_date'], $data['requested_start_time'], $data['requested_end_time']).' is already booked. Choose a green slot on the calendar.');
         }
 
-        $meeting->rescheduleRequests()->create([
+        $rescheduleRequest = $meeting->rescheduleRequests()->create([
             'customer_id' => $customer->id,
             'requested_date' => $data['requested_date'],
             'requested_start_time' => $data['requested_start_time'],
@@ -61,6 +62,8 @@ class PortalRescheduleRequestController extends Controller
             'reason' => $data['reason'] ?? null,
             'status' => 'pending',
         ]);
+
+        StaffNotifier::rescheduleRequested($rescheduleRequest);
 
         return redirect()->route('portal.dashboard')->with('status', 'Reschedule request submitted. We will review it and get back to you.');
     }

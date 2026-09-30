@@ -53,18 +53,23 @@ class PaymentInvoices
             ->sum(fn (TrainingSession $session) => self::sendDue($session));
     }
 
-    public static function sendThanks(TrainingSessionPayment $payment): void
+    /** Returns whether the thank-you email went out. */
+    public static function sendThanks(TrainingSessionPayment $payment): bool
     {
         $customer = $payment->session->customer;
 
         if (! $customer?->email) {
-            return;
+            return false;
         }
 
         try {
             Mail::to($customer->email)->send(new PaymentReceivedMail($payment));
+
+            return true;
         } catch (Throwable $exception) {
             Log::error('Could not send the payment thank-you email.', ['payment_id' => $payment->id, 'error' => $exception->getMessage()]);
+
+            return false;
         }
     }
 }

@@ -99,6 +99,12 @@
                             @endcan
                         </x-erp.nav-group>
                     @endcanany
+
+                    @can('access-erp')
+                        <div class="mt-2 border-t border-white/10 pt-2">
+                            <x-erp.nav-link :href="route('tutorial.index')" :active="request()->routeIs('tutorial.*')" icon="tutorial">Tutorial</x-erp.nav-link>
+                        </div>
+                    @endcan
                 </nav>
             </aside>
 

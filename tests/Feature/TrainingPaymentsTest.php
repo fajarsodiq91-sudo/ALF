@@ -61,7 +61,11 @@ class TrainingPaymentsTest extends TestCase
 
     private function sessionWithMeetings(int $meetings, string $plan, float $fee = 8000000): TrainingSession
     {
-        $session = TrainingSession::factory()->create(['fee' => $fee, 'payment_plan' => $plan]);
+        $session = TrainingSession::factory()->create([
+            'customer_id' => Customer::factory()->create(['email' => 'customer@example.com'])->id,
+            'fee' => $fee,
+            'payment_plan' => $plan,
+        ]);
         for ($i = 0; $i < $meetings; $i++) {
             TrainingSessionMeeting::factory()->create(['training_session_id' => $session->id, 'meeting_date' => Carbon::parse('2026-10-06')->addWeeks($i)->toDateString()]);
         }
@@ -150,7 +154,7 @@ class TrainingPaymentsTest extends TestCase
     public function test_recording_a_payment_creates_income_in_finance(): void
     {
         $account = Account::factory()->create(['is_active' => true]);
-        $customer = Customer::factory()->create(['name' => 'PT Pembayar']);
+        $customer = Customer::factory()->create(['name' => 'PT Pembayar', 'email' => 'pembayar@example.com']);
         $session = $this->sessionWithMeetings(8, 'installment');
         $session->update(['customer_id' => $customer->id]);
         $payment = $session->payments()->first();
@@ -214,6 +218,18 @@ class TrainingPaymentsTest extends TestCase
 
         $income = IncomeTransaction::findOrFail($payment->fresh()->income_transaction_id);
         $this->assertSame('Cash', $income->account->name);
+    }
+
+    public function test_the_payment_is_still_recorded_but_finance_is_warned_when_the_thank_you_email_cannot_go_out(): void
+    {
+        $payment = $this->sessionWithMeetings(2, 'full')->payments()->first();
+        $payment->session->customer->update(['email' => null]);
+
+        $this->actingAs($this->finance())->post(route('training.payments.pay', $payment), [
+            'paid_date' => '2026-09-16', 'payment_method' => 'Cash',
+        ])->assertSessionHas('error', fn (string $error) => str_contains($error, 'thank-you email') && str_contains($error, 'could NOT be sent'));
+
+        $this->assertTrue($payment->fresh()->isPaid());
     }
 
     public function test_bank_transfer_requires_an_account_but_cash_does_not(): void

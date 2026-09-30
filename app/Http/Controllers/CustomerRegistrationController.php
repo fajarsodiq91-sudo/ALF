@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\TrainingProgram;
 use App\Services\BookedSlots;
 use App\Services\ImageCompressor;
+use App\Services\StaffNotifier;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -94,6 +95,8 @@ class CustomerRegistrationController extends Controller
             // The registration itself is saved; a mail problem must not make the customer resubmit.
             Log::error('Could not send the registration confirmation email.', ['customer_id' => $customer->id, 'error' => $exception->getMessage()]);
         }
+
+        StaffNotifier::registrationSubmitted($customer);
 
         session(['registration_status_token' => $customer->status_token]);
 

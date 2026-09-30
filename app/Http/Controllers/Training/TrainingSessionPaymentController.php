@@ -73,7 +73,9 @@ class TrainingSessionPaymentController extends Controller
             ]);
         });
 
-        PaymentInvoices::sendThanks($payment->fresh('session.customer'));
+        if (! PaymentInvoices::sendThanks($payment->fresh('session.customer'))) {
+            return $back->with('error', 'Payment recorded as income in Finance, but the thank-you email to the customer could NOT be sent (no email address on file, or the mail settings need checking).');
+        }
 
         return $back->with('status', 'Payment recorded as income in Finance. A thank-you email was sent to the customer.');
     }

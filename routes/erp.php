@@ -36,7 +36,9 @@ use App\Http\Controllers\Training\TrainingProgramController;
 use App\Http\Controllers\Training\TrainingSessionController;
 use App\Http\Controllers\Training\TrainingSessionMeetingController;
 use App\Http\Controllers\Training\TrainingSessionPaymentController;
+use App\Http\Controllers\TutorialController;
 use App\Services\TransactionProof;
+use App\Services\Tutorial;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/erp', '/erp/dashboard');
@@ -44,6 +46,12 @@ Route::redirect('/erp', '/erp/dashboard');
 Route::get('/erp/dashboard', function () {
     return view('erp.dashboard');
 })->middleware(['auth', 'verified', 'permission:access-erp'])->name('dashboard');
+
+// The guide is open to every ERP user; each topic is further limited to the permissions of its module.
+Route::middleware(['auth', 'verified', 'permission:access-erp'])->prefix('erp/tutorial')->name('tutorial.')->group(function () {
+    Route::get('/', [TutorialController::class, 'index'])->name('index');
+    Route::get('/{topic}', [TutorialController::class, 'show'])->whereIn('topic', Tutorial::slugs())->name('show');
+});
 
 Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
 
