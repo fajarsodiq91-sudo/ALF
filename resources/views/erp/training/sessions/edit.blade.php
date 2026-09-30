@@ -2,23 +2,33 @@
     @include('erp.partials.slot-picker', ['booked' => $booked])
     @php $inputClass = 'block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm'; @endphp
 
-    <div class="max-w-3xl space-y-6">
+    <div class="max-w-3xl space-y-6" x-data="{ openSection: @js(request()->query('focus')) }">
         <x-erp.flash />
 
-        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg p-6">
-            <form action="{{ route('training.update', $session) }}" method="POST">
-                @csrf
-                @method('PUT')
-                @include('erp.training.sessions._form')
-            </form>
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg" x-data="{ key: 'details' }">
+            <button type="button" @click="openSection = (openSection === key ? null : key)" class="flex w-full items-center justify-between px-6 py-4 text-left">
+                <span class="text-sm font-semibold text-gray-800">Session details</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-400 transition-transform" :class="{ 'rotate-180': openSection === key }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            <div x-show="openSection === key" x-cloak class="px-6 pb-6">
+                <form action="{{ route('training.update', $session) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    @include('erp.training.sessions._form')
+                </form>
+            </div>
         </div>
 
         @if ($session->acceptsParticipants())
-            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4 space-y-3">
-                <div class="flex items-center justify-between">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200" x-data="{ key: 'participants' }">
+                <button type="button" @click="openSection = (openSection === key ? null : key)" class="flex w-full items-center justify-between px-4 py-3 text-left">
                     <span class="text-sm font-semibold text-gray-800">Participants</span>
-                    <span class="text-xs text-gray-500">{{ $session->participants->count() }} of {{ $session->participant_limit }} joined</span>
-                </div>
+                    <span class="flex items-center gap-2">
+                        <span class="text-xs text-gray-500">{{ $session->participants->count() }} of {{ $session->participant_limit }} joined</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-400 transition-transform" :class="{ 'rotate-180': openSection === key }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                    </span>
+                </button>
+            <div x-show="openSection === key" x-cloak class="px-4 pb-4 space-y-3">
                 @if ($session->participantLinkOpen())
                     <div>
                         <label class="block text-xs font-medium text-gray-600">Participant link (the company also sees it in its portal)</label>
@@ -43,15 +53,20 @@
                     </ul>
                 @endif
             </div>
+            </div>
         @endif
 
-        <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-x-auto">
-            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-x-auto" x-data="{ key: 'payments' }">
+            <button type="button" @click="openSection = (openSection === key ? null : key)" class="flex w-full items-center justify-between px-4 py-3 border-b border-gray-200 text-left">
                 <span class="text-sm font-semibold text-gray-800">Payments</span>
-                <span class="text-xs text-gray-500">
-                    {{ \App\Services\SessionPaymentPlan::rupiah($session->paidAmount()) }} received of {{ \App\Services\SessionPaymentPlan::rupiah($session->fee) }}
+                <span class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500">
+                        {{ \App\Services\SessionPaymentPlan::rupiah($session->paidAmount()) }} received of {{ \App\Services\SessionPaymentPlan::rupiah($session->fee) }}
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-400 transition-transform" :class="{ 'rotate-180': openSection === key }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
                 </span>
-            </div>
+            </button>
+            <div x-show="openSection === key" x-cloak>
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
@@ -146,10 +161,15 @@
                     <tbody><tr><td colspan="5" class="px-4 py-6 text-center text-gray-400">No payments. Set a fee above to create the payment schedule.</td></tr></tbody>
                 @endforelse
             </table>
+            </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-x-auto">
-            <div class="px-4 py-3 border-b border-gray-200 text-sm font-semibold text-gray-800">Meeting schedule</div>
+        <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-x-auto" x-data="{ key: 'meetings' }">
+            <button type="button" @click="openSection = (openSection === key ? null : key)" class="flex w-full items-center justify-between px-4 py-3 border-b border-gray-200 text-left">
+                <span class="text-sm font-semibold text-gray-800">Meeting schedule</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-gray-400 transition-transform" :class="{ 'rotate-180': openSection === key }" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            <div x-show="openSection === key" x-cloak>
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
@@ -260,6 +280,7 @@
                     </div>
                 </form>
             @endcan
+            </div>
         </div>
     </div>
 </x-layouts.erp>

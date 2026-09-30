@@ -86,7 +86,7 @@
                                             <button type="submit" class="mr-3 text-green-700 hover:text-green-800 font-medium">Mark as done</button>
                                         </form>
                                     @endif
-                                    <a href="{{ route('training.edit', $session) }}" class="text-brand hover:text-brand-dark font-medium">Edit</a>
+                                    <a href="{{ route('training.edit', array_filter(['session' => $session->id, 'focus' => request('focus')])) }}" class="text-brand hover:text-brand-dark font-medium">Edit</a>
                                     <form action="{{ route('training.destroy', $session) }}" method="POST" class="inline" onsubmit="return confirm('Delete this session?');">
                                         @csrf
                                         @method('DELETE')

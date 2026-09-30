@@ -30,7 +30,7 @@
                 'label' => 'Training payments',
                 'sub' => 'awaiting confirmation',
                 'count' => $count,
-                'route' => route('training.index', ['payment' => 'awaiting']),
+                'route' => route('training.index', ['payment' => 'awaiting', 'focus' => 'payments']),
                 'icon' => 'cash',
             ];
         }
@@ -54,7 +54,7 @@
                 'label' => 'Reschedule requests',
                 'sub' => 'awaiting review',
                 'count' => $count,
-                'route' => route('training.index', ['reschedule_pending' => 1]),
+                'route' => route('training.index', ['reschedule_pending' => 1, 'focus' => 'meetings']),
                 'icon' => 'calendar',
             ];
         }
