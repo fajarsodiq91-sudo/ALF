@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Sales\RegisterCustomerRequest;
 use App\Mail\CustomerRegistrationReceived;
 use App\Models\Customer;
+use App\Models\Setting;
 use App\Models\TrainingProgram;
 use App\Services\BookedSlots;
 use App\Services\ImageCompressor;
@@ -39,6 +40,7 @@ class CustomerRegistrationController extends Controller
         return view('customer-registration.form', [
             'customer' => $customer,
             'token' => $token,
+            'hasAgreement' => Setting::get('agreement_content') !== null,
             'programs' => $grouped,
             'prices' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->pricesBySize()]),
             'maxGroupSizes' => $programs->mapWithKeys(fn ($program) => [$program->id => $customer->customer_type === 'individual' ? $program->maxGroupSize() : 1]),
@@ -51,6 +53,13 @@ class CustomerRegistrationController extends Controller
             'programImages' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->images->map->url()]),
             'programTerms' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->terms]),
         ]);
+    }
+
+    public function agreement(): View
+    {
+        abort_unless($content = Setting::get('agreement_content'), 404);
+
+        return view('customer-registration.agreement', ['content' => $content]);
     }
 
     public function store(RegisterCustomerRequest $request, string $token): RedirectResponse|Response

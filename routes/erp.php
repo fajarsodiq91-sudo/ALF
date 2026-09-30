@@ -24,6 +24,7 @@ use App\Http\Controllers\Sales\CustomerController;
 use App\Http\Controllers\Sales\CustomerPortalPreviewController;
 use App\Http\Controllers\Sales\CustomerProjectController;
 use App\Http\Controllers\Settings\BlockedSlotController;
+use App\Http\Controllers\Settings\AgreementController;
 use App\Http\Controllers\Settings\MasterDataController;
 use App\Http\Controllers\Settings\OperatingHoursController;
 use App\Http\Controllers\Settings\RoleController;
@@ -237,6 +238,8 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     Route::middleware('permission:masterdata.manage')->group(function () {
         Route::get('master-data/operating-hours', [OperatingHoursController::class, 'edit'])->name('masterdata.hours.edit');
         Route::put('master-data/operating-hours', [OperatingHoursController::class, 'update'])->name('masterdata.hours.update');
+        Route::get('master-data/agreement', [AgreementController::class, 'edit'])->name('masterdata.agreement.edit');
+        Route::put('master-data/agreement', [AgreementController::class, 'update'])->name('masterdata.agreement.update');
         Route::post('master-data/blocked-slots', [BlockedSlotController::class, 'store'])->name('masterdata.blocked.store');
         Route::delete('master-data/blocked-slots/{blockedSlot}', [BlockedSlotController::class, 'destroy'])->name('masterdata.blocked.destroy');
         Route::resource('master-data', MasterDataController::class)->only(['index', 'store', 'update', 'destroy'])

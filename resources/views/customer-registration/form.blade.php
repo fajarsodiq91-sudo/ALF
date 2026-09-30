@@ -233,6 +233,9 @@
                             <input type="checkbox" name="terms_accepted" value="1" required class="mt-0.5 rounded border-gray-300 text-brand focus:ring-brand">
                             <span>I have read and agree to the terms &amp; conditions of the program(s) selected above<span x-show="anyTermsToAgree()"> and shown next to each one</span>, as the agreement between myself and PT Alfajar Logic Futura.</span>
                         </label>
+                        @if ($hasAgreement)
+                            <p class="mt-2 pl-6 text-sm"><a href="{{ route('customer-registration.agreement') }}" target="_blank" rel="noopener noreferrer" class="font-medium text-brand underline hover:text-brand-dark">Read the full agreement</a></p>
+                        @endif
                         @error('terms_accepted') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                     </div>
 

@@ -28,6 +28,7 @@ Route::middleware('throttle:60,1')->prefix('p')->name('customer-portfolio.')->gr
 
 Route::middleware('throttle:30,1')->prefix('customer-registration')->name('customer-registration.')->group(function () {
     Route::get('/done', [CustomerRegistrationController::class, 'done'])->name('done');
+    Route::get('/agreement', [CustomerRegistrationController::class, 'agreement'])->name('agreement');
     Route::get('/status/{token}', [CustomerRegistrationController::class, 'status'])->name('status');
     Route::get('/{token}', [CustomerRegistrationController::class, 'show'])->name('show');
     Route::post('/{token}', [CustomerRegistrationController::class, 'store'])->name('store');
