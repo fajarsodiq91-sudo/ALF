@@ -67,7 +67,8 @@ echo "==> Uploading public/build"
 rsync -avz --delete -e "$RSYNC_RSH" public/build/ "$SSH_USER@$SSH_HOST:$REMOTE_APP_DIR/public/build/"
 
 echo "==> Pending migrations"
-$SSH "cd $REMOTE_APP_DIR && $REMOTE_PHP artisan migrate:status --pending"
+# On a fresh database the migrations table does not exist yet, so this can fail harmlessly.
+$SSH "cd $REMOTE_APP_DIR && $REMOTE_PHP artisan migrate:status --pending" || echo "(could not list pending migrations: fresh database?)"
 
 if $RUN_MIGRATE; then
   echo "==> Backing up the database"
