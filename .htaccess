@@ -7,6 +7,10 @@
     RewriteRule ^(\.env(\..*)?|\.git(/.*)?|\.htaccess|composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|README\.md|CLAUDE\.md|AGENTS\.md|boost\.json|deploy\.sh|\.editorconfig|\.gitattributes|\.gitignore|\.npmrc|\.mcp\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js)$ - [F,L]
     RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules|_legacy_site|\.claude)(/.*)?$ - [F,L]
 
+    # Folders that belong to other sites/subdomains living in the same public_html,
+    # and the SSL verification folder: serve them as-is, never route them to Laravel.
+    RewriteRule ^(generus|kondangjaya|ppg|\.well-known|cgi-bin)(/.*)?$ - [L]
+
     RewriteCond %{REQUEST_URI} !^/public/
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>

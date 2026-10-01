@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Deploy ALF Laravel app to Hostinger (pt.alfajarlogic.com)
+# Deploy ALF Laravel app to Hostinger (alfajarlogic.com)
 #
 # How production works:
 #   Hostinger Git auto-deploy clones `main` from GitHub into public_html and runs
@@ -22,9 +22,9 @@ SSH_KEY="$HOME/.ssh/hostinger_deploy"
 SSH_PORT=65002
 SSH_USER="u627878615"
 SSH_HOST="46.202.138.72"
-REMOTE_APP_DIR="domains/pt.alfajarlogic.com/public_html"
+REMOTE_APP_DIR="domains/alfajarlogic.com/public_html"
 REMOTE_PHP="/opt/alt/php84/usr/bin/php"
-SITE_URL="https://pt.alfajarlogic.com"
+SITE_URL="https://alfajarlogic.com"
 WAIT_SECONDS=300
 
 SSH="ssh -i $SSH_KEY -p $SSH_PORT -o BatchMode=yes $SSH_USER@$SSH_HOST"
