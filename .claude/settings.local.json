@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ssh -i /home/codespace/.ssh/hostinger_deploy *)",
+      "Bash(rsync -avz -e *)",
+      "Bash(./deploy.sh *)"
+    ]
+  }
+}
