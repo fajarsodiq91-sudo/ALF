@@ -10,6 +10,7 @@ use App\Models\MeetingRescheduleRequest;
 use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
 use App\Services\BookedSlots;
+use App\Services\CustomerNotifier;
 use App\Services\OperatingHours;
 use App\Services\PaymentInvoices;
 use App\Services\SessionPaymentPlan;
@@ -43,8 +44,9 @@ class TrainingSessionMeetingController extends Controller
             ]);
         }
 
-        $session->meetings()->create($data);
+        $meeting = $session->meetings()->create($data);
         SessionPaymentPlan::syncDueMeeting($session);
+        CustomerNotifier::meetingAdded($meeting);
 
         return redirect()->route('training.edit', $session)->with('status', 'Meeting added.');
     }
@@ -55,6 +57,7 @@ class TrainingSessionMeetingController extends Controller
 
         $session->participants()->detach($participant->id);
         $session->update(['participants_count' => $session->participants()->count()]);
+        CustomerNotifier::participantRemoved($session, $participant);
 
         return redirect()->route('training.edit', $session)->with('status', 'Participant removed.');
     }
@@ -67,6 +70,7 @@ class TrainingSessionMeetingController extends Controller
         $done = ! $meeting->is_completed;
         $meeting->update(['is_completed' => $done, 'completed_at' => $done ? now() : null]);
         PaymentInvoices::sendDue($meeting->session);
+        CustomerNotifier::meetingToggled($meeting);
 
         return redirect()->route('training.edit', $meeting->training_session_id)
             ->with('status', $done ? 'Meeting marked as done.' : 'Meeting marked as upcoming again.');
@@ -78,6 +82,7 @@ class TrainingSessionMeetingController extends Controller
 
         $meeting->delete();
         SessionPaymentPlan::syncDueMeeting($meeting->session);
+        CustomerNotifier::meetingRemoved($meeting);
 
         return redirect()->route('training.edit', $meeting->training_session_id)->with('status', 'Meeting deleted.');
     }

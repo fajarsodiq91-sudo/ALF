@@ -11,6 +11,7 @@ use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Services\BookedSlots;
 use App\Services\CertificateIssuer;
+use App\Services\CustomerNotifier;
 use App\Services\PaymentInvoices;
 use App\Services\SessionPaymentPlan;
 use Illuminate\Http\RedirectResponse;
@@ -60,6 +61,7 @@ class TrainingSessionController extends Controller
         $session->syncParticipantToken();
         CertificateIssuer::issueFor($session);
         PaymentInvoices::sendDue($session);
+        CustomerNotifier::sessionScheduled($session);
 
         return redirect()->route('training.index')->with('status', 'Training session created successfully.');
     }
@@ -87,6 +89,7 @@ class TrainingSessionController extends Controller
         }
 
         $session->update($data);
+        $statusChanged = $session->wasChanged('status');
         $session->syncParticipantToken();
         $certificates = CertificateIssuer::issueFor($session);
 
@@ -96,6 +99,10 @@ class TrainingSessionController extends Controller
         }
 
         PaymentInvoices::sendDue($session);
+
+        if ($statusChanged) {
+            CustomerNotifier::sessionStatusChanged($session);
+        }
 
         return redirect()->route('training.index')->with('status', 'Training session updated successfully.'.($certificates ? " {$certificates} certificate(s) issued." : ''));
     }
@@ -119,6 +126,7 @@ class TrainingSessionController extends Controller
         }
 
         $session->update(['status' => 'completed']);
+        CustomerNotifier::sessionStatusChanged($session);
         $certificates = CertificateIssuer::issueFor($session);
 
         return redirect()->route('training.index')->with('status', 'Session marked as done.'.($certificates ? " {$certificates} certificate(s) issued." : ''));

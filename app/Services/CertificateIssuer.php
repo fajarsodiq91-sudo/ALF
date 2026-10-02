@@ -36,7 +36,7 @@ class CertificateIssuer
                 continue;
             }
 
-            self::create($session, $holder);
+            CustomerNotifier::certificateIssued(self::create($session, $holder));
             $created++;
         }
 
