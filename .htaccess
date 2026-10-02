@@ -5,6 +5,10 @@
     # in this shared-hosting deployment (the whole repo is deployed here,
     # not just the public/ folder, so this must stay in place).
     RewriteRule ^(\.env(\..*)?|\.git(/.*)?|\.htaccess|composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|README\.md|CLAUDE\.md|AGENTS\.md|boost\.json|deploy\.sh|\.editorconfig|\.gitattributes|\.gitignore|\.npmrc|\.mcp\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js)$ - [F,L]
+    # Uploaded files (customer photos etc.) are served from the public/storage symlink,
+    # so /storage/... must reach public/ before the storage/ folder is blocked below.
+    RewriteRule ^storage/(.+)$ public/storage/$1 [L]
+
     RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules|_legacy_site|\.claude)(/.*)?$ - [F,L]
 
     # Folders that belong to other sites/subdomains living in the same public_html,
