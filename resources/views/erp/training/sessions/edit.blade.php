@@ -206,6 +206,9 @@
                                         @method('PATCH')
                                         <button type="submit" class="text-brand hover:text-brand-dark font-medium">{{ $meeting->is_completed ? 'Undo' : 'Mark done' }}</button>
                                     </form>
+                                    @unless ($meeting->is_completed)
+                                        <button type="button" @click="$dispatch('open-meeting-reschedule', { url: @js(route('training.meetings.reschedule', $meeting)), current: @js($meeting->meeting_date->format('D, d M Y').' · '.($meeting->timeRange() ?? 'no time set')), meeting_date: @js($meeting->meeting_date->toDateString()), start_time: @js($meeting->start_time ? substr($meeting->start_time, 0, 5) : ''), end_time: @js($meeting->end_time ? substr($meeting->end_time, 0, 5) : '') })" class="mr-3 text-brand hover:text-brand-dark font-medium">Reschedule</button>
+                                    @endunless
                                     <form action="{{ route('training.meetings.destroy', $meeting) }}" method="POST" class="inline" onsubmit="return confirm('Delete this meeting?');">
                                         @csrf
                                         @method('DELETE')
@@ -281,6 +284,28 @@
                         <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-brand-dark hover:to-brand-dark">Add Meeting</button>
                     </div>
                 </form>
+            @endcan
+            @can('training.manage')
+                <div x-data="{ open: false, url: '', current: '', m: { meeting_date: '', start_time: '', end_time: '' } }"
+                     @open-meeting-reschedule.window="url = $event.detail.url; current = $event.detail.current; m = { meeting_date: $event.detail.meeting_date, start_time: $event.detail.start_time, end_time: $event.detail.end_time }; open = true"
+                     @keydown.escape.window="open = false" x-show="open" x-cloak class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
+                    <form :action="url" method="POST" @submit="if (!meetingReady(m)) { $event.preventDefault(); alert('Choose a new date and time first.'); }" class="w-full max-w-sm space-y-4 rounded-xl bg-white p-5 shadow-2xl">
+                        @csrf
+                        @method('PATCH')
+                        <input type="hidden" name="meeting_date" :value="m.meeting_date">
+                        <input type="hidden" name="start_time" :value="m.start_time">
+                        <input type="hidden" name="end_time" :value="m.end_time">
+                        <h4 class="text-base font-semibold text-gray-800">Reschedule meeting</h4>
+                        <p class="text-sm text-gray-500">Current: <span x-text="current"></span></p>
+                        <p class="text-sm font-medium text-gray-800" x-text="meetingLabel(m)"></p>
+                        <button type="button" @click="$dispatch('open-slot-picker', { meeting: m, siblings: [], minutes: @js($session->program?->session_minutes), corporate: @js($session->isCorporate()) })" class="inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50">Choose new date &amp; time</button>
+                        <p class="text-xs text-gray-500">The change applies immediately and the customer is notified by email.</p>
+                        <div class="flex justify-end gap-2">
+                            <button type="button" @click="open = false" class="rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">Cancel</button>
+                            <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white shadow-sm">Save &amp; notify</button>
+                        </div>
+                    </form>
+                </div>
             @endcan
             </div>
         </div>

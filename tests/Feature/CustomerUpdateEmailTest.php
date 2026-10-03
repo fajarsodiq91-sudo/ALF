@@ -45,6 +45,38 @@ class CustomerUpdateEmailTest extends TestCase
         Mail::assertSent(TrainingUpdateMail::class, 1);
     }
 
+    public function test_admin_can_reschedule_a_meeting_directly_and_the_customer_is_emailed(): void
+    {
+        $meeting = TrainingSessionMeeting::factory()->create([
+            'training_session_id' => $this->session->id, 'meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30',
+        ]);
+
+        $this->actingAs($this->admin)->patch(route('training.meetings.reschedule', $meeting), [
+            'meeting_date' => '2026-10-08', 'start_time' => '20:00', 'end_time' => '21:30',
+        ])->assertRedirect()->assertSessionHas('status');
+
+        $this->assertSame('2026-10-08', $meeting->fresh()->meeting_date->toDateString());
+        Mail::assertSent(TrainingUpdateMail::class, fn ($mail) => $mail->hasTo('client@pt.test')
+            && str_contains($mail->heading, 'changed') && isset($mail->details['Previous schedule']));
+    }
+
+    public function test_rescheduling_onto_a_booked_slot_is_refused_without_email(): void
+    {
+        $meeting = TrainingSessionMeeting::factory()->create([
+            'training_session_id' => $this->session->id, 'meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30',
+        ]);
+        TrainingSessionMeeting::factory()->create([
+            'training_session_id' => $this->session->id, 'meeting_date' => '2026-10-08', 'start_time' => '20:00', 'end_time' => '21:30',
+        ]);
+
+        $this->actingAs($this->admin)->patch(route('training.meetings.reschedule', $meeting), [
+            'meeting_date' => '2026-10-08', 'start_time' => '20:00', 'end_time' => '21:30',
+        ])->assertSessionHas('error');
+
+        $this->assertSame('2026-10-06', $meeting->fresh()->meeting_date->toDateString());
+        Mail::assertNothingSent();
+    }
+
     public function test_completing_a_session_emails_the_customer(): void
     {
         $this->actingAs($this->admin)->post(route('training.complete', $this->session))->assertRedirect();

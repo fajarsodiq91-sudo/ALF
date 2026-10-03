@@ -87,6 +87,43 @@ class TrainingSessionMeetingController extends Controller
         return redirect()->route('training.edit', $meeting->training_session_id)->with('status', 'Meeting deleted.');
     }
 
+    /** Moves a meeting directly (no customer approval); the customer is told by email. Pending customer requests for it are closed. */
+    public function reschedule(Request $request, TrainingSessionMeeting $meeting): RedirectResponse
+    {
+        $this->authorize('training.manage');
+
+        $data = $request->validate([
+            'meeting_date' => ['required', 'date'],
+            'start_time' => ['nullable', 'date_format:H:i'],
+            'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],
+        ]);
+
+        $session = $meeting->session;
+        $start = $data['start_time'] ?? null;
+        $end = $data['end_time'] ?? null;
+
+        if ($violation = OperatingHours::violation($data['meeting_date'], $start, $end, $session->program?->session_minutes, $session->isCorporate())) {
+            return back()->with('error', "Cannot reschedule: {$violation}");
+        }
+
+        if ($start && $end && BookedSlots::conflicts($data['meeting_date'], $start, $end, null, $meeting->id)) {
+            return back()->with('error', 'Cannot reschedule: '.BookedSlots::describe($data['meeting_date'], $start, $end).' is already booked.');
+        }
+
+        $originalLabel = $meeting->meeting_date->format('D, d M Y').' · '.($meeting->timeRange() ?? 'no time set');
+
+        $meeting->update(['meeting_date' => $data['meeting_date'], 'start_time' => $start, 'end_time' => $end]);
+        $meeting->rescheduleRequests()->where('status', 'pending')
+            ->update(['status' => 'rejected', 'reviewed_by' => auth()->id(), 'reviewed_at' => now()]);
+
+        $message = 'Meeting rescheduled.';
+        $message .= CustomerNotifier::meetingRescheduled($meeting->refresh(), $originalLabel)
+            ? ' The customer has been notified by email.'
+            : ' The email to the customer could NOT be sent, so please contact them manually.';
+
+        return redirect()->route('training.edit', $meeting->training_session_id)->with('status', $message);
+    }
+
     /** Approves a customer's reschedule request: moves the meeting and notifies them by email. */
     public function approveReschedule(MeetingRescheduleRequest $rescheduleRequest): RedirectResponse
     {

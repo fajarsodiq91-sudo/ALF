@@ -37,7 +37,7 @@ class BookedSlots
     }
 
     /** Whether the given time overlaps something already booked. Times are "HH:MM"; unknown times cannot clash. */
-    public static function conflicts(string $date, ?string $start, ?string $end, ?int $exceptCustomerId = null): bool
+    public static function conflicts(string $date, ?string $start, ?string $end, ?int $exceptCustomerId = null, ?int $exceptMeetingId = null): bool
     {
         if (! $start || ! $end) {
             return false;
@@ -46,7 +46,7 @@ class BookedSlots
         $date = Carbon::parse($date)->toDateString();
         [$start, $end] = [substr($start, 0, 5), substr($end, 0, 5)];
 
-        return self::all($exceptCustomerId)->contains(
+        return self::all($exceptCustomerId, $exceptMeetingId)->contains(
             fn (array $slot) => $slot['date'] === $date && $slot['start'] < $end && $slot['end'] > $start
         );
     }
@@ -124,9 +124,10 @@ class BookedSlots
     /**
      * @return Collection<int, array{date: string, start: string, end: string}>
      */
-    private static function all(?int $exceptCustomerId): Collection
+    private static function all(?int $exceptCustomerId, ?int $exceptMeetingId = null): Collection
     {
         $scheduled = TrainingSessionMeeting::query()
+            ->when($exceptMeetingId, fn ($query, $id) => $query->whereKeyNot($id))
             ->whereNotNull('start_time')
             ->whereNotNull('end_time')
             ->whereHas('session', fn ($query) => $query->where('status', '!=', 'cancelled'))

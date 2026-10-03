@@ -215,6 +215,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::delete('{session}/participants/{participant}', [TrainingSessionMeetingController::class, 'removeParticipant'])->name('training.participants.destroy');
         Route::post('{session}/meetings', [TrainingSessionMeetingController::class, 'store'])->name('training.meetings.store');
         Route::patch('meetings/{meeting}/toggle', [TrainingSessionMeetingController::class, 'toggle'])->name('training.meetings.toggle');
+        Route::patch('meetings/{meeting}/reschedule', [TrainingSessionMeetingController::class, 'reschedule'])->name('training.meetings.reschedule');
         Route::delete('meetings/{meeting}', [TrainingSessionMeetingController::class, 'destroy'])->name('training.meetings.destroy');
         Route::post('reschedule-requests/{rescheduleRequest}/approve', [TrainingSessionMeetingController::class, 'approveReschedule'])->name('training.reschedule-requests.approve');
         Route::post('reschedule-requests/{rescheduleRequest}/reject', [TrainingSessionMeetingController::class, 'rejectReschedule'])->name('training.reschedule-requests.reject');

@@ -31,6 +31,17 @@ class CustomerNotifier
         self::send($meeting->session->customer, 'A meeting was added to your program', 'A new meeting has been added to your program.', self::meetingDetails($meeting));
     }
 
+    /** @param  string  $originalLabel  the schedule before the team moved the meeting */
+    public static function meetingRescheduled(TrainingSessionMeeting $meeting, string $originalLabel): bool
+    {
+        return self::send(
+            $meeting->session->customer,
+            'Your meeting schedule has changed',
+            'We have changed the schedule of one of your meetings.',
+            ['Previous schedule' => $originalLabel] + self::meetingDetails($meeting),
+        );
+    }
+
     public static function meetingRemoved(TrainingSessionMeeting $meeting): void
     {
         self::send($meeting->session->customer, 'A meeting was cancelled', 'The meeting below has been removed from your schedule.', self::meetingDetails($meeting));
@@ -90,16 +101,20 @@ class CustomerNotifier
     }
 
     /** @param  array<string, string>  $details */
-    private static function send(?Customer $customer, string $heading, string $message, array $details): void
+    private static function send(?Customer $customer, string $heading, string $message, array $details): bool
     {
         if (! $customer?->email) {
-            return;
+            return false;
         }
 
         try {
             Mail::to($customer->email)->send(new TrainingUpdateMail($customer, $heading, $message, $details));
+
+            return true;
         } catch (Throwable $exception) {
             Log::error('Could not send the customer update email.', ['customer_id' => $customer->id, 'heading' => $heading, 'error' => $exception->getMessage()]);
+
+            return false;
         }
     }
 }
