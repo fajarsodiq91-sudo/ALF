@@ -42,7 +42,8 @@
     <ul>
         <li>Sertifikat terbit otomatis untuk sesi bertipe <strong>Learning</strong> ketika sesi ditandai selesai. Nomornya berformat <code>ALF/LRN/{tahun}/{bulan romawi}/{urutan}-{kode 3 karakter}</code>, dengan tahun, bulan, dan urutan diambil dari ID customer.</li>
         <li>Tanda tangan di sertifikat adalah tanda tangan instruktur sesi tersebut (diunggah di data karyawan). Bila tidak ada instruktur, dipakai nama dan jabatan penandatangan di <em>Settings → System Settings</em>.</li>
-        <li>Setiap sertifikat memuat <strong>QR code</strong> ke halaman portofolio publik customer. Halaman itu tanpa login dan memuat sertifikatnya serta proyek yang sudah Anda tandai <strong>In portfolio</strong> (di halaman detail customer di Sales). File proyek hanya bisa diunduh publik bila sudah ditandai seperti itu.</li>
+        <li>Setiap sertifikat memuat <strong>QR code</strong> yang mengarah ke halaman verifikasi publik <code>/verify/{kode}</code>. Halaman tanpa login itu menyatakan sertifikat <em>Valid</em> beserta nama penerima, program, nomor sertifikat, nomor ID, tanggal terbit, dan tautan ke portofolio publik customer. Kode yang tidak dikenal menampilkan halaman <em>tidak valid</em> (404).</li>
+        <li>Halaman portofolio publik customer juga tanpa login dan memuat sertifikatnya serta proyek yang sudah Anda tandai <strong>In portfolio</strong> (di halaman detail customer di Sales). File proyek hanya bisa diunduh publik bila sudah ditandai seperti itu.</li>
     </ul>
     <x-tutorial.note type="tip">Cabut tanda portofolio kapan saja dengan menekan tombol <strong>In portfolio</strong> lagi di halaman detail customer.</x-tutorial.note>
 </x-tutorial.section>

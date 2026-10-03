@@ -36,9 +36,26 @@
         <p>Menu <a href="{{ route('settings.system') }}">Settings → System Settings</a> menyimpan profil perusahaan dan beberapa pengaturan default.</p>
         <ul>
             <li><strong>Company name</strong>, <strong>Address</strong>, <strong>Phone</strong>, <strong>Email</strong>, dan <strong>NPWP (tax ID)</strong>. Nama perusahaan tampil di judul halaman ERP.</li>
+            <li><strong>Company bank account</strong>: nomor rekening perusahaan (boleh beberapa baris). Teks ini dicantumkan di email invoice yang dikirim ke customer sebagai tujuan pembayaran.</li>
             <li><strong>Certificate default signer name</strong> dan <strong>title</strong>: penandatangan sertifikat bila sesi tidak punya instruktur.</li>
             <li><strong>Default income tax</strong>: pajak yang otomatis dipilih di setiap pemasukan baru, termasuk pembayaran training customer. Pilih <em>No automatic tax</em> bila tidak ingin pajak otomatis. Tetap bisa diubah per transaksi.</li>
         </ul>
         <p>Klik <strong>Save Settings</strong> untuk menyimpan.</p>
+    </x-tutorial.section>
+@endcan
+
+@can('settings.manage-system')
+    <x-tutorial.section title="Certificate Templates: desain sertifikat" id="certificate-templates">
+        <p>Menu <a href="{{ route('settings.certificate-templates.index') }}">Settings → Certificate Templates</a> mengatur latar sertifikat dan posisi tiap isiannya. Tanpa template, sertifikat memakai desain bawaan.</p>
+        <x-tutorial.steps>
+            <li>Klik tambah, isi <strong>Name</strong>, lalu unggah latar berformat <strong>PNG A4 landscape</strong> (297 × 210 mm; disarankan 300 DPI = 3508 × 2480 px, minimal lebar 1600 px).</li>
+            <li>Atur posisi tiap isian: nomor sertifikat, nama penerima, kalimat deskripsi, tanggal terbit, QR code, nomor ID, gambar tanda tangan, nama dan jabatan penandatangan. <strong>X</strong> adalah titik tengah horizontal, <strong>Y</strong> tepi atas, keduanya diukur dari pojok kiri atas halaman; <strong>W</strong> adalah lebar kotak teks (atau ukuran gambar untuk QR dan tanda tangan). Kosongkan untuk memakai nilai bawaan.</li>
+            <li>Simpan, lalu klik <strong>Preview</strong> untuk melihat sertifikat contoh dan koreksi posisinya bila perlu.</li>
+        </x-tutorial.steps>
+        <ul>
+            <li>Centang <strong>default</strong> untuk menjadikannya template utama; hanya satu yang bisa jadi default. Sertifikat yang programnya tidak punya template khusus memakai yang default.</li>
+            <li>Template khusus dipasang per program lewat isian <em>Certificate template</em> di data program (lihat topik <em>Program &amp; Kategori Training</em>).</li>
+            <li>Mengganti template tidak mengubah isi sertifikat lama; unggah gambar baru hanya bila ingin mengganti latarnya.</li>
+        </ul>
     </x-tutorial.section>
 @endcan

@@ -142,7 +142,7 @@ class Tutorial
         ],
         'master-data' => [
             'title' => 'Master Data',
-            'summary' => 'Pilihan dropdown, jam operasional, blokir slot, dan teks perjanjian pendaftaran.',
+            'summary' => 'Pilihan dropdown, jam operasional, blokir slot, teks perjanjian pendaftaran, serta konten website publik.',
             'group' => 'Pengaturan',
             'permission' => 'masterdata.manage',
             'route' => 'masterdata.index',
@@ -150,7 +150,7 @@ class Tutorial
         ],
         'settings' => [
             'title' => 'Settings: User, Role & Sistem',
-            'summary' => 'Membuat akun staf, mengatur role dan permission, serta profil perusahaan.',
+            'summary' => 'Membuat akun staf, mengatur role dan permission, profil perusahaan, serta template sertifikat.',
             'group' => 'Pengaturan',
             'permission' => ['settings.manage-users', 'settings.manage-roles', 'settings.manage-system'],
             'route' => null,

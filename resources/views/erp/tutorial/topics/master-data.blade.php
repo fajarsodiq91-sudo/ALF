@@ -1,9 +1,9 @@
 <x-tutorial.section title="Apa itu Master Data?">
-    <p>Master Data berisi pengaturan yang dipakai di seluruh ERP: pilihan dropdown, jam operasional, slot yang diblokir, dan teks perjanjian pendaftaran. Menu ini butuh permission <code>masterdata.manage</code>. Bagian kirinya berisi daftar pengaturan; klik salah satu untuk mengubahnya.</p>
+    <p>Master Data berisi pengaturan yang dipakai di seluruh ERP: pilihan dropdown, jam operasional, slot yang diblokir, teks perjanjian pendaftaran, serta isi website publik perusahaan. Menu ini butuh permission <code>masterdata.manage</code>. Bagian kirinya berisi daftar pengaturan; klik salah satu untuk mengubahnya.</p>
 </x-tutorial.section>
 
 <x-tutorial.section title="Pilihan dropdown">
-    <p>Grup yang tersedia: <strong>Customer Type</strong>, <strong>Asset Category</strong>, <strong>Employment Type</strong>, <strong>Leave Type</strong>, <strong>Program Type</strong>, dan <strong>Training Delivery Mode</strong>.</p>
+    <p>Grup yang tersedia: <strong>Customer Type</strong>, <strong>Asset Category</strong>, <strong>Employment Type</strong>, <strong>Leave Type</strong>, <strong>Program Type</strong>, <strong>Training Delivery Mode</strong>, dan <strong>Portfolio Category</strong> (kategori portofolio di website; tiap kategori menjadi tombol filter di halaman Portfolio).</p>
     <ul>
         <li><strong>Menambah</strong>: pilih grup, tulis nama pilihan baru di kolom bawah, lalu klik <strong>Add Option</strong>.</li>
         <li><strong>Mengubah</strong>: ubah <em>Label</em> (nama tampil), <em>Order</em> (urutan), atau kotak <em>Active</em>, lalu klik <strong>Save</strong> pada baris itu. Mengganti label tidak merusak data lama karena kode internalnya tidak berubah.</li>
@@ -32,4 +32,15 @@
 
 <x-tutorial.section title="Agreement (perjanjian pendaftaran)">
     <p>Tulis teks perjanjian yang dibaca customer saat mendaftar di menu <strong>Agreement</strong>, lalu klik <strong>Save</strong>. Formulir pendaftaran menampilkan tautan <em>Read the full agreement</em> di bawah kotak persetujuan yang membuka teks ini di halaman publik. Kosongkan teksnya untuk menyembunyikan tautan tersebut. Persetujuan atas syarat &amp; ketentuan tiap program diatur terpisah di data program.</p>
+</x-tutorial.section>
+
+<x-tutorial.section title="Website publik (Website pages & Website lists)">
+    <p>Teks dan gambar website perusahaan bisa diubah tanpa menyentuh kode. Di bagian kiri Master Data ada dua kelompok menu: <strong>Website pages</strong> dan <strong>Website lists</strong>.</p>
+    <ul>
+        <li><strong>Website pages</strong> (<em>Site-wide</em>, <em>Home</em>, <em>About</em>, <em>Services</em>, <em>Portfolio</em>, <em>Contact</em>, <em>Thank You</em>): teks dan gambar tetap per halaman, dikelompokkan per bagian. <em>Site-wide</em> memuat logo header/footer, favicon, nama perusahaan, menu navigasi, tombol ajakan (CTA), dan kontak (alamat, email, WhatsApp, LinkedIn, Instagram, peta). Isi lalu klik simpan; perubahan langsung tampil di website.</li>
+        <li>Untuk kolom gambar, unggah file baru untuk mengganti, atau centang opsi hapus untuk kembali ke gambar bawaan.</li>
+        <li><strong>Website lists</strong> (<em>Home Service Cards</em>, <em>Services</em>, <em>Training Programs</em>, <em>Statistics</em>, <em>Timeline</em>, <em>Testimonials</em>, <em>Portfolio</em>, <em>Footer Links</em>): konten yang berulang berupa daftar kartu. Klik tambah untuk membuat item, atau edit/hapus item yang ada.</li>
+        <li>Tiap item punya <strong>Sort order</strong> (urutan tampil; kosongkan agar otomatis di akhir) dan kotak <strong>Active</strong>. Item nonaktif disembunyikan dari website tanpa dihapus.</li>
+    </ul>
+    <x-tutorial.note type="tip">Form kontak di website mengirim pesan ke alamat <strong>Contact form recipient</strong> di <em>Site-wide → Contact</em>. Alamat baru perlu dikonfirmasi lewat email dari formsubmit.co sebelum pesan mulai terkirim.</x-tutorial.note>
 </x-tutorial.section>

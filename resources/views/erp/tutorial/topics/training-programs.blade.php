@@ -10,6 +10,7 @@
         <li><strong>Number of meetings</strong>: customer wajib memilih tanggal untuk <em>tepat</em> sejumlah ini saat mendaftar.</li>
         <li><strong>Session length (minutes)</strong>: bila diisi, customer memilih jam mulai bebas di dalam jam operasional dan jam selesai mengikuti panjang sesi. Bila kosong, customer memesan satu slot jam operasional utuh.</li>
         <li><strong>Standard Price (Rp)</strong>, <strong>Description</strong>, dan <strong>Terms &amp; Conditions</strong>. Syarat &amp; ketentuan wajib disetujui customer saat mendaftar (misalnya kebijakan pembatalan atau kehadiran).</li>
+        <li>Bila sudah ada template di <em>Settings → Certificate Templates</em>, pilih <strong>Certificate template</strong> untuk program ini; biarkan <em>Default template</em> untuk memakai desain utama.</li>
         <li>Centang <strong>Active</strong> agar program tampil di formulir pendaftaran. Program nonaktif tidak bisa dipilih customer, tetapi sesi lama tetap aman.</li>
         <li>Klik <strong>Create Program</strong>.</li>
     </x-tutorial.steps>

@@ -18,7 +18,8 @@
     <ul>
         <li>Di <strong>Meeting schedule</strong>, klik <strong>Choose on calendar</strong> untuk memilih tanggal dan jam. Slot hijau berarti masih kosong. Isi <strong>Place</strong> dan <strong>Topic</strong> (opsional), lalu klik <strong>Add Meeting</strong>.</li>
         <li>Selama aturan jam operasional aktif (<em>Only allow meetings inside these hours</em> di Master Data), pertemuan harus tepat mengikuti slot yang dibuka, dan slot yang sudah dipesan customer lain atau diblokir ditolak. Bila aturan dimatikan, Anda bisa mengisi tanggal dan jam bebas, tetapi bentrok dengan pemesanan lain tetap ditolak.</li>
-        <li><strong>Mark done</strong> menandai pertemuan sudah terlaksana (<strong>Undo</strong> mengembalikannya ke <em>Upcoming</em>). Progres customer di portal mengikuti tanda ini, dan tanda ini bisa memicu invoice termin berikutnya.</li>
+        <li>Tombol aksi di tabel berupa ikon; arahkan kursor ke ikon untuk melihat namanya. <strong>Mark done</strong> menandai pertemuan sudah terlaksana (<strong>Undo</strong> mengembalikannya ke <em>Upcoming</em>). Progres customer di portal mengikuti tanda ini, dan tanda ini bisa memicu invoice termin berikutnya.</li>
+        <li><strong>Reschedule</strong> (ikon jadwal, hanya untuk pertemuan yang belum selesai) memindahkan pertemuan langsung tanpa menunggu permintaan customer: klik, pilih <strong>Choose new date &amp; time</strong> di kalender, lalu <strong>Save &amp; notify</strong>. Perubahan berlaku seketika, aturan jam operasional dan bentrok tetap diperiksa, permintaan reschedule customer yang masih pending untuk pertemuan itu otomatis ditutup, dan customer menerima email. Bila email gagal, muncul pesan agar Anda menghubungi customer manual.</li>
         <li><strong>Delete</strong> menghapus pertemuan.</li>
     </ul>
 </x-tutorial.section>
@@ -31,6 +32,10 @@
     </ul>
 </x-tutorial.section>
 
+<x-tutorial.section title="Email pemberitahuan ke customer">
+    <p>Perubahan yang Anda lakukan pada program customer otomatis diberitahukan lewat email: sesi dijadwalkan, status sesi berubah, pertemuan ditambah, dipindah, dihapus, atau ditandai selesai/kembali upcoming, peserta dikeluarkan, dan sertifikat terbit. Kegagalan kirim tidak menggagalkan aksinya, hanya dicatat di log, kecuali reschedule yang menampilkan peringatan. Customer tanpa alamat email tidak dikirimi apa pun.</p>
+</x-tutorial.section>
+
 <x-tutorial.section title="Pembayaran">
     <p>Bagian <strong>Payments</strong> menampilkan tiap termin dengan status <em>Paid</em>, <em>Due now</em>, atau <em>Not yet due</em>. Termin dibuat sesuai <strong>Payment Plan</strong>:</p>
     <ul>
@@ -40,11 +45,11 @@
     </ul>
     <p><strong>Mencatat pembayaran</strong> (butuh permission <code>finance.manage</code>):</p>
     <x-tutorial.steps>
-        <li>Klik <strong>Record payment</strong> pada termin yang sudah diterima.</li>
+        <li>Klik ikon <strong>Record payment</strong> pada termin yang sudah diterima.</li>
         <li>Pilih <strong>Method</strong>: <em>Bank Transfer</em> atau <em>Cash</em>. Untuk transfer, pilih <strong>Received in account</strong> dan bila ada, lampirkan bukti (<strong>Proof of transfer (file)</strong> atau tautan). Pembayaran tunai dicatat ke akun bernama <em>Cash</em> (dibuat otomatis bila belum ada).</li>
         <li>Isi <strong>Date received</strong>, lalu klik <strong>Confirm &amp; add to Finance income</strong>.</li>
     </x-tutorial.steps>
-    <p>Hasilnya, pembayaran otomatis muncul sebagai <strong>Income</strong> di Finance (kategori <em>Training Revenue</em>) dengan pajak default sesuai <em>Settings → System Settings</em>, dan customer menerima email terima kasih. Bila email itu gagal terkirim (misalnya customer tidak punya alamat email atau pengaturan email server bermasalah), pesan merah muncul, tetapi pembayarannya tetap tercatat di Finance. Salah catat? Klik <strong>Cancel payment</strong>: income di Finance ikut terhapus dan termin kembali belum dibayar. <strong>View proof</strong> membuka bukti yang tersimpan.</p>
+    <p>Hasilnya, pembayaran otomatis muncul sebagai <strong>Income</strong> di Finance (kategori <em>Training Revenue</em>) dengan pajak default sesuai <em>Settings → System Settings</em>, dan customer menerima email terima kasih. Bila email itu gagal terkirim (misalnya customer tidak punya alamat email atau pengaturan email server bermasalah), pesan merah muncul, tetapi pembayarannya tetap tercatat di Finance. Salah catat? Klik ikon <strong>Cancel payment</strong>: income di Finance ikut terhapus dan termin kembali belum dibayar. Ikon <strong>View proof</strong> membuka bukti yang tersimpan.</p>
     <x-tutorial.note type="warning">Selama sudah ada pembayaran yang tercatat di Finance, <strong>Fee</strong> dan <strong>Payment Plan</strong> sesi tidak bisa diubah. Batalkan pembayarannya dulu bila perlu mengubahnya.</x-tutorial.note>
     <x-tutorial.note type="info">Invoice dikirim ke email customer otomatis ketika sebuah termin jatuh tempo (saat sesi disimpan, saat pertemuan ditandai selesai, atau lewat pengecekan harian pukul 08:00), masing-masing hanya sekali. Kartu <strong>Training payments awaiting confirmation</strong> di Dashboard menghitung termin yang belum dicatat.</x-tutorial.note>
 </x-tutorial.section>
