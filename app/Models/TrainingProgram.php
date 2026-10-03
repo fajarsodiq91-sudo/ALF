@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name', 'program_type', 'is_corporate', 'training_category_id', 'description', 'terms', 'duration_days', 'session_minutes', 'standard_price', 'is_active',
-    'discount_type', 'discount_value', 'discount_expires_at', 'group_max_size', 'group_tiers',
+    'discount_type', 'discount_value', 'discount_expires_at', 'group_max_size', 'group_tiers', 'certificate_template_id',
 ])]
 class TrainingProgram extends Model
 {
@@ -26,6 +26,11 @@ class TrainingProgram extends Model
         self::DISCOUNT_PERCENTAGE => 'Percentage (%)',
         self::DISCOUNT_FIXED => 'Fixed amount (Rp)',
     ];
+
+    public function certificateTemplate(): BelongsTo
+    {
+        return $this->belongsTo(CertificateTemplate::class);
+    }
 
     protected function casts(): array
     {

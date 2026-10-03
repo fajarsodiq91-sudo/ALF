@@ -15,6 +15,7 @@
         'logoSrc' => public_path('assets/icons/alf.png'),
         // The GD extension embeds PNG/JPG images into the PDF; without it, the design falls back to text only.
         'embedImages' => extension_loaded('gd'),
+        'pdf' => true,
     ])
 </body>
 </html>

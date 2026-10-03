@@ -96,6 +96,7 @@
                             @endcan
                             @can('settings.manage-system')
                                 <x-erp.nav-link :href="route('settings.system')" :active="request()->routeIs('settings.system*')" nested>System Settings</x-erp.nav-link>
+                                <x-erp.nav-link :href="route('settings.certificate-templates.index')" :active="request()->routeIs('settings.certificate-templates.*')" nested>Certificate Templates</x-erp.nav-link>
                             @endcan
                         </x-erp.nav-group>
                     @endcanany

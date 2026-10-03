@@ -35,6 +35,7 @@ class SaveTrainingProgramRequest extends FormRequest
             'program_type' => ['required', Rule::in(MasterData::codes('program_type'))],
             'is_corporate' => ['sometimes', 'boolean'],
             'training_category_id' => ['nullable', 'exists:training_categories,id'],
+            'certificate_template_id' => ['nullable', 'exists:certificate_templates,id'],
             'description' => ['nullable', 'string', 'max:1000'],
             'terms' => ['nullable', 'string', 'max:5000'],
             'images' => ['nullable', 'array', 'max:10'],

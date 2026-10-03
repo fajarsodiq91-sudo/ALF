@@ -26,6 +26,7 @@ use App\Http\Controllers\Sales\CustomerPortalPreviewController;
 use App\Http\Controllers\Sales\CustomerProjectController;
 use App\Http\Controllers\Settings\AgreementController;
 use App\Http\Controllers\Settings\BlockedSlotController;
+use App\Http\Controllers\Settings\CertificateTemplateController;
 use App\Http\Controllers\Settings\MasterDataController;
 use App\Http\Controllers\Settings\OperatingHoursController;
 use App\Http\Controllers\Settings\RoleController;
@@ -306,6 +307,8 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::middleware('permission:settings.manage-system')->group(function () {
             Route::get('/system', [SystemSettingController::class, 'edit'])->name('system');
             Route::put('/system', [SystemSettingController::class, 'update'])->name('system.update');
+            Route::get('certificate-templates/{certificate_template}/preview', [CertificateTemplateController::class, 'preview'])->name('certificate-templates.preview');
+            Route::resource('certificate-templates', CertificateTemplateController::class)->except(['show'])->names('certificate-templates');
 
         });
     });

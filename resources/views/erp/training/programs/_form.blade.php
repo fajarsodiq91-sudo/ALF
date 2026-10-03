@@ -26,6 +26,18 @@
         <p class="mt-1 text-xs text-gray-500">Groups this program for customers, e.g. "Excel Basic" under "Data Analyst".</p>
         @error('training_category_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
+    @if (\App\Models\CertificateTemplate::exists())
+        <div>
+            <label for="certificate_template_id" class="block text-sm font-medium text-gray-700">Certificate template</label>
+            <select name="certificate_template_id" id="certificate_template_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                <option value="">Default template</option>
+                @foreach (\App\Models\CertificateTemplate::orderBy('name')->get() as $template)
+                    <option value="{{ $template->id }}" @selected((string) old('certificate_template_id', $program->certificate_template_id ?? '') === (string) $template->id)>{{ $template->name }}</option>
+                @endforeach
+            </select>
+            @error('certificate_template_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+    @endif
     <div class="">
         <label for="session_minutes" class="block text-sm font-medium text-gray-700">Session length (minutes)</label>
         <input type="number" name="session_minutes" id="session_minutes" value="{{ old('session_minutes', $program->session_minutes ?? '') }}" min="15" max="720" step="5" placeholder="e.g. 60" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
