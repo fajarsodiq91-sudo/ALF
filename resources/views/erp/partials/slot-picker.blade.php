@@ -92,7 +92,7 @@
 
 <div x-data="slotPicker()" @open-slot-picker.window="show($event.detail)" @keydown.escape.window="close()"
      @click.self="close()"
-     x-show="open" x-cloak class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:items-center" role="dialog" aria-modal="true" aria-label="Choose a date and time">
+     x-show="open" x-cloak class="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:items-center" role="dialog" aria-modal="true" aria-label="Choose a date and time">
     <div class="w-full max-w-4xl rounded-xl bg-white shadow-2xl">
         <div class="flex items-center justify-between border-b border-gray-200 px-4 py-3">
             <div class="flex items-center gap-2">
