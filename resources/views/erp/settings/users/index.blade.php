@@ -32,7 +32,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <a href="{{ route('settings.users.edit', $user) }}" class="text-brand hover:text-brand-dark font-medium">Edit</a>
+                                <a href="{{ route('settings.users.edit', $user) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit" aria-label="Edit"><x-erp.action-icon name="edit" /></a>
                             </td>
                         </tr>
                     @endforeach

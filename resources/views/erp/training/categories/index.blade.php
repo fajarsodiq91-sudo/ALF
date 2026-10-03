@@ -40,11 +40,11 @@
                             </td>
                             @can('training.manage')
                                 <td class="px-4 py-3 text-right whitespace-nowrap">
-                                    <a href="{{ route('training.categories.edit', $category) }}" class="text-brand hover:text-brand-dark font-medium">Edit</a>
+                                    <a href="{{ route('training.categories.edit', $category) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit" aria-label="Edit"><x-erp.action-icon name="edit" /></a>
                                     <form action="{{ route('training.categories.destroy', $category) }}" method="POST" class="inline" onsubmit="return confirm('Delete this category? This only works if no programs are assigned to it.');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="ml-3 text-gray-400 hover:text-red-600 font-medium">Delete</button>
+                                        <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-gray-400 hover:bg-red-50 hover:text-red-600" data-tip="Delete" aria-label="Delete"><x-erp.action-icon name="delete" /></button>
                                     </form>
                                 </td>
                             @endcan

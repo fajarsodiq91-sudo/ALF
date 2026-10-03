@@ -88,16 +88,16 @@
                             @can('sales.manage')
                                 <td class="px-4 py-3 text-right">
                                     @if ($customer->isPendingApproval())
-                                        <a href="{{ route('sales.review', $customer) }}" class="mr-3 font-medium text-brand hover:text-brand-dark">Review</a>
+                                        <a href="{{ route('sales.review', $customer) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Review" aria-label="Review"><x-erp.action-icon name="review" /></a>
                                     @endif
                                     @if ($customer->isAwaitingCustomer())
-                                        <a href="{{ route('sales.invite.show', $customer) }}" class="mr-3 text-brand hover:text-brand-dark font-medium">QR Code</a>
+                                        <a href="{{ route('sales.invite.show', $customer) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="QR Code" aria-label="QR Code"><x-erp.action-icon name="qr" /></a>
                                     @endif
-                                    <a href="{{ route('sales.edit', $customer) }}" class="text-brand hover:text-brand-dark font-medium">Edit</a>
+                                    <a href="{{ route('sales.edit', $customer) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit" aria-label="Edit"><x-erp.action-icon name="edit" /></a>
                                     <form action="{{ route('sales.destroy', $customer) }}" method="POST" class="inline" onsubmit="return confirm('Delete this customer?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="ml-3 text-gray-400 hover:text-red-600 font-medium">Delete</button>
+                                        <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-gray-400 hover:bg-red-50 hover:text-red-600" data-tip="Delete" aria-label="Delete"><x-erp.action-icon name="delete" /></button>
                                     </form>
                                 </td>
                             @endcan

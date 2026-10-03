@@ -30,13 +30,13 @@
                             <td class="px-4 py-3 text-right text-gray-600">{{ $role->users_count }}</td>
                             <td class="px-4 py-3 text-right">
                                 @if ($role->name !== 'Super Admin')
-                                    <a href="{{ route('settings.roles.edit', $role) }}" class="text-brand hover:text-brand-dark font-medium">Edit</a>
+                                    <a href="{{ route('settings.roles.edit', $role) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit" aria-label="Edit"><x-erp.action-icon name="edit" /></a>
                                 @endif
                                 @unless (in_array($role->name, $builtIn, true))
                                     <form action="{{ route('settings.roles.destroy', $role) }}" method="POST" class="inline" onsubmit="return confirm('Delete this role?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="ml-3 text-gray-400 hover:text-red-600 font-medium">Delete</button>
+                                        <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-gray-400 hover:bg-red-50 hover:text-red-600" data-tip="Delete" aria-label="Delete"><x-erp.action-icon name="delete" /></button>
                                     </form>
                                 @endunless
                             </td>

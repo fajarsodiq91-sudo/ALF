@@ -52,23 +52,23 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-right whitespace-nowrap">
-                                <a href="{{ route('hr.payroll.show', $payroll) }}" class="text-gray-500 hover:text-gray-800 font-medium">Slip</a>
+                                <a href="{{ route('hr.payroll.show', $payroll) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-gray-500 hover:bg-gray-100 hover:text-gray-800" data-tip="Slip" aria-label="Slip"><x-erp.action-icon name="slip" /></a>
                                 @if ($payroll->isPaid())
                                     @can('finance.manage')
                                         <form action="{{ route('hr.payroll.cancel-payment', $payroll) }}" method="POST" class="inline" onsubmit="return confirm('Cancel this payment? The Finance expense will be removed.');">
                                             @csrf
-                                            <button type="submit" class="ml-3 text-amber-600 hover:text-amber-800 font-medium">Cancel Payment</button>
+                                            <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-amber-600 hover:bg-amber-50 hover:text-amber-800" data-tip="Cancel Payment" aria-label="Cancel Payment"><x-erp.action-icon name="cancel" /></button>
                                         </form>
                                     @endcan
                                 @else
                                     @can('finance.manage')
-                                        <button type="button" @click="paying = !paying" class="ml-3 text-green-600 hover:text-green-800 font-medium">Pay</button>
+                                        <button type="button" @click="paying = !paying" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-green-600 hover:bg-green-50 hover:text-green-800" data-tip="Pay" aria-label="Pay"><x-erp.action-icon name="pay" /></button>
                                     @endcan
-                                    <a href="{{ route('hr.payroll.edit', $payroll) }}" class="ml-3 text-brand hover:text-brand-dark font-medium">Edit</a>
+                                    <a href="{{ route('hr.payroll.edit', $payroll) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit" aria-label="Edit"><x-erp.action-icon name="edit" /></a>
                                     <form action="{{ route('hr.payroll.destroy', $payroll) }}" method="POST" class="inline" onsubmit="return confirm('Delete this payroll?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="ml-3 text-gray-400 hover:text-red-600 font-medium">Delete</button>
+                                        <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-gray-400 hover:bg-red-50 hover:text-red-600" data-tip="Delete" aria-label="Delete"><x-erp.action-icon name="delete" /></button>
                                     </form>
                                 @endif
                             </td>

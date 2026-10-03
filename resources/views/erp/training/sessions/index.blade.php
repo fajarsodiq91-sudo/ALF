@@ -83,14 +83,14 @@
                                     @if ($readyToComplete)
                                         <form action="{{ route('training.complete', $session) }}" method="POST" class="inline" onsubmit="return confirm('Mark this session as done? Certificates will be issued if it is a learning program.');">
                                             @csrf
-                                            <button type="submit" class="mr-3 text-green-700 hover:text-green-800 font-medium">Mark as done</button>
+                                            <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-green-600 hover:bg-green-50 hover:text-green-800" data-tip="Mark as done" aria-label="Mark as done"><x-erp.action-icon name="done" /></button>
                                         </form>
                                     @endif
-                                    <a href="{{ route('training.edit', array_filter(['session' => $session->id, 'focus' => request('focus')])) }}" class="text-brand hover:text-brand-dark font-medium">Edit</a>
+                                    <a href="{{ route('training.edit', array_filter(['session' => $session->id, 'focus' => request('focus')])) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit" aria-label="Edit"><x-erp.action-icon name="edit" /></a>
                                     <form action="{{ route('training.destroy', $session) }}" method="POST" class="inline" onsubmit="return confirm('Delete this session?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="ml-3 text-gray-400 hover:text-red-600 font-medium">Delete</button>
+                                        <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-gray-400 hover:bg-red-50 hover:text-red-600" data-tip="Delete" aria-label="Delete"><x-erp.action-icon name="delete" /></button>
                                     </form>
                                 </td>
                             @endcan

@@ -102,18 +102,18 @@
                                         <div class="inline-flex items-center gap-3">
                                             @if ($payment->hasProof())
                                                 @if ($payment->proof_path)
-                                                    <a href="{{ route('training.payments.proof', $payment) }}" class="text-brand hover:text-brand-dark font-medium">View proof</a>
+                                                    <a href="{{ route('training.payments.proof', $payment) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="View proof" aria-label="View proof"><x-erp.action-icon name="proof" /></a>
                                                 @else
-                                                    <a href="{{ $payment->proof_url }}" target="_blank" rel="noopener" class="text-brand hover:text-brand-dark font-medium">View proof</a>
+                                                    <a href="{{ $payment->proof_url }}" target="_blank" rel="noopener" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="View proof" aria-label="View proof"><x-erp.action-icon name="proof" /></a>
                                                 @endif
                                             @endif
                                             <form action="{{ route('training.payments.cancel', $payment) }}" method="POST" class="inline" onsubmit="return confirm('Cancel this payment? The Finance income will be removed.');">
                                                 @csrf
-                                                <button type="submit" class="text-amber-600 hover:text-amber-800 font-medium">Cancel payment</button>
+                                                <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-amber-600 hover:bg-amber-50 hover:text-amber-800" data-tip="Cancel payment" aria-label="Cancel payment"><x-erp.action-icon name="cancel" /></button>
                                             </form>
                                         </div>
                                     @else
-                                        <button type="button" @click="paying = !paying" class="text-green-600 hover:text-green-800 font-medium">Record payment</button>
+                                        <button type="button" @click="paying = !paying" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-green-600 hover:bg-green-50 hover:text-green-800" data-tip="Record payment" aria-label="Record payment"><x-erp.action-icon name="pay" /></button>
                                     @endif
                                 </td>
                             @endcan
@@ -204,15 +204,15 @@
                                     <form action="{{ route('training.meetings.toggle', $meeting) }}" method="POST" class="inline">
                                         @csrf
                                         @method('PATCH')
-                                        <button type="submit" class="text-brand hover:text-brand-dark font-medium">{{ $meeting->is_completed ? 'Undo' : 'Mark done' }}</button>
+                                        <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="{{ $meeting->is_completed ? 'Undo' : 'Mark done' }}" aria-label="{{ $meeting->is_completed ? 'Undo' : 'Mark done' }}"><x-erp.action-icon name="{{ $meeting->is_completed ? 'undo' : 'done' }}" /></button>
                                     </form>
                                     @unless ($meeting->is_completed)
-                                        <button type="button" @click="$dispatch('open-meeting-reschedule', { url: @js(route('training.meetings.reschedule', $meeting)), current: @js($meeting->meeting_date->format('D, d M Y').' · '.($meeting->timeRange() ?? 'no time set')), meeting_date: @js($meeting->meeting_date->toDateString()), start_time: @js($meeting->start_time ? substr($meeting->start_time, 0, 5) : ''), end_time: @js($meeting->end_time ? substr($meeting->end_time, 0, 5) : '') })" class="mr-3 text-brand hover:text-brand-dark font-medium">Reschedule</button>
+                                        <button type="button" @click="$dispatch('open-meeting-reschedule', { url: @js(route('training.meetings.reschedule', $meeting)), current: @js($meeting->meeting_date->format('D, d M Y').' · '.($meeting->timeRange() ?? 'no time set')), meeting_date: @js($meeting->meeting_date->toDateString()), start_time: @js($meeting->start_time ? substr($meeting->start_time, 0, 5) : ''), end_time: @js($meeting->end_time ? substr($meeting->end_time, 0, 5) : '') })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Reschedule" aria-label="Reschedule"><x-erp.action-icon name="reschedule" /></button>
                                     @endunless
                                     <form action="{{ route('training.meetings.destroy', $meeting) }}" method="POST" class="inline" onsubmit="return confirm('Delete this meeting?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="ml-3 text-gray-400 hover:text-red-600 font-medium">Delete</button>
+                                        <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-gray-400 hover:bg-red-50 hover:text-red-600" data-tip="Delete" aria-label="Delete"><x-erp.action-icon name="delete" /></button>
                                     </form>
                                 </td>
                             @endcan

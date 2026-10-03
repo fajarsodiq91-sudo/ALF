@@ -37,3 +37,34 @@ table tbody tr {
 table tbody tr:hover {
     background-color: theme('colors.steel.50');
 }
+
+/* Instant label tooltip for icon-only action buttons (data-tip) */
+.action-tip {
+    position: relative;
+}
+
+.action-tip::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    right: 0;
+    z-index: 50;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    background-color: theme('colors.gray.800');
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1rem;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(2px);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.action-tip:hover::after,
+.action-tip:focus-visible::after {
+    opacity: 1;
+    transform: translateY(0);
+}

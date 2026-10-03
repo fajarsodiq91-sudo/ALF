@@ -64,11 +64,11 @@
                                         ])>{{ $item->is_active ? 'Shown' : 'Hidden' }}</span>
                                     </td>
                                     <td class="px-4 py-2 text-right whitespace-nowrap">
-                                        <a href="{{ route('masterdata.site.items.edit', [$type, $item]) }}" class="text-brand hover:text-brand-dark font-medium">Edit</a>
+                                        <a href="{{ route('masterdata.site.items.edit', [$type, $item]) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit" aria-label="Edit"><x-erp.action-icon name="edit" /></a>
                                         <form action="{{ route('masterdata.site.items.destroy', [$type, $item]) }}" method="POST" class="inline" onsubmit="return confirm('Delete this item?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="ml-3 text-gray-400 hover:text-red-600 font-medium">Delete</button>
+                                            <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-gray-400 hover:bg-red-50 hover:text-red-600" data-tip="Delete" aria-label="Delete"><x-erp.action-icon name="delete" /></button>
                                         </form>
                                     </td>
                                 </tr>

@@ -82,17 +82,17 @@
                                     @if ($leave->isPending())
                                         <form action="{{ route('hr.leaves.approve', $leave) }}" method="POST" class="inline">
                                             @csrf
-                                            <button type="submit" class="text-green-600 hover:text-green-800 font-medium">Approve</button>
+                                            <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-green-600 hover:bg-green-50 hover:text-green-800" data-tip="Approve" aria-label="Approve"><x-erp.action-icon name="approve" /></button>
                                         </form>
                                         <form action="{{ route('hr.leaves.reject', $leave) }}" method="POST" class="inline">
                                             @csrf
-                                            <button type="submit" class="ml-3 text-amber-600 hover:text-amber-800 font-medium">Reject</button>
+                                            <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-amber-600 hover:bg-amber-50 hover:text-amber-800" data-tip="Reject" aria-label="Reject"><x-erp.action-icon name="reject" /></button>
                                         </form>
                                     @endif
                                     <form action="{{ route('hr.leaves.destroy', $leave) }}" method="POST" class="inline" onsubmit="return confirm('Delete this leave request?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="ml-3 text-gray-400 hover:text-red-600 font-medium">Delete</button>
+                                        <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-gray-400 hover:bg-red-50 hover:text-red-600" data-tip="Delete" aria-label="Delete"><x-erp.action-icon name="delete" /></button>
                                     </form>
                                 </td>
                             @endcan
