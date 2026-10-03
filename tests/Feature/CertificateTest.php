@@ -73,6 +73,7 @@ class CertificateTest extends TestCase
     public function test_corporate_sessions_certify_the_participants_not_the_company(): void
     {
         $company = $this->customer('260801');
+        $company->update(['customer_type' => 'company']);
         $session = $this->completed($company);
         $session->update(['participant_limit' => 5]);
         $session->syncParticipantToken();
