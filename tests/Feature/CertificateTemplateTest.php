@@ -89,4 +89,24 @@ class CertificateTemplateTest extends TestCase
         $this->assertDatabaseCount('certificate_templates', 0);
         Storage::disk('public')->assertMissing('certificate-templates/a.png');
     }
+
+    public function test_verification_page_is_public_and_shows_only_that_certificate(): void
+    {
+        $certificate = $this->certificate();
+
+        $this->assertSame(24, strlen($certificate->verification_code));
+        $this->get($certificate->verifyUrl())->assertOk()
+            ->assertSee('Valid certificate')
+            ->assertSee($certificate->number)
+            ->assertSee($certificate->customer->name);
+        $this->get(route('certificates.verify', 'does-not-exist'))->assertNotFound();
+    }
+
+    public function test_the_qr_code_targets_the_verification_page(): void
+    {
+        $this->template(true);
+        $certificate = $this->certificate();
+
+        $this->assertStringContainsString('/verify/'.$certificate->verification_code, $certificate->verifyUrl());
+    }
 }

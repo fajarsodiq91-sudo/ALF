@@ -87,7 +87,7 @@ class CertificatePortfolioTest extends TestCase
             ->assertSee('Training Director');
     }
 
-    public function test_viewing_the_certificate_creates_the_customers_portfolio_link_and_renders_a_qr_code(): void
+    public function test_viewing_the_certificate_renders_a_qr_code_and_the_verification_page_links_to_the_portfolio(): void
     {
         $certificate = $this->certificate();
         $this->assertNull($certificate->customer->portfolio_token);
@@ -97,7 +97,8 @@ class CertificatePortfolioTest extends TestCase
             ->assertOk()
             ->assertSee('<svg', false);
 
-        // The QR encodes the URL as pixels, not as a link, so we check the token it was built from instead.
+        // The QR points at the verification page, which in turn links to the customer's portfolio (creating its token).
+        $this->get($certificate->verifyUrl())->assertOk()->assertSee('/p/', false);
         $token = $certificate->customer->fresh()->portfolio_token;
         $this->assertNotNull($token);
         $this->get(route('customer-portfolio.show', $token))->assertOk()->assertSee($certificate->customer->name);

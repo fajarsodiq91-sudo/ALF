@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CertificateVerificationController;
 use App\Http\Controllers\CustomerRegistrationController;
 use App\Http\Controllers\ParticipantJoinController;
 use App\Http\Controllers\Portal\PortalCertificateController;
@@ -25,6 +26,9 @@ Route::middleware('throttle:60,1')->prefix('p')->name('customer-portfolio.')->gr
     Route::get('/{token}', [PublicPortfolioController::class, 'show'])->name('show');
     Route::get('/projects/{project}/download', [PublicPortfolioController::class, 'download'])->name('projects.download');
 });
+
+// Public, login-free page a certificate's QR code points to.
+Route::get('/verify/{code}', [CertificateVerificationController::class, 'show'])->middleware('throttle:60,1')->name('certificates.verify');
 
 Route::middleware('throttle:30,1')->prefix('customer-registration')->name('customer-registration.')->group(function () {
     Route::get('/done', [CustomerRegistrationController::class, 'done'])->name('done');

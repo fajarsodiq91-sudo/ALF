@@ -16,7 +16,7 @@
     $signerName = $instructor?->name ?? \App\Models\Setting::get('certificate_signer_name', $companyName);
     $signerTitle = $instructor?->position ?? \App\Models\Setting::get('certificate_signer_title', 'Training Team');
     $signatureUrl = $instructor?->signatureUrl();
-    $portfolioUrl = route('customer-portfolio.show', $certificate->customer->portfolioToken());
+    $portfolioUrl = $certificate->verifyUrl();
     $qr = \App\Services\QrCodeGenerator::svg($portfolioUrl, 200, true);
     $firstName = explode(' ', trim($certificate->customer->name))[0];
 @endphp
@@ -114,7 +114,7 @@
                             <div class="mark"><img src="{{ $logoSrc }}"></div>
                         @endif
                     </div>
-                    <p class="caption">Scan to view {{ $firstName }}'s portfolio</p>
+                    <p class="caption">Scan to verify this certificate</p>
                 </div>
 
                 <div class="cert__meta">

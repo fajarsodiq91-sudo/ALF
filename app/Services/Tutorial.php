@@ -82,7 +82,7 @@ class Tutorial
             'group' => 'Sales & Training',
             'permission' => 'sales.view',
             'route' => 'customer-portal.index',
-            'covers' => ['customer-portal.*', 'portal.*', 'customer-portfolio.*'],
+            'covers' => ['customer-portal.*', 'portal.*', 'customer-portfolio.*', 'certificates.verify'],
         ],
         'training-programs' => [
             'title' => 'Program & Kategori Training',

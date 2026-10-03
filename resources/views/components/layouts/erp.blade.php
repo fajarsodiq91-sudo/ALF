@@ -21,7 +21,7 @@
                 :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             >
                 <div class="h-14 flex items-center gap-2 px-4 border-b border-white/10 bg-gradient-to-r from-brand-dark/50 to-transparent">
-                    <img src="{{ asset('assets/icons/alf.png') }}" alt="" class="h-7 w-7 rounded shrink-0" />
+                    <img src="{{ asset('assets/icons/alf-sidebar.png') }}" alt="" class="h-7 w-7 shrink-0 object-contain" />
                     <span class="font-semibold text-white leading-tight text-[13px]">
                         PT. Alfajar Logic Futura
                     </span>

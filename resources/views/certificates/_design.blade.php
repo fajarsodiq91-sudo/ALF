@@ -21,7 +21,7 @@
             'statement' => 'has completed the requirements to pass the '.$session->program->name.' program held by '.$companyName.'.',
             'date' => $certificate->issued_at->format('d F Y'),
             'id_number' => $certificate->customer->customer_code,
-            'qr' => \App\Services\QrCodeGenerator::svg(route('customer-portfolio.show', $certificate->customer->portfolioToken()), 400),
+            'qr' => \App\Services\QrCodeGenerator::svg($certificate->verifyUrl(), 400),
             'signature' => $signature ? ($pdf ? \Illuminate\Support\Facades\Storage::disk('public')->path($signature) : $instructor->signatureUrl()) : null,
             'signer_name' => $instructor?->name ?? \App\Models\Setting::get('certificate_signer_name', $companyName),
             'signer_title' => $instructor?->position ?? \App\Models\Setting::get('certificate_signer_title', 'Training Team'),
