@@ -16,7 +16,17 @@ Here is the invoice for your program at PT Alfajar Logic Futura.
 | Total fee | {{ \App\Services\SessionPaymentPlan::rupiah($session->fee) }} |
 </x-mail::table>
 
+@if ($bankAccount)
+Please transfer the amount due to the following account:
+
+<x-mail::panel>
+{!! implode("  \n", array_map('e', preg_split('/\R/', trim($bankAccount)))) !!}
+</x-mail::panel>
+
+Let us know once the transfer is done. For any question, contact us: [admin@alfajarlogic.com](mailto:admin@alfajarlogic.com) or [WhatsApp](https://wa.me/6282125298452).
+@else
 Please make the transfer and let us know once it is done. Contact us for our account details or any question: [admin@alfajarlogic.com](mailto:admin@alfajarlogic.com) or [WhatsApp](https://wa.me/6282125298452).
+@endif
 We will confirm your payment by email as soon as we have received it.
 
 <x-mail::button :url="$loginUrl">

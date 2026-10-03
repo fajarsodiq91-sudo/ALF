@@ -20,6 +20,7 @@ class PaymentInvoiceMail extends Mailable
     {
         return new Content(markdown: 'emails.payment-invoice', with: [
             'session' => $this->payment->session->loadMissing(['program', 'customer']),
+            'bankAccount' => \App\Models\Setting::get('company_bank_account'),
             'loginUrl' => route('portal.login'),
         ]);
     }

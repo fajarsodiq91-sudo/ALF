@@ -18,6 +18,7 @@ class Setting extends Model
         'company_phone' => 'Phone',
         'company_email' => 'Email',
         'company_npwp' => 'NPWP (tax ID)',
+        'company_bank_account' => 'Bank account for payments (shown on invoice emails)',
         'certificate_signer_name' => 'Certificate default signer name',
         'certificate_signer_title' => 'Certificate default signer title',
     ];

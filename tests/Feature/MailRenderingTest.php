@@ -85,6 +85,12 @@ class MailRenderingTest extends TestCase
         $invoice = (new PaymentInvoiceMail($payment))->render();
         $this->assertStringContainsString($payment->invoiceNumber(), $invoice);
         $this->assertStringContainsString('PT Maju Jaya', $invoice);
+        $this->assertStringNotContainsString('1234567890', $invoice);
+
+        \App\Models\Setting::put(['company_bank_account' => "BCA 1234567890\na.n. PT Alfajar Logic Futura"]);
+        $withAccount = (new PaymentInvoiceMail($payment))->render();
+        $this->assertStringContainsString('BCA 1234567890', $withAccount);
+        $this->assertStringContainsString('a.n. PT Alfajar Logic Futura', $withAccount);
 
         $this->assertStringContainsString('Thank you for your payment', (new PaymentReceivedMail($payment))->render());
     }

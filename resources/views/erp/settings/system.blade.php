@@ -16,8 +16,8 @@
                     @endif
                     <div>
                         <label for="{{ $key }}" class="block text-sm font-medium text-gray-700">{{ $label }}</label>
-                        @if ($key === 'company_address')
-                            <textarea name="{{ $key }}" id="{{ $key }}" rows="3"
+                        @if (in_array($key, ['company_address', 'company_bank_account']))
+                            <textarea name="{{ $key }}" id="{{ $key }}" rows="3" @if ($key === 'company_bank_account') placeholder="BCA 1234567890&#10;a.n. PT Alfajar Logic Futura" @endif
                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">{{ old($key, $values[$key] ?? '') }}</textarea>
                         @else
                             <input type="{{ $key === 'company_email' ? 'email' : 'text' }}" name="{{ $key }}" id="{{ $key }}"

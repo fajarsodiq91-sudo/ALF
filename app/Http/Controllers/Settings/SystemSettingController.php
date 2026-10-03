@@ -24,6 +24,7 @@ class SystemSettingController extends Controller
             'company_phone' => ['nullable', 'string', 'max:50'],
             'company_email' => ['nullable', 'email', 'max:255'],
             'company_npwp' => ['nullable', 'string', 'max:50'],
+            'company_bank_account' => ['nullable', 'string', 'max:500'],
             'certificate_signer_name' => ['nullable', 'string', 'max:255'],
             'certificate_signer_title' => ['nullable', 'string', 'max:255'],
             Tax::DEFAULT_INCOME_SETTING => ['nullable', 'exists:taxes,id'],
