@@ -6,7 +6,7 @@
         <select name="training_program_id" id="training_program_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
             <option value="">Select program</option>
             @foreach ($programs as $program)
-                <option value="{{ $program->id }}" @selected((int) old('training_program_id', $session->training_program_id ?? '') === $program->id)>{{ $program->name }}{{ $program->is_active ? '' : ' (inactive)' }}</option>
+                <option value="{{ $program->id }}" data-prices='@json($program->pricesBySize())' @selected((int) old('training_program_id', $session->training_program_id ?? '') === $program->id)>{{ $program->name }}{{ $program->is_active ? '' : ' (inactive)' }}</option>
             @endforeach
         </select>
         @error('training_program_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
@@ -90,6 +90,7 @@
     <div class="">
         <label for="fee" class="block text-sm font-medium text-gray-700">Fee (Rp)</label>
         <input type="number" name="fee" id="fee" value="{{ old('fee', $session->fee ?? 0) }}" required step="0.01" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+        <p class="mt-1 text-xs text-gray-500">Filled in automatically from the selected program's price (after any promo); you can still adjust it.</p>
         @error('fee') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
     <div class="sm:col-span-2">
@@ -125,3 +126,20 @@
     <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">{{ $session ? 'Update Session' : 'Create Session' }}</button>
     <a href="{{ route('training.index') }}" class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>
 </div>
+
+<script>
+    (() => {
+        const program = document.getElementById('training_program_id');
+        const participants = document.getElementById('participants_count');
+        const fee = document.getElementById('fee');
+        const fill = () => {
+            const prices = JSON.parse(program.selectedOptions[0]?.dataset.prices || '{}');
+            const max = Object.keys(prices).length;
+            if (! max) return;
+            const size = Math.min(Math.max(1, parseInt(participants.value) || 1), max);
+            fee.value = Math.round(prices[size] * size * 100) / 100;
+        };
+        program.addEventListener('change', fill);
+        participants.addEventListener('input', fill);
+    })();
+</script>
