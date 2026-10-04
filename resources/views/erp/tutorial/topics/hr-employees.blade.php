@@ -25,3 +25,21 @@
     </ul>
     <x-tutorial.note type="info">Menambah, mengubah, dan menghapus karyawan butuh permission <code>hr.manage</code>; dengan <code>hr.view</code> Anda hanya melihat daftar.</x-tutorial.note>
 </x-tutorial.section>
+
+<x-tutorial.section title="ID Card karyawan">
+    <p>Klik ikon <strong>ID Card</strong> di baris karyawan untuk membuka kartu dalam tab baru, lalu <strong>Cetak ID Card</strong>. Ukuran kartu 54 × 85,6 mm (CR80). Halaman depan memuat logo Alfajar, tulisan <em>[jabatan] PT Alfajar Logic Futura</em>, foto, nomor karyawan, dan nama; halaman belakang memuat QR Code.</p>
+    <ul>
+        <li>Tombol <strong>Cetak semua ID Card</strong> di samping tombol Filter mencetak kartu semua karyawan yang tampil menurut filter yang sedang aktif (maksimal 200 kartu).</li>
+        <li>Foto kartu diambil dari <strong>Profile Photo</strong>; tanpa foto, kartu menampilkan inisial nama.</li>
+        <li>Memindai QR Code membuka halaman verifikasi publik yang menampilkan foto, nama, jabatan, dan status. Karyawan berstatus <em>Resigned</em> ditandai <strong>ID Card tidak berlaku</strong>.</li>
+    </ul>
+</x-tutorial.section>
+
+<x-tutorial.section title="Merekam kartu RFID">
+    <p>Di formulir karyawan (dan customer) ada kolom <strong>RFID Card UID</strong>. Klik kolom itu, lalu tempelkan kartu ke reader USB; reader mengetikkan nomor kartu otomatis (tombol Enter dari reader tidak menyimpan formulir). Simpan formulirnya untuk merekam kartu.</p>
+    <ul>
+        <li>Nomor kartu dirapikan otomatis (huruf besar, tanpa spasi atau titik dua), jadi format dari berbagai reader tetap dianggap sama.</li>
+        <li>Satu kartu hanya boleh dimiliki satu orang, baik karyawan maupun customer. Mendaftarkan kartu yang sudah dipakai ditolak dengan menyebut pemiliknya.</li>
+        <li>Kartu yang hilang atau diganti: kosongkan atau ganti nomornya lalu simpan.</li>
+    </ul>
+</x-tutorial.section>

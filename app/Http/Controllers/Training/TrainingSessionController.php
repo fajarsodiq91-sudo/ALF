@@ -70,7 +70,7 @@ class TrainingSessionController extends Controller
     {
         $this->authorize('training.manage');
 
-        return view('erp.training.sessions.edit', [...$this->formData(), 'session' => $session->load(['meetings.rescheduleRequests', 'payments.incomeTransaction', 'participants']), 'accounts' => Account::where('is_active', true)->orderBy('name')->get(), 'booked' => BookedSlots::keys()]);
+        return view('erp.training.sessions.edit', [...$this->formData(), 'session' => $session->load(['meetings.rescheduleRequests', 'meetings.attendances.customer', 'payments.incomeTransaction', 'participants']), 'accounts' => Account::where('is_active', true)->orderBy('name')->get(), 'booked' => BookedSlots::keys()]);
     }
 
     public function update(SaveTrainingSessionRequest $request, TrainingSession $session): RedirectResponse

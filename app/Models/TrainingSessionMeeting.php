@@ -29,6 +29,11 @@ class TrainingSessionMeeting extends Model
         return $this->belongsTo(TrainingSession::class, 'training_session_id');
     }
 
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(TrainingMeetingAttendance::class)->orderBy('checked_in_at');
+    }
+
     public function rescheduleRequests(): HasMany
     {
         return $this->hasMany(MeetingRescheduleRequest::class, 'training_session_meeting_id')->latest();

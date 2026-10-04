@@ -59,3 +59,16 @@
         </ul>
     </x-tutorial.section>
 @endcan
+
+@can('settings.manage-system')
+    <x-tutorial.section title="Tap Devices: reader RFID dan QR" id="tap-devices">
+        <p>Menu <a href="{{ route('settings.tap-devices.index') }}">Settings → Tap Devices</a> mendaftarkan reader jaringan (ESP32 atau reader standalone) yang mengirim tap kartu ke sistem untuk absensi karyawan dan presensi training.</p>
+        <x-tutorial.steps>
+            <li>Isi <strong>Name</strong> dan <strong>Location</strong>, lalu klik <strong>Add reader</strong>.</li>
+            <li>Salin <strong>token</strong> yang tampil dan masukkan ke firmware reader. Token hanya ditampilkan sekali; bila hilang, klik <strong>New token</strong> (token lama langsung tidak berlaku).</li>
+            <li>Reader mengirim <code>POST /api/tap</code> dengan header <code>Authorization: Bearer &lt;token&gt;</code> dan body JSON <code>{"uid": "04A1B2C3"}</code> untuk kartu RFID, atau <code>{"qr": "&lt;teks hasil scan&gt;"}</code> untuk QR Code di belakang ID Card.</li>
+            <li>Balasan JSON berisi <code>ok</code>, <code>status</code>, <code>message</code>, <code>name</code>, dan <code>role</code>, yang bisa ditampilkan di layar atau dibunyikan lewat buzzer reader (<code>ok: true</code> = berhasil, HTTP 200; gagal = HTTP 422; token salah = 401).</li>
+        </x-tutorial.steps>
+        <x-tutorial.note type="info">Kolom <em>Last seen</em> menunjukkan kapan reader terakhir mengirim tap, berguna untuk memeriksa reader yang mati. <strong>Disable</strong> menghentikan reader tanpa menghapusnya.</x-tutorial.note>
+    </x-tutorial.section>
+@endcan

@@ -32,6 +32,7 @@
                 <option value="rejected" @selected(request('status') === 'rejected')>Rejected</option>
             </select>
             <button type="submit" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 hover:shadow-md hover:-translate-y-px">Filter</button>
+            <a href="{{ route('sales.id-cards', request()->query()) }}" target="_blank" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 hover:shadow-md hover:-translate-y-px">Cetak semua ID Card</a>
         </form>
 
         <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-x-auto">
@@ -92,6 +93,9 @@
                                     @endif
                                     @if ($customer->isAwaitingCustomer())
                                         <a href="{{ route('sales.invite.show', $customer) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="QR Code" aria-label="QR Code"><x-erp.action-icon name="qr" /></a>
+                                    @endif
+                                    @if ($customer->customer_code)
+                                        <a href="{{ route('sales.id-card', $customer) }}" target="_blank" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="ID Card" aria-label="ID Card"><x-erp.action-icon name="id-card" /></a>
                                     @endif
                                     <a href="{{ route('sales.edit', $customer) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit" aria-label="Edit"><x-erp.action-icon name="edit" /></a>
                                     <form action="{{ route('sales.destroy', $customer) }}" method="POST" class="inline" onsubmit="return confirm('Delete this customer?');">

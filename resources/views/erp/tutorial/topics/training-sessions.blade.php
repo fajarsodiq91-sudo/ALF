@@ -72,3 +72,12 @@
     <p>Tanda tangan sertifikat memakai instruktur sesi, atau penandatangan default di <em>Settings → System Settings</em> bila tidak ada instruktur.</p>
     <x-tutorial.note>Menambah, mengubah, dan menyelesaikan sesi butuh permission <code>training.manage</code>; mencatat pembayaran butuh <code>finance.manage</code>.</x-tutorial.note>
 </x-tutorial.section>
+
+<x-tutorial.section title="Presensi peserta lewat tap kartu">
+    <p>Customer (termasuk peserta yang bergabung lewat tautan perusahaan) dapat hadir dengan menempelkan kartu RFID atau memindai QR Code ID Card di reader. Sistem mencatat kehadiran pada pertemuan hari itu; jumlahnya tampil di kolom <strong>Attended</strong> pada <em>Meeting schedule</em> (arahkan kursor ke angka untuk melihat nama dan jam).</p>
+    <ul>
+        <li>Presensi dibuka <strong>60 menit sebelum</strong> pertemuan dimulai sampai jam selesai (tanpa jam selesai: 4 jam setelah mulai).</li>
+        <li>Hanya sesi yang belum <em>Completed</em> atau <em>Cancelled</em>, dan pertemuan yang belum ditandai selesai, yang menerima presensi.</li>
+        <li>Tap kedua pada pertemuan yang sama tidak membuat catatan ganda.</li>
+    </ul>
+</x-tutorial.section>

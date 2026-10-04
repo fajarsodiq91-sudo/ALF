@@ -30,6 +30,7 @@
                 @endforeach
             </select>
             <button type="submit" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 hover:shadow-md hover:-translate-y-px">Filter</button>
+            <a href="{{ route('hr.id-cards', request()->query()) }}" target="_blank" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 hover:shadow-md hover:-translate-y-px">Cetak semua ID Card</a>
         </form>
 
         <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg overflow-x-auto">
@@ -67,6 +68,7 @@
                             </td>
                             @can('hr.manage')
                                 <td class="px-4 py-3 text-right">
+                                    <a href="{{ route('hr.id-card', $employee) }}" target="_blank" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="ID Card" aria-label="ID Card"><x-erp.action-icon name="id-card" /></a>
                                     <a href="{{ route('hr.edit', $employee) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit" aria-label="Edit"><x-erp.action-icon name="edit" /></a>
                                     <form action="{{ route('hr.destroy', $employee) }}" method="POST" class="inline" onsubmit="return confirm('Delete this employee?');">
                                         @csrf

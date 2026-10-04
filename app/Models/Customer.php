@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasIdCardToken;
 use App\Services\CustomerCodeGenerator;
 use App\Services\SessionPaymentPlan;
 use Carbon\Carbon;
@@ -13,18 +14,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 #[Fillable([
     'name', 'customer_type', 'email', 'phone',
-    'city', 'address', 'is_active', 'notes', 'photo_path', 'requested_programs', 'company_customer_id', 'terms_accepted_at',
+    'city', 'address', 'is_active', 'notes', 'photo_path', 'rfid_uid', 'requested_programs', 'company_customer_id', 'terms_accepted_at',
 ])]
 class Customer extends Authenticatable
 {
     /** @use HasFactory<CustomerFactory> */
     use HasFactory;
+
+    use HasIdCardToken;
 
     public const REGISTRATION_COMPLETE = 'complete';
 
@@ -71,6 +75,27 @@ class Customer extends Authenticatable
             'rejected_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
         ];
+    }
+
+    /** The list filters shared by the customer list and its bulk ID-card print. */
+    public function scopeFiltered(Builder $query, Request $request): void
+    {
+        $query
+            // A company's employees stay under the company; people who joined an individual's group are customers in their own right.
+            ->where(fn ($query) => $query->whereNull('company_customer_id')
+                ->orWhereHas('company', fn ($company) => $company->where('customer_type', 'individual')))
+            ->when($request->input('status') === 'awaiting', fn ($query) => $query->where('registration_status', self::REGISTRATION_AWAITING))
+            ->when($request->input('status') === 'pending_approval', fn ($query) => $query->where('registration_status', self::REGISTRATION_PENDING_APPROVAL))
+            ->when($request->input('status') === 'rejected', fn ($query) => $query->where('registration_status', self::REGISTRATION_REJECTED))
+            ->when(in_array($request->input('status'), ['active', 'inactive'], true), fn ($query) => $query->where('is_active', $request->input('status') === 'active'))
+            ->when($request->filled('type'), fn ($query) => $query->where('customer_type', $request->string('type')))
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%'.$request->string('q').'%';
+                $query->where(fn ($inner) => $inner->where('name', 'like', $term)
+                    ->orWhere('customer_code', 'like', $term)
+                    ->orWhere('phone', 'like', $term)
+                    ->orWhere('email', 'like', $term));
+            });
     }
 
     /** Customers whose registration is finished (hides invitations still waiting for the customer). */

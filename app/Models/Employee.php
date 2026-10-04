@@ -2,22 +2,27 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasIdCardToken;
 use App\Services\EmployeeNumberGenerator;
 use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'employee_number', 'name', 'email', 'phone', 'position', 'department',
-    'employment_type', 'status', 'join_date', 'annual_leave_quota', 'address', 'notes', 'signature_path', 'photo_path',
+    'employment_type', 'status', 'join_date', 'annual_leave_quota', 'address', 'notes', 'signature_path', 'photo_path', 'rfid_uid',
 ])]
 class Employee extends Model
 {
     /** @use HasFactory<EmployeeFactory> */
     use HasFactory;
+
+    use HasIdCardToken;
 
     public const STATUSES = [
         'active' => 'Active',
@@ -39,6 +44,21 @@ class Employee extends Model
                 }
             }
         });
+    }
+
+    /** The list filters (status, employment type, search) shared by the employee list and its bulk ID-card print. */
+    public function scopeFiltered(Builder $query, Request $request): void
+    {
+        $query
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when($request->filled('type'), fn ($query) => $query->where('employment_type', $request->string('type')))
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%'.$request->string('q').'%';
+                $query->where(fn ($inner) => $inner->where('name', 'like', $term)
+                    ->orWhere('employee_number', 'like', $term)
+                    ->orWhere('position', 'like', $term)
+                    ->orWhere('department', 'like', $term));
+            });
     }
 
     protected function casts(): array

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Sales;
 
+use App\Rules\UniqueRfid;
 use App\Services\MasterData;
+use App\Services\Rfid;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -11,6 +13,11 @@ class UpdateCustomerRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->user()->can('sales.manage');
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge(['rfid_uid' => Rfid::normalize($this->input('rfid_uid'))]);
     }
 
     /**
@@ -29,6 +36,7 @@ class UpdateCustomerRequest extends FormRequest
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'remove_photo' => ['sometimes', 'boolean'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'rfid_uid' => ['nullable', 'string', 'max:64', new UniqueRfid($this->route('customer'))],
         ];
     }
 }

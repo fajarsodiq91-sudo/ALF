@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Hr;
 
 use App\Models\Employee;
+use App\Rules\UniqueRfid;
 use App\Services\MasterData;
+use App\Services\Rfid;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -12,6 +14,11 @@ class UpdateEmployeeRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->user()->can('hr.manage');
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge(['rfid_uid' => Rfid::normalize($this->input('rfid_uid'))]);
     }
 
     /**
@@ -31,6 +38,7 @@ class UpdateEmployeeRequest extends FormRequest
             'annual_leave_quota' => ['required', 'integer', 'min:0', 'max:365'],
             'address' => ['nullable', 'string', 'max:1000'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'rfid_uid' => ['nullable', 'string', 'max:64', new UniqueRfid($this->route('employee'))],
             'signature' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
             'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'remove_photo' => ['nullable', 'boolean'],

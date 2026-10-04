@@ -65,6 +65,14 @@
         @error('address') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
     <div class="sm:col-span-2">
+        <label for="rfid_uid" class="block text-sm font-medium text-gray-700">RFID Card UID</label>
+        <input type="text" name="rfid_uid" id="rfid_uid" value="{{ old('rfid_uid', $employee->rfid_uid ?? '') }}" autocomplete="off" placeholder="Click here, then tap the card on the reader"
+               onkeydown="if (event.key === 'Enter') { event.preventDefault(); }"
+               class="mt-1 block w-full rounded-md border-gray-300 font-mono shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+        <p class="mt-1 text-xs text-gray-500">A USB RFID reader types the card number into this field. Each card can belong to one person only. Leave blank if the card is not issued yet.</p>
+        @error('rfid_uid') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+    <div class="sm:col-span-2">
         <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
         <textarea name="notes" id="notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">{{ old('notes', $employee->notes ?? '') }}</textarea>
         @error('notes') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror

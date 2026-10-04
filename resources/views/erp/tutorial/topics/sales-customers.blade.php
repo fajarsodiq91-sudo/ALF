@@ -64,3 +64,7 @@
     </ul>
     <x-tutorial.note type="info">Karyawan perusahaan yang bergabung lewat tautan peserta tetap berada di bawah perusahaannya dan tidak muncul di daftar ini. Sebaliknya, anggota grup dari customer <strong>Individual</strong> muncul sebagai customer masing-masing dengan ID sendiri.</x-tutorial.note>
 </x-tutorial.section>
+
+<x-tutorial.section title="ID Card customer">
+    <p>Customer yang sudah punya ID dapat dibuatkan kartu lewat ikon <strong>ID Card</strong> di daftar. Halaman depan memuat logo Alfajar, tulisan <em>Customer PT Alfajar Logic Futura</em>, foto, ID customer, nama, dan tanggal <em>Valid from</em> (tanggal persetujuan pendaftaran); halaman belakang memuat QR Code. Tombol <strong>Cetak semua ID Card</strong> mencetak seluruh customer sesuai filter yang aktif. QR Code membuka halaman verifikasi publik; customer yang ditandai <em>Inactive</em> tampil sebagai <strong>ID Card tidak berlaku</strong>.</p>
+</x-tutorial.section>

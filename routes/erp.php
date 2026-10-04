@@ -19,6 +19,7 @@ use App\Http\Controllers\Hr\AttendanceController;
 use App\Http\Controllers\Hr\EmployeeController;
 use App\Http\Controllers\Hr\LeaveRequestController;
 use App\Http\Controllers\Hr\PayrollController;
+use App\Http\Controllers\IdCardController;
 use App\Http\Controllers\Projects\ProjectController;
 use App\Http\Controllers\Projects\ProjectTaskController;
 use App\Http\Controllers\Sales\CustomerController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\SiteItemController;
 use App\Http\Controllers\Settings\SitePageController;
 use App\Http\Controllers\Settings\SystemSettingController;
+use App\Http\Controllers\Settings\TapDeviceController;
 use App\Http\Controllers\Settings\UserController;
 use App\Http\Controllers\Training\TrainingCategoryController;
 use App\Http\Controllers\Training\TrainingProgramController;
@@ -185,6 +187,8 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     });
 
     Route::middleware('permission:sales.view')->group(function () {
+        Route::get('sales/id-cards', [IdCardController::class, 'customers'])->name('sales.id-cards');
+        Route::get('sales/{customer}/id-card', [IdCardController::class, 'customer'])->name('sales.id-card');
         Route::post('sales/invite', [CustomerController::class, 'invite'])->name('sales.invite.store');
         Route::get('sales/{customer}/invite', [CustomerController::class, 'showInvite'])->name('sales.invite.show');
         Route::post('sales/{customer}/invite/regenerate', [CustomerController::class, 'regenerateInvite'])->name('sales.invite.regenerate');
@@ -246,6 +250,8 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     });
 
     Route::middleware('permission:hr.view')->group(function () {
+        Route::get('hr/id-cards', [IdCardController::class, 'employees'])->name('hr.id-cards');
+        Route::get('hr/{employee}/id-card', [IdCardController::class, 'employee'])->name('hr.id-card');
         Route::resource('hr', EmployeeController::class)->except(['show'])->parameters(['hr' => 'employee'])->names([
             'index' => 'hr.index',
             'create' => 'hr.create',
@@ -310,6 +316,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             Route::put('/system', [SystemSettingController::class, 'update'])->name('system.update');
             Route::get('certificate-templates/{certificate_template}/preview', [CertificateTemplateController::class, 'preview'])->name('certificate-templates.preview');
             Route::resource('certificate-templates', CertificateTemplateController::class)->except(['show'])->names('certificate-templates');
+            Route::resource('tap-devices', TapDeviceController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['tap-devices' => 'tapDevice'])->names('tap-devices');
 
         });
     });

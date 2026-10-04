@@ -114,7 +114,7 @@ class Tutorial
             'group' => 'Operasional',
             'permission' => 'hr.view',
             'route' => 'hr.index',
-            'covers' => ['hr.index', 'hr.create', 'hr.edit'],
+            'covers' => ['hr.index', 'hr.create', 'hr.edit', 'hr.id-card', 'hr.id-cards', 'id-cards.verify'],
         ],
         'hr-leave-attendance' => [
             'title' => 'HR: Cuti & Absensi',

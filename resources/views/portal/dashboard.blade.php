@@ -10,6 +10,7 @@
                 <h1 class="text-lg font-semibold text-gray-800">Welcome, {{ $customer->name }}</h1>
                 <p class="text-sm text-gray-500">Customer ID <span class="font-mono text-gray-700">{{ $customer->customer_code }}</span></p>
             </div>
+            <a href="{{ route('portal.id-card') }}" target="_blank" title="My ID Card" aria-label="My ID Card" class="ml-auto inline-flex items-center justify-center rounded-md p-2 text-brand transition hover:bg-brand-50 hover:text-brand-dark"><x-erp.action-icon name="id-card" class="h-6 w-6" /></a>
         </div>
 
         @include('erp.partials.slot-picker', ['booked' => \App\Services\BookedSlots::keys($customer->id)])

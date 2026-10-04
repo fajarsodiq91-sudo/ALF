@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Template preview — {{ $template->name }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/icons/alf.png') }}">
     <style>body { margin: 0; background: #e5e7eb; } .page { width: 297mm; margin: 10mm auto; box-shadow: 0 2px 12px rgba(0,0,0,.25); }</style>
 </head>
 <body>

@@ -180,6 +180,7 @@
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Place</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Topic</th>
                         <th class="px-4 py-3 text-left font-medium text-gray-500">Realised</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-500">Attended</th>
                         @can('training.manage')
                             <th class="px-4 py-3 text-right font-medium text-gray-500">Actions</th>
                         @endcan
@@ -197,6 +198,13 @@
                                     <span class="inline-flex rounded-full bg-green-50 text-green-700 px-2 py-0.5 text-xs font-medium">Done {{ $meeting->completed_at?->format('d M') }}</span>
                                 @else
                                     <span class="inline-flex rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-xs font-medium">Upcoming</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 text-gray-500">
+                                @if ($meeting->attendances->isNotEmpty())
+                                    <span class="cursor-help font-medium text-gray-800" title="{{ $meeting->attendances->map(fn ($attendance) => $attendance->customer->name.' ('.$attendance->checked_in_at->format('H:i').')')->implode(', ') }}">{{ $meeting->attendances->count() }}</span>
+                                @else
+                                    —
                                 @endif
                             </td>
                             @can('training.manage')
@@ -220,7 +228,7 @@
                         @php $pendingReschedule = $meeting->rescheduleRequests->firstWhere('status', 'pending'); @endphp
                         @if ($pendingReschedule)
                             <tr class="bg-amber-50">
-                                <td colspan="6" class="px-4 py-3 text-sm">
+                                <td colspan="7" class="px-4 py-3 text-sm">
                                     <div class="flex flex-wrap items-center justify-between gap-3">
                                         <div>
                                             <span class="font-medium text-amber-800">Customer requested a reschedule</span>
@@ -246,7 +254,7 @@
                             </tr>
                         @endif
                     @empty
-                        <tr><td colspan="6" class="px-4 py-6 text-center text-gray-400">No meetings scheduled yet.</td></tr>
+                        <tr><td colspan="7" class="px-4 py-6 text-center text-gray-400">No meetings scheduled yet.</td></tr>
                     @endforelse
                 </tbody>
             </table>

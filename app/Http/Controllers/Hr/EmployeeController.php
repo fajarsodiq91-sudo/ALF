@@ -17,15 +17,7 @@ class EmployeeController extends Controller
     public function index(Request $request): View
     {
         $employees = Employee::query()
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
-            ->when($request->filled('type'), fn ($query) => $query->where('employment_type', $request->string('type')))
-            ->when($request->filled('q'), function ($query) use ($request) {
-                $term = '%'.$request->string('q').'%';
-                $query->where(fn ($inner) => $inner->where('name', 'like', $term)
-                    ->orWhere('employee_number', 'like', $term)
-                    ->orWhere('position', 'like', $term)
-                    ->orWhere('department', 'like', $term));
-            })
+            ->filtered($request)
             ->orderBy('name')
             ->paginate(20)
             ->withQueryString();

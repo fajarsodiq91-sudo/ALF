@@ -47,3 +47,7 @@
     </ul>
     <x-tutorial.note type="tip">Cabut tanda portofolio kapan saja dengan menekan tombol <strong>In portfolio</strong> lagi di halaman detail customer.</x-tutorial.note>
 </x-tutorial.section>
+
+<x-tutorial.section title="ID Card di portal">
+    <p>Di dashboard portal, ikon <strong>ID Card</strong> di sebelah kanan <em>Welcome</em> membuka ID Card customer sendiri di tab baru, siap dicetak. Isinya sama dengan kartu yang dicetak dari menu Customer, dan customer hanya bisa melihat kartunya sendiri.</p>
+</x-tutorial.section>

@@ -19,3 +19,13 @@
     </ul>
     <x-tutorial.note type="info">Mengajukan, menyetujui, atau menolak cuti dan mengubah absensi butuh permission <code>hr.manage</code>; dengan <code>hr.view</code> Anda hanya melihat.</x-tutorial.note>
 </x-tutorial.section>
+
+<x-tutorial.section title="Absensi lewat tap kartu">
+    <p>Karyawan yang kartu RFID-nya sudah direkam dapat absen dengan menempelkan kartu ke reader, atau memindai QR Code di belakang ID Card. Hasilnya muncul di daftar Attendance seperti input manual.</p>
+    <ul>
+        <li>Tap pertama hari itu mencatat <strong>masuk</strong> (status <em>Present</em>); tap berikutnya memperbarui jam <strong>pulang</strong> ke tap terakhir.</li>
+        <li>Tap yang berselang kurang dari 2 menit dianggap tap yang sama.</li>
+        <li>Karyawan yang tidak berstatus <em>Active</em>, atau yang hari itu sudah tercatat Sick, Permit, Leave, atau Absent, ditolak dan catatannya tidak ditimpa.</li>
+        <li>Reader didaftarkan di Settings → Tap Devices.</li>
+    </ul>
+</x-tutorial.section>

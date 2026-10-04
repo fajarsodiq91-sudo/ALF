@@ -35,21 +35,7 @@ class CustomerController extends Controller
     public function index(Request $request): View
     {
         $customers = Customer::query()
-            // A company's employees stay under the company; people who joined an individual's group are customers in their own right.
-            ->where(fn ($query) => $query->whereNull('company_customer_id')
-                ->orWhereHas('company', fn ($company) => $company->where('customer_type', 'individual')))
-            ->when($request->input('status') === 'awaiting', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_AWAITING))
-            ->when($request->input('status') === 'pending_approval', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_PENDING_APPROVAL))
-            ->when($request->input('status') === 'rejected', fn ($query) => $query->where('registration_status', Customer::REGISTRATION_REJECTED))
-            ->when(in_array($request->input('status'), ['active', 'inactive'], true), fn ($query) => $query->where('is_active', $request->input('status') === 'active'))
-            ->when($request->filled('type'), fn ($query) => $query->where('customer_type', $request->string('type')))
-            ->when($request->filled('q'), function ($query) use ($request) {
-                $term = '%'.$request->string('q').'%';
-                $query->where(fn ($inner) => $inner->where('name', 'like', $term)
-                    ->orWhere('customer_code', 'like', $term)
-                    ->orWhere('phone', 'like', $term)
-                    ->orWhere('email', 'like', $term));
-            })
+            ->filtered($request)
             ->orderByRaw('name is null desc')
             ->orderBy('name')
             ->paginate(20)
