@@ -21,15 +21,6 @@ class ErpModulesTest extends TestCase
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
-    /**
-     * Finance pages not yet built (all main finance pages became real CRUD in Phase 6-12).
-     * Only the main ERP dashboard stub remains.
-     */
-    public static function financeStubRoutes(): array
-    {
-        return [];
-    }
-
     /** All finance.* routes, regardless of whether they're stubs or real, for permission-gate coverage. */
     public static function allFinanceRoutes(): array
     {
@@ -73,20 +64,6 @@ class ErpModulesTest extends TestCase
             ['finance.transfers'],
             ['finance.transactions'],
         ];
-    }
-
-    #[DataProvider('financeStubRoutes')]
-    public function test_finance_role_can_view_finance_stub_pages(string $routeName): void
-    {
-        $user = User::factory()->create();
-        $user->assignRole('Finance');
-
-        $response = $this->actingAs($user)->get(route($routeName));
-
-        $response->assertOk();
-        // Assert the stub badge appears in the main content area, not just
-        // incidentally in the sidebar's own "Coming Soon" module badges.
-        $response->assertSeeInOrder(['max-w-3xl', 'Coming Soon'], false);
     }
 
     #[DataProvider('allFinanceRoutes')]

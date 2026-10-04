@@ -1,0 +1,143 @@
+name: Deploy
+
+# Push to main: run tests, then deploy code to Hostinger (alfajarlogic.com).
+# Migrations never run on push. Start this workflow by hand (Actions > Deploy > Run workflow)
+# and tick "migrate" to back up the database and run `php artisan migrate --force`.
+#
+# Required repository secrets:
+#   SSH_PRIVATE_KEY   private key of a deploy-only key pair (public key in server ~/.ssh/authorized_keys)
+#   SSH_KNOWN_HOSTS   output of: ssh-keyscan -p 65002 46.202.138.72
+#   SSH_HOST, SSH_PORT, SSH_USER
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      migrate:
+        description: Back up the database, then run migrations
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  REMOTE_APP_DIR: domains/alfajarlogic.com/public_html
+  REMOTE_PHP: /opt/alt/php84/usr/bin/php
+  SITE_URL: https://alfajarlogic.com
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, pdo_sqlite, sqlite3, mbstring, intl, bcmath
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Run tests
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          vendor/bin/phpunit
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: public/build
+          retention-days: 1
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: public/build
+
+      - name: Configure SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host prod
+            HostName ${{ secrets.SSH_HOST }}
+            Port ${{ secrets.SSH_PORT }}
+            User ${{ secrets.SSH_USER }}
+            IdentityFile ~/.ssh/deploy_key
+            BatchMode yes
+            StrictHostKeyChecking yes
+          EOF
+
+      - name: Pull this commit on the server
+        run: |
+          ssh prod "set -euo pipefail
+            cd $REMOTE_APP_DIR
+            git fetch origin main
+            git checkout --detach ${{ github.sha }}
+            $REMOTE_PHP \$(command -v composer) install --no-dev --optimize-autoloader --no-interaction"
+
+      - name: Upload public/build
+        run: rsync -az --delete public/build/ prod:$REMOTE_APP_DIR/public/build/
+
+      - name: Back up database and migrate
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.migrate }}
+        run: |
+          ssh prod "APP_DIR=$REMOTE_APP_DIR REMOTE_PHP=$REMOTE_PHP bash -s" <<'EOF'
+          set -euo pipefail
+          cd "$APP_DIR"
+          env_value() { grep -E "^$1=" .env | head -1 | cut -d= -f2- | tr -d '"'; }
+          mkdir -p ~/db_backups
+          chmod 700 ~/db_backups
+          file=~/db_backups/pre-deploy-$(date +%F-%H%M).sql
+          MYSQL_PWD="$(env_value DB_PASSWORD)" mysqldump -h "$(env_value DB_HOST)" -u "$(env_value DB_USERNAME)" \
+            --single-transaction --no-tablespaces "$(env_value DB_DATABASE)" > "$file"
+          ls -la "$file"
+          "$REMOTE_PHP" artisan migrate --force
+          EOF
+
+      - name: Refresh caches
+        run: |
+          ssh prod "set -euo pipefail
+            cd $REMOTE_APP_DIR
+            $REMOTE_PHP artisan migrate:status --pending || true
+            $REMOTE_PHP artisan storage:link || true
+            $REMOTE_PHP artisan db:seed --class=RolePermissionSeeder --force
+            $REMOTE_PHP artisan optimize:clear
+            $REMOTE_PHP artisan config:cache
+            $REMOTE_PHP artisan route:cache
+            $REMOTE_PHP artisan view:cache
+            chmod -R 775 storage bootstrap/cache"
+
+      - name: Smoke test
+        run: |
+          for path in / /login; do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$SITE_URL$path")"
+            echo "$path -> $code"
+            [ "$code" = "200" ] || exit 1
+          done
