@@ -69,11 +69,33 @@ class TrainingSessionMeetingController extends Controller
 
         $done = ! $meeting->is_completed;
         $meeting->update(['is_completed' => $done, 'completed_at' => $done ? now() : null]);
+        $this->syncStatus($meeting->session);
         PaymentInvoices::sendDue($meeting->session);
         CustomerNotifier::meetingToggled($meeting);
 
         return redirect()->route('training.edit', $meeting->training_session_id)
             ->with('status', $done ? 'Meeting marked as done.' : 'Meeting marked as upcoming again.');
+    }
+
+    /** planned → ongoing once a meeting is done; → completed when every meeting is done (and back if one is reopened). */
+    private function syncStatus(TrainingSession $session): void
+    {
+        if ($session->status === 'cancelled') {
+            return;
+        }
+
+        $total = $session->meetings()->count();
+        $done = $session->meetings()->where('is_completed', true)->count();
+
+        $status = match (true) {
+            $total > 0 && $done === $total => 'completed',
+            $done > 0 => 'ongoing',
+            default => 'planned',
+        };
+
+        if ($status !== $session->status) {
+            $session->update(['status' => $status]);
+        }
     }
 
     public function destroy(TrainingSessionMeeting $meeting): RedirectResponse
