@@ -81,3 +81,12 @@
         <li>Tap kedua pada pertemuan yang sama tidak membuat catatan ganda.</li>
     </ul>
 </x-tutorial.section>
+
+<x-tutorial.section title="Laporan kehadiran sesi">
+    <p>Klik <strong>Attendance report</strong> di bagian atas halaman edit sesi. Tabelnya menampilkan setiap peserta (atau customer itu sendiri untuk sesi perorangan) dan tiap pertemuan, dengan centang dan jam hadir, jumlah hadir, serta persentase kehadiran.</p>
+    <ul>
+        <li>Persentase dihitung dari pertemuan yang <strong>sudah berlangsung</strong> (tanggalnya hari ini atau lewat, atau sudah ditandai selesai); pertemuan mendatang tidak ikut dihitung.</li>
+        <li>Warna persentase: hijau 80% ke atas, kuning 50–79%, merah di bawah 50%.</li>
+        <li>Peserta yang lupa kartu bisa ditandai hadir manual dengan klik sel di tabel (butuh permission <code>training.manage</code>); klik lagi pada sel bercentang untuk membatalkan. Tanda manual diberi label <em>manual</em>.</li>
+    </ul>
+</x-tutorial.section>

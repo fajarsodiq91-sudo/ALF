@@ -5,6 +5,10 @@
     <div class="max-w-3xl space-y-6" x-data="{ openSection: @js(request()->query('focus')) }">
         <x-erp.flash />
 
+        <div class="flex justify-end">
+            <a href="{{ route('training.attendance', $session) }}" class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Attendance report &rarr;</a>
+        </div>
+
         <div class="bg-white rounded-lg shadow-md border border-gray-200 transition-shadow duration-200 hover:shadow-lg" x-data="{ key: 'details' }">
             <button type="button" @click="openSection = (openSection === key ? null : key)" class="flex w-full items-center justify-between px-6 py-4 text-left">
                 <span class="text-sm font-semibold text-gray-800">Session details</span>

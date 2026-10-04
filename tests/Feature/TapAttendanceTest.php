@@ -160,4 +160,67 @@ class TapAttendanceTest extends TestCase
         $this->actingAs($admin)->put(route('settings.tap-devices.update', $device), ['regenerate' => 1])->assertSessionHas('device_token');
         $this->tap(['uid' => 'ZZ'], $plain)->assertUnauthorized();
     }
+
+    private function admin(): User
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        return User::factory()->create()->assignRole('Super Admin');
+    }
+
+    public function test_kiosk_scan_records_attendance_for_a_logged_in_staff_member(): void
+    {
+        $employee = Employee::factory()->create(['status' => 'active']);
+        $admin = $this->admin();
+
+        $this->get(route('kiosk.index'))->assertRedirect();
+        $this->postJson(route('kiosk.scan'), ['qr' => 'x'])->assertUnauthorized();
+
+        $this->actingAs($admin)->get(route('kiosk.index'))->assertOk()->assertSee('html5-qrcode', false);
+        $this->actingAs($admin)->postJson(route('kiosk.scan'), ['qr' => route('id-cards.verify', $employee->idCardToken())])
+            ->assertOk()->assertJson(['ok' => true, 'status' => 'check_in', 'name' => $employee->name]);
+        $this->actingAs($admin)->postJson(route('kiosk.scan'), ['qr' => 'garbage'])->assertOk()->assertJson(['ok' => false, 'status' => 'unknown_card']);
+    }
+
+    public function test_kiosk_is_closed_to_staff_without_hr_or_training_manage(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+        $user = User::factory()->create()->givePermissionTo('access-erp');
+
+        $this->actingAs($user)->get(route('kiosk.index'))->assertForbidden();
+    }
+
+    public function test_session_report_shows_attendance_rate_per_participant(): void
+    {
+        $company = Customer::factory()->create();
+        $present = Customer::factory()->create(['rfid_uid' => 'AB01']);
+        $absent = Customer::factory()->create();
+        $session = TrainingSession::factory()->create(['customer_id' => $company->id, 'status' => 'ongoing']);
+        $session->participants()->attach([$present->id, $absent->id]);
+        foreach ([today()->subDay(), today()] as $date) {
+            TrainingSessionMeeting::factory()->create(['training_session_id' => $session->id, 'meeting_date' => $date, 'start_time' => '09:30:00', 'end_time' => '12:00:00', 'is_completed' => false]);
+        }
+        TrainingSessionMeeting::factory()->create(['training_session_id' => $session->id, 'meeting_date' => today()->addWeek(), 'is_completed' => false]);
+
+        $this->tap(['uid' => 'AB01'])->assertOk()->assertJson(['status' => 'attended']);
+
+        $response = $this->actingAs($this->admin())->get(route('training.attendance', $session))->assertOk();
+        $response->assertSeeInOrder([$absent->name, '0/2', '0%']);
+        $response->assertSeeInOrder([$present->name, '1/2', '50%']);
+        // The company that owns the session is not a participant, so it is not listed.
+        $response->assertDontSee($company->name.'</span>', false);
+    }
+
+    public function test_staff_can_mark_and_unmark_attendance_by_hand(): void
+    {
+        $customer = Customer::factory()->create();
+        $meeting = $this->meetingFor($customer);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->patch(route('training.attendance.toggle', [$meeting, $customer]))->assertRedirect();
+        $this->assertDatabaseHas('training_meeting_attendances', ['customer_id' => $customer->id, 'method' => 'manual']);
+
+        $this->actingAs($admin)->patch(route('training.attendance.toggle', [$meeting, $customer]));
+        $this->assertSame(0, TrainingMeetingAttendance::count());
+    }
 }

@@ -68,6 +68,9 @@
                                 <x-erp.nav-link :href="route('hr.index')" :active="request()->routeIs('hr.index', 'hr.create', 'hr.edit')" nested>Employees</x-erp.nav-link>
                                 <x-erp.nav-link :href="route('hr.leaves.index')" :active="request()->routeIs('hr.leaves.*')" nested>Leave</x-erp.nav-link>
                                 <x-erp.nav-link :href="route('hr.attendance.index')" :active="request()->routeIs('hr.attendance.*')" nested>Attendance</x-erp.nav-link>
+                                @canany(['hr.manage', 'training.manage'])
+                                    <x-erp.nav-link :href="route('kiosk.index')" :active="request()->routeIs('kiosk.*')" nested>Scan Kiosk</x-erp.nav-link>
+                                @endcanany
                             @endcan
                             @can('hr.payroll')
                                 <x-erp.nav-link :href="route('hr.payroll.index')" :active="request()->routeIs('hr.payroll.*')" nested>Payroll</x-erp.nav-link>

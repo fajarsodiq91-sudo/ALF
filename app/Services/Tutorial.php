@@ -98,7 +98,7 @@ class Tutorial
             'group' => 'Sales & Training',
             'permission' => 'training.view',
             'route' => 'training.index',
-            'covers' => ['training.index', 'training.create', 'training.edit', 'training.payments.*', 'participant.*'],
+            'covers' => ['training.index', 'training.create', 'training.edit', 'training.payments.*', 'training.attendance*', 'participant.*'],
         ],
         'projects' => [
             'title' => 'Projects',
@@ -122,7 +122,7 @@ class Tutorial
             'group' => 'Operasional',
             'permission' => 'hr.view',
             'route' => 'hr.leaves.index',
-            'covers' => ['hr.leaves.*', 'hr.attendance.*'],
+            'covers' => ['hr.leaves.*', 'hr.attendance.*', 'kiosk.*'],
         ],
         'hr-payroll' => [
             'title' => 'HR: Payroll',

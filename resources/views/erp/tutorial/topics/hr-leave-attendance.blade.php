@@ -29,3 +29,13 @@
         <li>Reader didaftarkan di Settings → Tap Devices.</li>
     </ul>
 </x-tutorial.section>
+
+<x-tutorial.section title="Scan Kiosk: absen dengan kamera HP">
+    <p>Tanpa reader fisik, HP atau tablet staf dapat dipakai memindai QR Code di ID Card. Buka <strong>HR → Scan Kiosk</strong> (butuh permission <code>hr.manage</code> atau <code>training.manage</code>), izinkan akses kamera, lalu arahkan kamera ke QR Code kartu.</p>
+    <ul>
+        <li>Aturannya sama dengan reader: karyawan tercatat masuk/pulang, customer tercatat hadir di pertemuan training hari itu.</li>
+        <li>Hasil tampil sebagai kotak berwarna: <strong>hijau</strong> berhasil, <strong>kuning</strong> sudah tercatat sebelumnya, <strong>merah</strong> ditolak (disertai alasan). Ada bunyi dan getar, serta daftar enam scan terakhir.</li>
+        <li>Browser hanya membolehkan kamera pada halaman <strong>HTTPS</strong>. Pastikan sistem diakses lewat https saat memakai kiosk.</li>
+        <li>Kiosk memakai login staf yang sedang aktif; bila sesi berakhir, muat ulang halaman dan login lagi.</li>
+    </ul>
+</x-tutorial.section>

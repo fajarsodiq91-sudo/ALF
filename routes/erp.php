@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Assets\AssetController;
+use App\Http\Controllers\AttendanceKioskController;
 use App\Http\Controllers\Finance\AccountController;
 use App\Http\Controllers\Finance\CategoryController;
 use App\Http\Controllers\Finance\DashboardController;
@@ -36,6 +37,7 @@ use App\Http\Controllers\Settings\SitePageController;
 use App\Http\Controllers\Settings\SystemSettingController;
 use App\Http\Controllers\Settings\TapDeviceController;
 use App\Http\Controllers\Settings\UserController;
+use App\Http\Controllers\Training\TrainingAttendanceController;
 use App\Http\Controllers\Training\TrainingCategoryController;
 use App\Http\Controllers\Training\TrainingProgramController;
 use App\Http\Controllers\Training\TrainingSessionController;
@@ -226,12 +228,20 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::post('payments/{payment}/pay', [TrainingSessionPaymentController::class, 'pay'])->name('training.payments.pay');
         Route::post('payments/{payment}/cancel', [TrainingSessionPaymentController::class, 'cancel'])->name('training.payments.cancel');
         Route::get('payments/{payment}/proof', [TrainingSessionPaymentController::class, 'proof'])->name('training.payments.proof');
+        Route::get('{session}/attendance', [TrainingAttendanceController::class, 'show'])->name('training.attendance');
+        Route::patch('meetings/{meeting}/attendance/{customer}', [TrainingAttendanceController::class, 'toggle'])->name('training.attendance.toggle');
         Route::post('{session}/complete', [TrainingSessionController::class, 'complete'])->name('training.complete');
     });
 
     Route::middleware('permission:training.view')->group(function () {
         Route::resource('training', TrainingSessionController::class)->except(['show'])
             ->parameters(['training' => 'session'])->names('training');
+    });
+
+    // Phone-camera kiosk for scanning ID-card QR codes: whoever manages HR or training may run it.
+    Route::middleware('permission:hr.manage|training.manage')->group(function () {
+        Route::get('attendance-kiosk', [AttendanceKioskController::class, 'index'])->name('kiosk.index');
+        Route::post('attendance-kiosk/scan', [AttendanceKioskController::class, 'scan'])->name('kiosk.scan');
     });
 
     Route::middleware('permission:hr.view')->prefix('hr')->group(function () {
