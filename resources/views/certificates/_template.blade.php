@@ -8,6 +8,10 @@
     $pdf ??= false;
     $embedImages ??= true;
     $pos = $template->positions();
+    // dompdf reads JPEG natively but needs the GD extension to decode PNG; never hand back a silently blank certificate.
+    $isJpeg = in_array(strtolower(pathinfo($template->background_path, PATHINFO_EXTENSION)), ['jpg', 'jpeg']);
+    throw_if($pdf && ! $isJpeg && ! extension_loaded('gd'), \RuntimeException::class, 'The PHP GD extension is required to put a PNG template in a PDF. Enable GD on the server or upload the template as JPG.');
+    $embedImages = $pdf ? true : $embedImages;
     $font = fn (string $file) => $pdf ? public_path('fonts/certificate/'.$file) : asset('fonts/certificate/'.$file);
     $background = $pdf ? \Illuminate\Support\Facades\Storage::disk('public')->path($template->background_path) : asset('storage/'.$template->background_path);
     $box = fn (string $key) => sprintf('left:%.2fmm;top:%.2fmm;width:%.2fmm;margin-left:-%.2fmm;', $pos[$key]['x'], $pos[$key]['y'], $pos[$key]['w'], $pos[$key]['w'] / 2);
@@ -35,7 +39,7 @@
     <div class="f f-statement" style="{{ $box('statement') }}">{{ $data['statement'] }}</div>
     <div class="f f-date" style="{{ $box('date') }}">{{ $data['date'] }}</div>
     <div class="f" style="{{ $box('qr') }}height:{{ $pos['qr']['w'] }}mm;">
-        <div style="width:{{ $pos['qr']['w'] }}mm;height:{{ $pos['qr']['w'] }}mm;">{!! preg_replace('/<svg /', '<svg style="width:'.$pos['qr']['w'].'mm;height:'.$pos['qr']['w'].'mm" ', $data['qr'], 1) !!}</div>
+        <div style="width:{{ $pos['qr']['w'] }}mm;height:{{ $pos['qr']['w'] }}mm;"><a href="{{ $data['verify_url'] }}" style="display:block;text-decoration:none;"><img src="data:image/svg+xml;base64,{{ base64_encode($data['qr']) }}" style="width:{{ $pos['qr']['w'] }}mm;height:{{ $pos['qr']['w'] }}mm;"></a></div>
     </div>
     <div class="f f-id" style="{{ $box('id_number') }}">{{ $data['id_number'] }}</div>
     @if ($data['signature'] && $embedImages)

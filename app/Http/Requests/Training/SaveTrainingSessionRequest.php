@@ -24,6 +24,7 @@ class SaveTrainingSessionRequest extends FormRequest
             'training_program_id' => ['required', 'exists:training_programs,id'],
             'customer_id' => ['nullable', 'exists:customers,id'],
             'instructor_id' => ['nullable', 'exists:employees,id'],
+            'certificate_template_id' => ['nullable', 'exists:certificate_templates,id'],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'delivery_mode' => ['required', Rule::in(MasterData::codes('delivery_mode'))],

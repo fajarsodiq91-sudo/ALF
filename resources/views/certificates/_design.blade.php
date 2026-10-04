@@ -3,7 +3,7 @@
     $embedImages ??= true;
     $pdf ??= false;
     $session = $certificate->session;
-    $template = \App\Models\CertificateTemplate::forProgram($session->program);
+    $template = \App\Models\CertificateTemplate::forSession($session);
 @endphp
 @if ($template)
     @php
@@ -21,6 +21,7 @@
             'statement' => 'has completed the requirements to pass the '.$session->program->name.' program held by '.$companyName.'.',
             'date' => $certificate->issued_at->format('d F Y'),
             'id_number' => $certificate->customer->customer_code,
+            'verify_url' => $certificate->verifyUrl(),
             'qr' => \App\Services\QrCodeGenerator::svg($certificate->verifyUrl(), 400),
             'signature' => $signature ? ($pdf ? \Illuminate\Support\Facades\Storage::disk('public')->path($signature) : $instructor->signatureUrl()) : null,
             'signer_name' => $instructor?->name ?? \App\Models\Setting::get('certificate_signer_name', $companyName),

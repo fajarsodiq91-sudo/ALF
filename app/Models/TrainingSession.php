@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 #[Fillable([
     'training_program_id', 'customer_id', 'instructor_id', 'start_date', 'end_date',
     'delivery_mode', 'location', 'participants_count', 'participant_limit', 'fee', 'payment_plan', 'status', 'notes',
-    'materials_url', 'certificate_url',
+    'materials_url', 'certificate_url', 'certificate_template_id',
 ])]
 class TrainingSession extends Model
 {
@@ -45,6 +45,11 @@ class TrainingSession extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function certificateTemplate(): BelongsTo
+    {
+        return $this->belongsTo(CertificateTemplate::class);
     }
 
     public function instructor(): BelongsTo

@@ -77,7 +77,13 @@ class CertificateTemplateController extends Controller
     {
         $rules = [
             'name' => ['required', 'string', 'max:100'],
-            'background' => [$creating ? 'required' : 'nullable', 'image', 'mimes:png', 'max:15360', 'dimensions:min_width=1600,ratio=297/210'],
+            'background' => [$creating ? 'required' : 'nullable', 'image', 'mimes:png,jpg,jpeg', 'max:15360', 'dimensions:min_width=1600,ratio=297/210',
+                function ($attribute, $value, $fail) {
+                    if ($value->getMimeType() === 'image/png' && ! extension_loaded('gd')) {
+                        $fail('This server cannot put PNG templates into PDFs (PHP GD extension missing). Upload the template as JPG, or enable GD.');
+                    }
+                },
+            ],
         ];
 
         foreach (array_keys(CertificateTemplate::FIELDS) as $field) {

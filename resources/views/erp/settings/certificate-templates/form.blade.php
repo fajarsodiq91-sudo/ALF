@@ -12,8 +12,8 @@
                 </div>
 
                 <div>
-                    <label for="background" class="block text-sm font-medium text-gray-700">Template (PNG, A4 landscape, 300 DPI = 3508 × 2480 px)</label>
-                    <input type="file" name="background" id="background" accept="image/png" @required(! $template->exists) class="mt-1 block w-full text-sm text-gray-600">
+                    <label for="background" class="block text-sm font-medium text-gray-700">Template (PNG or JPG, A4 landscape, 300 DPI = 3508 × 2480 px)</label>
+                    <input type="file" name="background" id="background" accept="image/png,image/jpeg" @required(! $template->exists) class="mt-1 block w-full text-sm text-gray-600">
                     @if ($template->exists)
                         <p class="mt-1 text-xs text-gray-500">Leave empty to keep the current image.</p>
                     @endif

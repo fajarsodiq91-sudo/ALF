@@ -48,7 +48,7 @@ class CertificateTemplateTest extends TestCase
             ->assertSee($certificate->number)
             ->assertSee('261001')
             ->assertSee('Great Vibes');
-        $this->assertSame($template->id, CertificateTemplate::forProgram($certificate->session->program)->id);
+        $this->assertSame($template->id, CertificateTemplate::forSession($certificate->session)->id);
     }
 
     public function test_program_template_wins_over_the_default(): void
@@ -57,7 +57,7 @@ class CertificateTemplateTest extends TestCase
         $own = CertificateTemplate::create(['name' => 'Blue', 'background_path' => 'certificate-templates/a.png']);
         $certificate = $this->certificate($own);
 
-        $this->assertSame($own->id, CertificateTemplate::forProgram($certificate->session->program)->id);
+        $this->assertSame($own->id, CertificateTemplate::forSession($certificate->session)->id);
     }
 
     public function test_without_any_template_the_built_in_design_is_used(): void
@@ -67,12 +67,17 @@ class CertificateTemplateTest extends TestCase
         $this->actingAs($certificate->customer, 'customer')->get(route('portal.certificates.show', $certificate))->assertOk()->assertDontSee('Great Vibes');
     }
 
-    public function test_pdf_download_renders_with_a_template(): void
+    public function test_pdf_with_a_jpeg_template_embeds_it_and_the_qr_links_to_verification(): void
     {
-        $this->template(true);
+        Storage::fake('public');
+        // 1x1 JPEG; dompdf embeds JPEG without GD.
+        Storage::disk('public')->put('certificate-templates/a.jpg', base64_decode('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='));
+        CertificateTemplate::create(['name' => 'Jpg', 'background_path' => 'certificate-templates/a.jpg', 'is_default' => true]);
         $certificate = $this->certificate();
 
-        $this->actingAs($certificate->customer, 'customer')->get(route('portal.certificates.download', $certificate))->assertOk()->assertHeader('content-type', 'application/pdf');
+        $response = $this->actingAs($certificate->customer, 'customer')->get(route('portal.certificates.download', $certificate))->assertOk();
+        $this->assertStringContainsString('/URI', $response->getContent());
+        $this->assertStringContainsString('/verify/'.$certificate->verification_code, $response->getContent());
     }
 
     public function test_admin_can_preview_and_delete_a_template(): void
@@ -108,5 +113,16 @@ class CertificateTemplateTest extends TestCase
         $certificate = $this->certificate();
 
         $this->assertStringContainsString('/verify/'.$certificate->verification_code, $certificate->verifyUrl());
+    }
+
+    public function test_session_template_wins_over_the_program_and_the_default(): void
+    {
+        $this->template(true);
+        $program = CertificateTemplate::create(['name' => 'Blue', 'background_path' => 'certificate-templates/a.png']);
+        $session = CertificateTemplate::create(['name' => 'Green', 'background_path' => 'certificate-templates/a.png']);
+        $certificate = $this->certificate($program);
+        $certificate->session->update(['certificate_template_id' => $session->id]);
+
+        $this->assertSame($session->id, CertificateTemplate::forSession($certificate->session->fresh())->id);
     }
 }

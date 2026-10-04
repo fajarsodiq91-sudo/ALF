@@ -53,10 +53,11 @@ class CertificateTemplate extends Model
         return $positions;
     }
 
-    /** The template for a program: its own choice, else the default one, else null (legacy design). */
-    public static function forProgram(?TrainingProgram $program): ?self
+    /** The template for a session: its own choice, else its program's, else the default one, else null (legacy design). */
+    public static function forSession(TrainingSession $session): ?self
     {
-        return ($program?->certificate_template_id ? $program->certificateTemplate : null)
+        return $session->certificateTemplate
+            ?? $session->program?->certificateTemplate
             ?? self::where('is_default', true)->first();
     }
 }

@@ -15,6 +15,7 @@
                 'statement' => 'has completed the requirements to pass the Contoh Program Pelatihan program held by PT Alfajar Logic Futura.',
                 'date' => now()->format('d F Y'),
                 'id_number' => '261001',
+                'verify_url' => url('/'),
                 'qr' => \App\Services\QrCodeGenerator::svg(url('/'), 400),
                 'signature' => null,
                 'signer_name' => 'Nama Penandatangan',

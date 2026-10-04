@@ -55,6 +55,18 @@
         </select>
         @error('instructor_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
+    @if (\App\Models\CertificateTemplate::exists())
+        <div class="">
+            <label for="certificate_template_id" class="block text-sm font-medium text-gray-700">Certificate template</label>
+            <select name="certificate_template_id" id="certificate_template_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                <option value="">Same as the program / default</option>
+                @foreach (\App\Models\CertificateTemplate::orderBy('name')->get() as $template)
+                    <option value="{{ $template->id }}" @selected((string) old('certificate_template_id', $session->certificate_template_id ?? '') === (string) $template->id)>{{ $template->name }}</option>
+                @endforeach
+            </select>
+            @error('certificate_template_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+    @endif
     <div class="">
         <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
         <select name="status" id="status" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
