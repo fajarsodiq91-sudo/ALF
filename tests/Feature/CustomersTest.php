@@ -77,7 +77,35 @@ class CustomersTest extends TestCase
 
         $this->actingAs($user)->delete(route('sales.destroy', $customer))
             ->assertRedirect(route('sales.index'));
-        $this->assertModelMissing($customer);
+        $this->assertSoftDeleted($customer);
+    }
+
+    public function test_deleted_customer_can_be_listed_and_restored(): void
+    {
+        $user = $this->userWithRole('Finance');
+        $customer = Customer::factory()->create(['name' => 'PT Terhapus']);
+        $customer->delete();
+
+        $this->actingAs($user)->get(route('sales.index'))->assertDontSee('PT Terhapus');
+        $this->actingAs($user)->get(route('sales.deleted'))->assertOk()->assertSee('PT Terhapus');
+
+        $this->actingAs($user)->post(route('sales.restore', $customer->id))
+            ->assertRedirect(route('sales.deleted'));
+
+        $this->assertNotSoftDeleted($customer);
+        $this->actingAs($user)->get(route('sales.index'))->assertSee('PT Terhapus');
+    }
+
+    public function test_view_only_user_cannot_restore_customers(): void
+    {
+        $user = User::factory()->create();
+        $user->givePermissionTo(['access-erp', 'sales.view']);
+        $customer = Customer::factory()->create();
+        $customer->delete();
+
+        $this->actingAs($user)->get(route('sales.deleted'))->assertForbidden();
+        $this->actingAs($user)->post(route('sales.restore', $customer->id))->assertForbidden();
+        $this->assertSoftDeleted($customer);
     }
 
     public function test_view_only_user_cannot_manage_customers(): void

@@ -8,9 +8,12 @@
                 <span class="font-medium text-gray-800">{{ $customers->total() }}</span> customer.
             </p>
             @can('sales.manage')
+                <div class="flex items-center gap-2">
+                <a href="{{ route('sales.deleted') }}" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-150 hover:bg-gray-50 hover:shadow-md hover:-translate-y-px">Deleted customers</a>
                 <a href="{{ route('sales.create') }}" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">
                     Add Customer
                 </a>
+                </div>
             @endcan
         </div>
 
@@ -98,7 +101,7 @@
                                         <a href="{{ route('sales.id-card', $customer) }}" target="_blank" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="ID Card" aria-label="ID Card"><x-erp.action-icon name="id-card" /></a>
                                     @endif
                                     <a href="{{ route('sales.edit', $customer) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit" aria-label="Edit"><x-erp.action-icon name="edit" /></a>
-                                    <form action="{{ route('sales.destroy', $customer) }}" method="POST" class="inline" onsubmit="return confirm('Delete this customer?');">
+                                    <form action="{{ route('sales.destroy', $customer) }}" method="POST" class="inline" onsubmit="return confirm('Delete this customer? They will be removed from the lists, but finance records stay intact.');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-gray-400 hover:bg-red-50 hover:text-red-600" data-tip="Delete" aria-label="Delete"><x-erp.action-icon name="delete" /></button>

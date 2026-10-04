@@ -189,6 +189,8 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
     });
 
     Route::middleware('permission:sales.view')->group(function () {
+        Route::get('sales/deleted', [CustomerController::class, 'deleted'])->name('sales.deleted');
+        Route::post('sales/{customer}/restore', [CustomerController::class, 'restore'])->withTrashed()->name('sales.restore');
         Route::get('sales/id-cards', [IdCardController::class, 'customers'])->name('sales.id-cards');
         Route::get('sales/{customer}/id-card', [IdCardController::class, 'customer'])->name('sales.id-card');
         Route::post('sales/invite', [CustomerController::class, 'invite'])->name('sales.invite.store');

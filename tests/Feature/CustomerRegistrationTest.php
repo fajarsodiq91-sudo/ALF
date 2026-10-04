@@ -269,7 +269,7 @@ class CustomerRegistrationTest extends TestCase
         Storage::disk('public')->assertMissing($second);
     }
 
-    public function test_deleting_a_customer_removes_the_photo_file(): void
+    public function test_photo_is_kept_on_soft_delete_and_removed_on_force_delete(): void
     {
         $finance = $this->financeUser();
         $this->actingAs($finance)->post(route('sales.store'), [
@@ -279,6 +279,10 @@ class CustomerRegistrationTest extends TestCase
         $path = $customer->photo_path;
 
         $this->actingAs($finance)->delete(route('sales.destroy', $customer));
+
+        Storage::disk('public')->assertExists($path);
+
+        $customer->forceDelete();
 
         Storage::disk('public')->assertMissing($path);
     }

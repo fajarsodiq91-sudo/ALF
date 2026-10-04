@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,7 @@ class Customer extends Authenticatable
     use HasFactory;
 
     use HasIdCardToken;
+    use SoftDeletes;
 
     public const REGISTRATION_COMPLETE = 'complete';
 
@@ -55,7 +57,7 @@ class Customer extends Authenticatable
             }
         });
 
-        static::deleted(function (Customer $customer) {
+        static::forceDeleted(function (Customer $customer) {
             if ($customer->photo_path) {
                 Storage::disk('public')->delete($customer->photo_path);
             }

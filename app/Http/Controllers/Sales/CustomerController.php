@@ -248,6 +248,34 @@ class CustomerController extends Controller
             ->with('status', 'Customer deleted successfully.');
     }
 
+    public function deleted(Request $request): View
+    {
+        $this->authorize('sales.manage');
+
+        $customers = Customer::onlyTrashed()
+            ->when($request->query('q'), fn ($query, $q) => $query->where(fn ($inner) => $inner
+                ->where('name', 'like', "%{$q}%")
+                ->orWhere('customer_code', 'like', "%{$q}%")
+                ->orWhere('email', 'like', "%{$q}%")
+                ->orWhere('phone', 'like', "%{$q}%")))
+            ->latest('deleted_at')
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('erp.sales.customers.deleted', ['customers' => $customers]);
+    }
+
+    public function restore(Customer $customer): RedirectResponse
+    {
+        $this->authorize('sales.manage');
+
+        $customer->restore();
+
+        return redirect()
+            ->route('sales.deleted')
+            ->with('status', 'Customer restored successfully.');
+    }
+
     private function storePhoto(?UploadedFile $photo): ?string
     {
         return $photo ? ImageCompressor::store($photo, 'customer-photos', 'public') : null;
