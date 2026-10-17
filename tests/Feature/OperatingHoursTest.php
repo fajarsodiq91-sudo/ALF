@@ -188,7 +188,8 @@ class OperatingHoursTest extends TestCase
         $this->post(route('portal.login.store'), ['customer_code' => $customer->customer_code, 'password' => 'rahasia123']);
 
         $this->get(route('portal.dashboard'))->assertOk()
-            ->assertSee('Our operating hours')->assertSee('weekDayNames', false)
+            ->assertSee('Weekly hours')->assertDontSee('Our operating hours')->assertDontSee('function availabilityCalendar', false)
+            ->assertSee('weekDayNames', false)
             ->assertSee('"1":[]', false)->assertSee('"start":"20:00","end":"21:30"', false)->assertSee('"start":"14:30","end":"16:00"', false);
 
         Mail::fake();

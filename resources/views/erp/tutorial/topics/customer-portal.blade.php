@@ -33,7 +33,7 @@
         <li><strong>Learning materials</strong> dan tombol <strong>Certificate</strong> muncul bila tautannya sudah Anda isi atau sertifikatnya sudah terbit.</li>
         <li><strong>Participants</strong> (untuk sesi perusahaan atau grup): tautan dan QR code pendaftaran peserta beserta daftar yang sudah bergabung.</li>
         <li><strong>Your project</strong>: mengunggah proyek hasil belajar berupa file (ZIP, PDF, Office, atau gambar, maks. 10 MB) atau tautan (Google Drive, GitHub, dan sebagainya), lengkap dengan judul dan deskripsi.</li>
-        <li><strong>Our operating hours</strong>: kalender jam operasional dan slot yang masih tersedia (bagian yang bisa dilipat).</li>
+        <li><strong>Weekly hours</strong>: jadwal mingguan hari dan jam pertemuan (bagian yang bisa dilipat). Ketersediaan slot hanya ditampilkan kepada calon customer saat mendaftar.</li>
     </ul>
     <p>Menu <strong>Certificates</strong> di header portal mendaftar semua sertifikat customer. Setiap sertifikat bisa dilihat dan diunduh sebagai PDF.</p>
 </x-tutorial.section>
