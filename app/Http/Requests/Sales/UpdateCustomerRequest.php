@@ -20,12 +20,23 @@ class UpdateCustomerRequest extends FormRequest
         $this->merge(['rfid_uid' => Rfid::normalize($this->input('rfid_uid'))]);
     }
 
+    public function messages(): array
+    {
+        return [
+            'customer_code.regex' => 'The customer ID must be 6 digits: year (YY), month (01-12) and a two-digit number, e.g. 260801.',
+            'customer_code.unique' => 'This customer ID is already used by another customer.',
+        ];
+    }
+
     /**
      * @return array<string, mixed>
      */
     public function rules(): array
     {
+        $customer = $this->route('customer');
+
         return [
+            ...($customer->isManuallyAdded() ? ['customer_code' => ['sometimes', 'string', 'regex:/^\d{2}(0[1-9]|1[0-2])\d{2}$/', Rule::unique('customers', 'customer_code')->ignore($customer)]] : []),
             'name' => ['required', 'string', 'max:255'],
             'customer_type' => ['required', Rule::in(MasterData::codes('customer_type'))],
             'email' => ['nullable', 'email', 'max:255'],

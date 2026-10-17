@@ -79,6 +79,19 @@ class Customer extends Authenticatable
         ];
     }
 
+    /**
+     * Added by hand through Add Customer (or filled in by staff from an invitation), as opposed to a customer
+     * who registered themselves, was approved, or joined a session as a participant. Only these IDs may be edited.
+     */
+    public function isManuallyAdded(): bool
+    {
+        return $this->customer_code !== null
+            && $this->registration_status === self::REGISTRATION_COMPLETE
+            && $this->submitted_at === null
+            && $this->approved_at === null
+            && $this->company_customer_id === null;
+    }
+
     /** Sets the initial portal password (the customer ID) and forces a change at the next login. False when the customer cannot have a portal login yet. */
     public function resetPortalPassword(): bool
     {

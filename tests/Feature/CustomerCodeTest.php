@@ -9,6 +9,7 @@ use Database\Seeders\RolePermissionSeeder;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -97,16 +98,102 @@ class CustomerCodeTest extends TestCase
         $this->assertNull(Customer::firstWhere('name', 'PT Penuh'));
     }
 
-    public function test_code_cannot_be_changed_by_update(): void
+    private function update(Customer $customer, array $overrides = [])
+    {
+        return $this->actingAs($this->financeUser())->put(route('sales.update', $customer), [
+            'name' => 'Nama Baru', 'phone' => '0812', 'customer_type' => 'company', 'is_active' => '1', ...$overrides,
+        ]);
+    }
+
+    public function test_code_can_be_changed_to_match_the_month_the_customer_registered(): void
+    {
+        $customer = Customer::factory()->create()->refresh();
+        $customer->resetPortalPassword();
+        $this->assertSame('260901', $customer->customer_code);
+
+        $this->update($customer, ['customer_code' => '260805'])->assertRedirect(route('sales.index'));
+
+        $customer->refresh();
+        $this->assertSame('260805', $customer->customer_code);
+        $this->assertSame('Nama Baru', $customer->name);
+        // The password had never been changed, so it follows the new ID.
+        $this->assertTrue(Hash::check('260805', $customer->password));
+        $this->assertTrue($customer->must_change_password);
+    }
+
+    public function test_a_password_the_customer_chose_is_kept_when_the_code_changes(): void
+    {
+        $customer = Customer::factory()->create();
+        $customer->forceFill(['password' => 'rahasia-pilihan', 'must_change_password' => false])->save();
+
+        $this->update($customer, ['customer_code' => '260805'])->assertRedirect(route('sales.index'));
+
+        $this->assertTrue(Hash::check('rahasia-pilihan', $customer->fresh()->password));
+    }
+
+    public function test_code_must_be_a_valid_unused_yymmnn(): void
+    {
+        $customer = Customer::factory()->create();
+        $other = Customer::factory()->create();
+
+        foreach (['000000', '261301', '2608', 'abcdef', $other->customer_code] as $bad) {
+            $this->update($customer, ['customer_code' => $bad])->assertSessionHasErrors('customer_code');
+        }
+
+        $this->assertSame('260901', $customer->fresh()->customer_code);
+    }
+
+    public function test_a_code_taken_by_a_deleted_customer_cannot_be_reused(): void
+    {
+        $customer = Customer::factory()->create();
+        $gone = Customer::factory()->create();
+        $gone->delete();
+
+        $this->update($customer, ['customer_code' => $gone->customer_code])->assertSessionHasErrors('customer_code');
+    }
+
+    public function test_a_hand_picked_code_is_never_handed_out_again_by_the_counter(): void
     {
         $customer = Customer::factory()->create();
 
-        $this->actingAs($this->financeUser())->put(route('sales.update', $customer), [
-            'name' => 'Nama Baru', 'phone' => '0812', 'customer_type' => 'company', 'is_active' => '1', 'customer_code' => '000000',
-        ])->assertRedirect(route('sales.index'));
+        $this->update($customer, ['customer_code' => '260950'])->assertRedirect(route('sales.index'));
 
+        $this->assertSame('260951', Customer::factory()->create()->customer_code);
+    }
+
+    public function test_the_code_of_a_self_registered_or_participant_customer_cannot_be_changed(): void
+    {
+        $approved = Customer::factory()->withPortalAccess()->create();
+        $participant = Customer::factory()->create(['company_customer_id' => Customer::factory()->create()->id]);
+
+        foreach ([$approved, $participant] as $customer) {
+            $original = $customer->customer_code;
+
+            $this->assertFalse($customer->isManuallyAdded());
+            $this->update($customer, ['customer_code' => '260805'])->assertRedirect(route('sales.index'));
+
+            $this->assertSame($original, $customer->fresh()->customer_code);
+            $this->assertSame('Nama Baru', $customer->fresh()->name);
+            $this->actingAs($this->financeUser())->get(route('sales.edit', $customer))->assertOk()->assertDontSee('name="customer_code"', false);
+        }
+    }
+
+    public function test_the_edit_form_offers_the_code_field_only_for_manually_added_customers(): void
+    {
+        $manual = Customer::factory()->create()->refresh();
+
+        $this->assertTrue($manual->isManuallyAdded());
+        $this->actingAs($this->financeUser())->get(route('sales.edit', $manual))->assertOk()->assertSee('name="customer_code"', false);
+    }
+
+    public function test_view_only_user_cannot_change_the_code(): void
+    {
+        $viewer = User::factory()->create();
+        $viewer->givePermissionTo(['access-erp', 'sales.view']);
+        $customer = Customer::factory()->create();
+
+        $this->actingAs($viewer)->put(route('sales.update', $customer), ['name' => 'X', 'phone' => '1', 'customer_type' => 'company', 'customer_code' => '260805'])->assertForbidden();
         $this->assertSame('260901', $customer->fresh()->customer_code);
-        $this->assertSame('Nama Baru', $customer->fresh()->name);
     }
 
     public function test_code_is_shown_and_searchable(): void

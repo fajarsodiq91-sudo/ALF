@@ -3,9 +3,16 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
     @if ($customer && ! $customer->isAwaitingCustomer())
         <div class="sm:col-span-2">
-            <span class="block text-sm font-medium text-gray-700">Customer ID</span>
-            <p class="mt-1 font-mono text-sm text-gray-800">{{ $customer->customer_code }}</p>
-            <p class="text-xs text-gray-500">Permanent ID for this customer, also used for repeat orders. It cannot be changed.</p>
+            @if ($customer->isManuallyAdded())
+                <label for="customer_code" class="block text-sm font-medium text-gray-700">Customer ID</label>
+                <input type="text" name="customer_code" id="customer_code" value="{{ old('customer_code', $customer->customer_code) }}" inputmode="numeric" maxlength="6" pattern="\d{6}" class="mt-1 block w-40 rounded-md border-gray-300 font-mono shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                @error('customer_code') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                <p class="text-xs text-gray-500">YYMMNN: year, month and a running number, e.g. 260801 for the first customer of August 2026. Change it only to match the month the customer actually registered. It is also their portal username, and an ID card already printed with the old number must be reprinted.</p>
+            @else
+                <span class="block text-sm font-medium text-gray-700">Customer ID</span>
+                <p class="mt-1 font-mono text-sm text-gray-800">{{ $customer->customer_code }}</p>
+                <p class="text-xs text-gray-500">Permanent ID for this customer, also used for repeat orders. It cannot be changed because the customer registered themselves.</p>
+            @endif
         </div>
     @else
         <p class="sm:col-span-2 text-xs text-gray-500">A permanent customer ID (YYMMNN) is generated automatically when the customer is saved.</p>

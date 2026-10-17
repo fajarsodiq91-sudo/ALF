@@ -38,4 +38,23 @@ class CustomerCodeGenerator
             return $period.str_pad((string) $next, 2, '0', STR_PAD_LEFT);
         });
     }
+
+    /**
+     * Records a number chosen by hand so the automatic counter of that month never hands it out again.
+     */
+    public static function reserve(string $code): void
+    {
+        $period = substr($code, 0, 4);
+        $number = (int) substr($code, 4, 2);
+
+        DB::transaction(function () use ($period, $number) {
+            $last = DB::table('customer_code_sequences')->where('period', $period)->lockForUpdate()->value('last_number');
+
+            if ($last === null) {
+                DB::table('customer_code_sequences')->insert(['period' => $period, 'last_number' => $number]);
+            } elseif ($number > $last) {
+                DB::table('customer_code_sequences')->where('period', $period)->update(['last_number' => $number]);
+            }
+        });
+    }
 }

@@ -16,6 +16,7 @@ use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Services\BookedSlots;
 use App\Services\CustomerApproval;
+use App\Services\CustomerCodeGenerator;
 use App\Services\ImageCompressor;
 use App\Services\MasterData;
 use App\Services\PaymentInvoices;
@@ -204,8 +205,11 @@ class CustomerController extends Controller
 
     public function update(UpdateCustomerRequest $request, Customer $customer): RedirectResponse
     {
-        $data = [...$request->safe()->except(['photo', 'remove_photo']), 'is_active' => $request->boolean('is_active')];
+        $data = [...$request->safe()->except(['photo', 'remove_photo', 'customer_code']), 'is_active' => $request->boolean('is_active')];
         $oldPhoto = $customer->photo_path;
+        $newCode = $customer->isManuallyAdded() && $request->filled('customer_code') && $request->input('customer_code') !== $customer->customer_code
+            ? $request->input('customer_code')
+            : null;
 
         if ($request->hasFile('photo')) {
             $customer->photo_path = $this->storePhoto($request->file('photo'));
@@ -214,8 +218,19 @@ class CustomerController extends Controller
         }
 
         try {
+            if ($newCode) {
+                // A password still equal to the old ID (never changed by the customer) follows the new ID.
+                $followsId = $customer->must_change_password && $customer->password !== null;
+                $customer->customer_code = $newCode;
+                CustomerCodeGenerator::reserve($newCode);
+            }
+
             // An admin filling in a pending customer completes the registration, same as the customer would.
             $customer->isAwaitingCustomer() ? $customer->completeRegistration($data) : $customer->update($data);
+
+            if ($newCode && $followsId) {
+                $customer->resetPortalPassword();
+            }
         } catch (DomainException $exception) {
             if ($request->hasFile('photo')) {
                 Storage::disk('public')->delete($customer->photo_path);
