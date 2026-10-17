@@ -24,6 +24,12 @@
                         @if ($customer->isPendingApproval())
                             <a href="{{ route('sales.review', $customer) }}" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-3 py-1.5 text-sm font-medium text-white shadow-sm">Review</a>
                         @endif
+                        @if ($customer->customer_code && $customer->registration_status === \App\Models\Customer::REGISTRATION_COMPLETE)
+                            <form action="{{ route('sales.portal-password', $customer) }}" method="POST" onsubmit="return confirm('{{ $customer->password ? 'Reset the portal password to the customer ID? Their current password will stop working.' : 'Set up portal login with the customer ID as the password?' }}');">
+                                @csrf
+                                <button type="submit" class="text-sm font-medium text-brand hover:text-brand-dark">{{ $customer->password ? 'Reset portal password' : 'Set up portal login' }}</button>
+                            </form>
+                        @endif
                         <a href="{{ route('sales.edit', $customer) }}" class="text-sm font-medium text-brand hover:text-brand-dark">Edit</a>
                     </div>
                 @endcan

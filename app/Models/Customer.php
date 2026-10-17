@@ -79,6 +79,18 @@ class Customer extends Authenticatable
         ];
     }
 
+    /** Sets the initial portal password (the customer ID) and forces a change at the next login. False when the customer cannot have a portal login yet. */
+    public function resetPortalPassword(): bool
+    {
+        if (! $this->customer_code || $this->registration_status !== self::REGISTRATION_COMPLETE) {
+            return false;
+        }
+
+        $this->forceFill(['password' => $this->customer_code, 'must_change_password' => true])->save();
+
+        return true;
+    }
+
     /** The list filters shared by the customer list and its bulk ID-card print. */
     public function scopeFiltered(Builder $query, Request $request): void
     {

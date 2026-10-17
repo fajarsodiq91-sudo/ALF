@@ -59,6 +59,7 @@ class CustomerController extends Controller
             $customer = new Customer([...$data, 'is_active' => $request->boolean('is_active')]);
             $customer->photo_path = $this->storePhoto($request->file('photo'));
             $customer->save();
+            $customer->refresh()->resetPortalPassword(); // refresh: the database fills in the customer ID and status
         } catch (DomainException $exception) {
             if ($customer->photo_path) {
                 Storage::disk('public')->delete($customer->photo_path);
@@ -246,6 +247,18 @@ class CustomerController extends Controller
         return redirect()
             ->route('sales.index')
             ->with('status', 'Customer deleted successfully.');
+    }
+
+    /** Gives (or restores) portal access: the password goes back to the customer ID and must be changed at the next login. */
+    public function resetPortalPassword(Customer $customer): RedirectResponse
+    {
+        $this->authorize('sales.manage');
+
+        if (! $customer->resetPortalPassword()) {
+            return back()->with('error', 'This customer has no ID yet or has not completed registration, so there is no portal login to set up.');
+        }
+
+        return back()->with('status', 'Portal password reset. The customer can log in with their customer ID '.$customer->customer_code.' as both username and password, and will be asked to change it.');
     }
 
     public function deleted(Request $request): View

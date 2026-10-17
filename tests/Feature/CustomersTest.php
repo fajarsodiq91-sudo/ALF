@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -78,6 +79,46 @@ class CustomersTest extends TestCase
         $this->actingAs($user)->delete(route('sales.destroy', $customer))
             ->assertRedirect(route('sales.index'));
         $this->assertSoftDeleted($customer);
+    }
+
+    public function test_a_manually_added_customer_can_log_in_to_the_portal_with_their_id(): void
+    {
+        $user = $this->userWithRole('Finance');
+        $this->actingAs($user)->post(route('sales.store'), $this->payload(['is_active' => '1']));
+        $customer = Customer::firstWhere('name', 'PT Maju Jaya');
+
+        $this->assertTrue($customer->must_change_password);
+        auth()->logout();
+
+        $this->post(route('portal.login.store'), ['customer_code' => $customer->customer_code, 'password' => $customer->customer_code])
+            ->assertRedirect();
+        $this->assertAuthenticatedAs($customer, 'customer');
+    }
+
+    public function test_manager_can_set_up_or_reset_portal_login_for_an_existing_customer(): void
+    {
+        $user = $this->userWithRole('Finance');
+        $customer = Customer::factory()->create(['is_active' => true]);
+        $this->assertNull($customer->password);
+
+        $this->actingAs($user)->post(route('sales.portal-password', $customer))->assertSessionHas('status');
+
+        $customer->refresh();
+        $this->assertTrue(Hash::check($customer->customer_code, $customer->password));
+        $this->assertTrue($customer->must_change_password);
+    }
+
+    public function test_portal_login_cannot_be_set_up_without_permission_or_for_incomplete_registrations(): void
+    {
+        $viewer = User::factory()->create();
+        $viewer->givePermissionTo(['access-erp', 'sales.view']);
+        $customer = Customer::factory()->create();
+
+        $this->actingAs($viewer)->post(route('sales.portal-password', $customer))->assertForbidden();
+
+        $pending = Customer::factory()->create(['registration_status' => Customer::REGISTRATION_PENDING_APPROVAL]);
+        $this->actingAs($this->userWithRole('Finance'))->post(route('sales.portal-password', $pending))->assertSessionHas('error');
+        $this->assertNull($pending->fresh()->password);
     }
 
     public function test_deleted_customer_can_be_listed_and_restored(): void
