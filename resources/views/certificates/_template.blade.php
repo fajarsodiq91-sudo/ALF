@@ -17,6 +17,10 @@
     // dompdf sets text lower inside its line box than a browser does (more so for bigger fonts), so the PDF lifts
     // each text field by the measured offset (CSS px) to land where the browser preview shows it.
     $pdfLift = ['number' => 7, 'name' => 30, 'statement' => 9, 'date' => 4, 'id_number' => 5, 'signer_name' => 4, 'signer_title' => 5];
+    // A long name shrinks to stay on one line inside its box (script faces run about 0.42 em per character, never below 28px);
+    // wrapped, it would spill onto the line below, and dompdf spaces wrapped lines wider than a browser does.
+    $nameSize = max(28, min(64, (int) floor($pos['name']['w'] * 96 / 25.4 * 0.96 / (max(1, mb_strlen($data['name'])) * 0.42))));
+    $pdfLift['name'] = (int) round(30 * $nameSize / 64);
     $box = fn (string $key) => sprintf('left:%.2fmm;top:%.2fmm;width:%.2fmm;margin-left:-%.2fmm;', $pos[$key]['x'], $pos[$key]['y'] - ($pdf ? ($pdfLift[$key] ?? 0) * 25.4 / 96 : 0), $pos[$key]['w'], $pos[$key]['w'] / 2);
 @endphp
 <style>
@@ -38,7 +42,7 @@
         <img class="bg" src="{{ $background }}">
     @endif
     <div class="f f-number" style="{{ $box('number') }}">{{ $data['number'] }}</div>
-    <div class="f f-name" style="{{ $box('name') }}">{{ $data['name'] }}</div>
+    <div class="f f-name" style="{{ $box('name') }}font-size:{{ $nameSize }}px;">{{ $data['name'] }}</div>
     <div class="f f-statement" style="{{ $box('statement') }}">{{ $data['statement'] }}</div>
     <div class="f f-date" style="{{ $box('date') }}">{{ $data['date'] }}</div>
     <div class="f" style="{{ $box('qr') }}height:{{ $pos['qr']['w'] }}mm;">
