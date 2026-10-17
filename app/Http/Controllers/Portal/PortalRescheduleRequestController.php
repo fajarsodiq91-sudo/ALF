@@ -8,6 +8,7 @@ use App\Models\TrainingSessionMeeting;
 use App\Services\BookedSlots;
 use App\Services\OperatingHours;
 use App\Services\StaffNotifier;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -50,18 +51,29 @@ class PortalRescheduleRequestController extends Controller
             return back()->with('error', $violation);
         }
 
-        if (BookedSlots::conflicts($data['requested_date'], $data['requested_start_time'], $data['requested_end_time'])) {
-            return back()->with('error', BookedSlots::describe($data['requested_date'], $data['requested_start_time'], $data['requested_end_time']).' is already booked. Choose a green slot on the calendar.');
+        try {
+            $rescheduleRequest = BookedSlots::exclusively(function () use ($data, $meeting, $customer) {
+                // The meeting's own current slot is about to be freed, so it does not count as a clash.
+                if (BookedSlots::conflicts($data['requested_date'], $data['requested_start_time'], $data['requested_end_time'], null, $meeting->id)) {
+                    return null;
+                }
+
+                return $meeting->rescheduleRequests()->create([
+                    'customer_id' => $customer->id,
+                    'requested_date' => $data['requested_date'],
+                    'requested_start_time' => $data['requested_start_time'],
+                    'requested_end_time' => $data['requested_end_time'],
+                    'reason' => $data['reason'] ?? null,
+                    'status' => 'pending',
+                ]);
+            });
+        } catch (DomainException $exception) {
+            return back()->with('error', $exception->getMessage());
         }
 
-        $rescheduleRequest = $meeting->rescheduleRequests()->create([
-            'customer_id' => $customer->id,
-            'requested_date' => $data['requested_date'],
-            'requested_start_time' => $data['requested_start_time'],
-            'requested_end_time' => $data['requested_end_time'],
-            'reason' => $data['reason'] ?? null,
-            'status' => 'pending',
-        ]);
+        if (! $rescheduleRequest) {
+            return back()->with('error', BookedSlots::describe($data['requested_date'], $data['requested_start_time'], $data['requested_end_time']).' is already booked. Choose a green slot on the calendar.');
+        }
 
         StaffNotifier::rescheduleRequested($rescheduleRequest);
 

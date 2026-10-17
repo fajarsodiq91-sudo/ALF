@@ -1,6 +1,6 @@
 {{--
     Calendar pop-up for choosing a meeting slot. Green = available, red = booked by someone else.
-    Open it with: $dispatch('open-slot-picker', { meeting, siblings, minutes, corporate })  where `meeting` is the
+    Open it with: $dispatch('open-slot-picker', { meeting, siblings, minutes, corporate, allowPast, allowOverlap })  where `meeting` is the
     reactive { meeting_date, start_time, end_time } object to fill, `siblings` are the other meetings of the same
     form, and `corporate` (bool) opens the corporate-only slots — pass the program's/session's is_corporate flag.
     Expects $booked: the taken slot keys from App\Services\BookedSlots::keys().
@@ -26,7 +26,7 @@
 
     function slotPicker() {
         return {
-            open: false, meeting: null, siblings: [], cursor: new Date(), today: window.isoDate(new Date()), minutes: null, focus: null, corporate: false, allowPast: false,
+            open: false, meeting: null, siblings: [], cursor: new Date(), today: window.isoDate(new Date()), minutes: null, focus: null, corporate: false, allowPast: false, allowOverlap: false,
 
             show(detail) {
                 this.meeting = detail.meeting;
@@ -34,6 +34,7 @@
                 this.minutes = detail.minutes ? parseInt(detail.minutes) : null;
                 this.corporate = !!detail.corporate;
                 this.allowPast = !!detail.allowPast;
+                this.allowOverlap = !!detail.allowOverlap;
                 this.focus = detail.meeting.meeting_date || null;
                 const start = detail.meeting.meeting_date ? new Date(detail.meeting.meeting_date + 'T00:00:00') : new Date();
                 this.cursor = new Date(start.getFullYear(), start.getMonth(), 1);
@@ -78,10 +79,12 @@
 
             /** Free start times of a day (only used when the program has a session length). */
             free(day) { return day.past ? 0 : day.slots.filter(s => s.state === 'available' || s.state === 'yours').length; },
+            /** A taken slot stays red but can still be chosen when the caller allows overlapping (staff, shared sessions). */
+            blocked(slot) { return slot.state === 'picked' || (slot.state === 'booked' && !this.allowOverlap); },
             focused() { return this.weeks().flat().find(d => d.iso === this.focus) || null; },
 
             choose(day, slot) {
-                if (day.past || slot.state === 'booked' || slot.state === 'picked') { return; }
+                if (day.past || this.blocked(slot)) { return; }
                 this.meeting.meeting_date = day.iso;
                 this.meeting.start_time = slot.start;
                 this.meeting.end_time = slot.end;
@@ -136,12 +139,13 @@
                                 <div class="mt-1 space-y-0.5" x-show="!minutes">
                                     <template x-for="slot in day.slots" :key="slot.value">
                                         <button type="button" @click="choose(day, slot)"
-                                                :disabled="day.past || slot.state === 'booked' || slot.state === 'picked'"
-                                                :title="slot.state === 'booked' ? 'Already booked' : (slot.state === 'available' ? 'Available: click to choose' : (slot.state === 'yours' ? 'Your current choice' : 'Used by another meeting in this form'))"
+                                                :disabled="day.past || blocked(slot)"
+                                                :title="slot.state === 'booked' ? (allowOverlap ? 'Already booked — you can still choose it for a shared session' : 'Already booked') : (slot.state === 'available' ? 'Available: click to choose' : (slot.state === 'yours' ? 'Your current choice' : 'Used by another meeting in this form'))"
                                                 class="block w-full rounded px-1 py-0.5 text-left text-[11px] leading-tight ring-1 transition"
                                                 :class="{
                                                     'bg-green-100 text-green-800 ring-green-300 hover:bg-green-200 hover:ring-green-500': slot.state === 'available' && !day.past,
-                                                    'bg-red-100 text-red-700 ring-red-300 line-through cursor-not-allowed': slot.state === 'booked',
+                                                    'bg-red-100 text-red-700 ring-red-300 line-through': slot.state === 'booked',
+                                                    'cursor-not-allowed': blocked(slot),
                                                     'bg-brand text-white ring-brand-dark': slot.state === 'yours',
                                                     'bg-amber-100 text-amber-800 ring-amber-300 cursor-not-allowed': slot.state === 'picked',
                                                     'bg-gray-100 text-gray-400 ring-gray-200': day.past && slot.state === 'available',
@@ -163,11 +167,12 @@
                     <p x-show="!focused().slots.length" class="text-sm text-gray-400" x-text="focused().open ? 'The operating hours of this day are shorter than the session length. Extend them in Master Data → Operating Hours.' : 'Closed on this day.'"></p>
                     <div class="flex flex-wrap gap-1.5">
                         <template x-for="slot in focused().slots" :key="slot.value">
-                            <button type="button" @click="choose(focused(), slot)" :disabled="focused().past || slot.state === 'booked' || slot.state === 'picked'"
+                            <button type="button" @click="choose(focused(), slot)" :disabled="focused().past || blocked(slot)"
                                     class="rounded px-2 py-1 text-xs ring-1"
                                     :class="{
                                         'bg-green-100 text-green-800 ring-green-300 hover:bg-green-200': slot.state === 'available',
-                                        'bg-red-100 text-red-700 ring-red-300 line-through cursor-not-allowed': slot.state === 'booked',
+                                        'bg-red-100 text-red-700 ring-red-300 line-through': slot.state === 'booked',
+                                                    'cursor-not-allowed': blocked(slot),
                                         'bg-brand text-white ring-brand-dark': slot.state === 'yours',
                                         'bg-amber-100 text-amber-800 ring-amber-300 cursor-not-allowed': slot.state === 'picked',
                                     }" x-text="slot.label"></button>

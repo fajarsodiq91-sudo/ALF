@@ -150,7 +150,21 @@ class CustomerController extends Controller
         }
 
         try {
-            CustomerApproval::approve($customer, $request->validated('programs'), $request->user());
+            $taken = BookedSlots::exclusively(function () use ($request, $customer) {
+                $programs = $request->validated('programs');
+
+                if ($taken = BookedSlots::firstTaken(collect($programs)->flatMap(fn ($program) => $program['meetings']), $customer->id)) {
+                    return $taken;
+                }
+
+                CustomerApproval::approve($customer, $programs, $request->user());
+
+                return null;
+            });
+
+            if ($taken) {
+                return back()->withInput()->with('error', BookedSlots::describe($taken['meeting_date'], $taken['start_time'] ?? '', $taken['end_time'] ?? '').' has just been booked by another customer. Please choose another slot.');
+            }
         } catch (DomainException $exception) {
             return back()->withInput()->with('error', $exception->getMessage());
         }

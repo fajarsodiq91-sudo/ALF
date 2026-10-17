@@ -39,7 +39,7 @@ class TrainingSessionMeetingController extends Controller
             return back()->withInput()->withErrors(['meeting_date' => $violation]);
         }
 
-        if (BookedSlots::conflicts($data['meeting_date'], $data['start_time'] ?? null, $data['end_time'] ?? null)) {
+        if (! $this->mayOverlap($session) && BookedSlots::conflicts($data['meeting_date'], $data['start_time'] ?? null, $data['end_time'] ?? null)) {
             return back()->withInput()->withErrors([
                 'meeting_date' => BookedSlots::describe($data['meeting_date'], $data['start_time'], $data['end_time']).' is already booked. Choose a green slot on the calendar.',
             ]);
@@ -50,6 +50,15 @@ class TrainingSessionMeetingController extends Controller
         CustomerNotifier::meetingAdded($meeting);
 
         return redirect()->route('training.edit', $session)->with('status', 'Meeting added.');
+    }
+
+    /**
+     * Staff may put a manually added customer's meeting on a time that is already taken: such a customer can
+     * share a session with another one. Customers who registered themselves always need a free slot.
+     */
+    private function mayOverlap(TrainingSession $session): bool
+    {
+        return (bool) $session->customer?->isManuallyAdded();
     }
 
     public function removeParticipant(TrainingSession $session, Customer $participant): RedirectResponse
@@ -154,7 +163,7 @@ class TrainingSessionMeetingController extends Controller
             return back()->with('error', "Cannot reschedule: {$violation}");
         }
 
-        if ($start && $end && BookedSlots::conflicts($data['meeting_date'], $start, $end, null, $meeting->id)) {
+        if (! $this->mayOverlap($session) && $start && $end && BookedSlots::conflicts($data['meeting_date'], $start, $end, null, $meeting->id)) {
             return back()->with('error', 'Cannot reschedule: '.BookedSlots::describe($data['meeting_date'], $start, $end).' is already booked.');
         }
 
@@ -192,7 +201,7 @@ class TrainingSessionMeetingController extends Controller
             return back()->with('error', "Cannot approve: {$violation}");
         }
 
-        if (BookedSlots::conflicts($date, $start, $end)) {
+        if (BookedSlots::conflicts($date, $start, $end, null, $meeting->id)) {
             return back()->with('error', 'Cannot approve: '.BookedSlots::describe($date, $start, $end).' has since been booked elsewhere.');
         }
 

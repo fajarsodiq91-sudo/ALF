@@ -6,8 +6,12 @@ use App\Models\BlockedSlot;
 use App\Models\Customer;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSessionMeeting;
+use Closure;
+use DomainException;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Which meeting times are already taken. A time is taken by a scheduled meeting of any session that is
@@ -20,16 +24,22 @@ class BookedSlots
     /** How far ahead the calendars can show bookings. */
     public const WINDOW_DAYS = 200;
 
+    /** How far back the staff calendar shows bookings; matches how far it lets them scroll back. */
+    public const PAST_MONTHS = 36;
+
     /**
      * Keys like "2026-10-06|20:00-21:30" for the calendars, so they can paint taken slots red.
      *
      * @param  int|null  $exceptCustomerId  a pending customer whose own request must not block them
+     * @param  bool  $includePast  also list past slots, for staff who record meetings after the fact
      * @return list<string>
      */
-    public static function keys(?int $exceptCustomerId = null): array
+    public static function keys(?int $exceptCustomerId = null, bool $includePast = false): array
     {
+        $from = $includePast ? today()->subMonths(self::PAST_MONTHS)->toDateString() : today()->toDateString();
+
         return self::all($exceptCustomerId)
-            ->filter(fn (array $slot) => $slot['date'] >= today()->toDateString() && $slot['date'] <= today()->addDays(self::WINDOW_DAYS)->toDateString())
+            ->filter(fn (array $slot) => $slot['date'] >= $from && $slot['date'] <= today()->addDays(self::WINDOW_DAYS)->toDateString())
             ->map(fn (array $slot) => $slot['date'].'|'.$slot['start'].'-'.$slot['end'])
             ->unique()
             ->values()
@@ -49,6 +59,43 @@ class BookedSlots
         return self::all($exceptCustomerId, $exceptMeetingId)->contains(
             fn (array $slot) => $slot['date'] === $date && $slot['start'] < $end && $slot['end'] > $start
         );
+    }
+
+    /**
+     * Runs a check-then-save on the calendar one request at a time, so two customers submitting at the same
+     * moment cannot both pass the "is it free?" check for the same slot.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     *
+     * @throws DomainException when the calendar stays busy for too long
+     */
+    public static function exclusively(Closure $callback): mixed
+    {
+        try {
+            return Cache::lock('booked-slots', 15)->block(10, $callback);
+        } catch (LockTimeoutException) {
+            throw new DomainException('The calendar is busy right now. Please try again in a moment.');
+        }
+    }
+
+    /**
+     * The first of the given meetings ({meeting_date, start_time, end_time}) that overlaps something booked, if any.
+     *
+     * @param  iterable<array<string, mixed>>  $meetings
+     * @return array<string, mixed>|null
+     */
+    public static function firstTaken(iterable $meetings, ?int $exceptCustomerId = null): ?array
+    {
+        foreach ($meetings as $meeting) {
+            if (self::conflicts($meeting['meeting_date'], $meeting['start_time'] ?? null, $meeting['end_time'] ?? null, $exceptCustomerId)) {
+                return $meeting;
+            }
+        }
+
+        return null;
     }
 
     /** "Tue, 06 Oct 2026, 20:00 – 21:30" for messages. */

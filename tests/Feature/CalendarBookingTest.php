@@ -53,6 +53,12 @@ class CalendarBookingTest extends TestCase
         return TrainingSessionMeeting::factory()->create(['training_session_id' => $session->id, 'meeting_date' => $date, 'start_time' => $start, 'end_time' => $end]);
     }
 
+    /** A session of a customer who registered themselves and was approved: never allowed to share a taken slot. */
+    private function selfRegisteredSession(): TrainingSession
+    {
+        return TrainingSession::factory()->create(['customer_id' => Customer::factory()->withPortalAccess()->create()->id]);
+    }
+
     /** @return array<string, string> */
     private function slot(string $date, string $start, string $end): array
     {
@@ -220,7 +226,7 @@ class CalendarBookingTest extends TestCase
     public function test_adding_a_meeting_to_a_session_refuses_a_booked_slot(): void
     {
         $this->book('2026-10-06', '20:00', '21:30');
-        $session = TrainingSession::factory()->create();
+        $session = $this->selfRegisteredSession();
         $finance = $this->finance();
 
         $this->actingAs($finance)->post(route('training.meetings.store', $session), $this->slot('2026-10-06', '20:00', '21:30'))
@@ -269,20 +275,74 @@ class CalendarBookingTest extends TestCase
         $this->assertSame(0, $session->meetings()->count());
     }
 
+    public function test_staff_may_double_book_a_manually_added_customer_but_not_a_self_registered_one(): void
+    {
+        $this->book('2026-10-06', '20:00', '21:30');
+        $manual = TrainingSession::factory()->create(['customer_id' => Customer::factory()->create()->id]);
+        $selfRegistered = $this->selfRegisteredSession();
+        $finance = $this->finance();
+
+        $this->actingAs($finance)->post(route('training.meetings.store', $manual), $this->slot('2026-10-06', '20:00', '21:30'))
+            ->assertSessionHasNoErrors();
+        $this->assertSame(1, $manual->meetings()->count());
+
+        $this->actingAs($finance)->post(route('training.meetings.store', $selfRegistered), $this->slot('2026-10-06', '20:00', '21:30'))
+            ->assertSessionHasErrors('meeting_date');
+        $this->assertSame(0, $selfRegistered->meetings()->count());
+    }
+
+    public function test_staff_rescheduling_is_strict_only_for_self_registered_customers(): void
+    {
+        $this->book('2026-10-06', '20:00', '21:30');
+        $finance = $this->finance();
+
+        foreach ([['manual', TrainingSession::factory()->create(['customer_id' => Customer::factory()->create()->id]), 1], ['self', $this->selfRegisteredSession(), 0]] as [$kind, $session, $moved]) {
+            $meeting = TrainingSessionMeeting::factory()->create(['training_session_id' => $session->id, 'meeting_date' => '2026-10-08', 'start_time' => '20:00', 'end_time' => '21:30']);
+
+            $this->actingAs($finance)->patch(route('training.meetings.reschedule', $meeting), $this->slot('2026-10-06', '20:00', '21:30'));
+
+            $this->assertSame($moved ? '2026-10-06' : '2026-10-08', $meeting->fresh()->meeting_date->toDateString(), $kind);
+        }
+    }
+
+    public function test_the_staff_calendar_marks_past_bookings_taken_but_customer_calendars_do_not_list_them(): void
+    {
+        $this->book('2026-09-08', '20:00', '21:30'); // a past booking (today is 2026-09-15)
+        $this->book('2026-10-06', '20:00', '21:30');
+
+        $this->assertSame(['2026-10-06|20:00-21:30'], BookedSlots::keys());
+        $this->assertEqualsCanonicalizing(['2026-09-08|20:00-21:30', '2026-10-06|20:00-21:30'], BookedSlots::keys(null, true));
+
+        $session = TrainingSession::factory()->create();
+        $this->actingAs($this->finance(), 'web')->get(route('training.edit', $session))->assertOk()
+            ->assertSee('2026-09-08|20:00-21:30', false);
+    }
+
+    public function test_first_taken_finds_the_clashing_meeting_and_the_calendar_lock_returns_the_result(): void
+    {
+        $this->book('2026-10-06', '20:00', '21:30');
+        $free = ['meeting_date' => '2026-10-08', 'start_time' => '20:00', 'end_time' => '21:30'];
+        $taken = ['meeting_date' => '2026-10-06', 'start_time' => '21:00', 'end_time' => '22:00'];
+
+        $this->assertNull(BookedSlots::firstTaken([$free]));
+        $this->assertSame($taken, BookedSlots::firstTaken([$free, $taken]));
+        $this->assertSame('done', BookedSlots::exclusively(fn () => 'done'));
+    }
+
     public function test_the_session_page_shows_the_calendar_picker_and_the_booked_slots(): void
     {
         $this->book('2026-10-06', '20:00', '21:30');
         $session = TrainingSession::factory()->create();
 
         $this->actingAs($this->finance(), 'web')->get(route('training.edit', $session))->assertOk()
-            ->assertSee('window.bookedSlots = ["2026-10-06|20:00-21:30"]', false)->assertSee('Choose on calendar')->assertSee('function slotPicker()', false);
+            ->assertSee('2026-10-06|20:00-21:30', false)->assertSee('Choose on calendar')->assertSee('function slotPicker()', false);
     }
 
     public function test_conflicts_are_still_checked_when_the_strict_hours_are_off(): void
     {
         OperatingHours::save(OperatingHours::defaults(), false);
         $this->book('2026-10-05', '14:00', '15:00'); // a Monday: allowed now
-        $session = TrainingSession::factory()->create();
+        $session = $this->selfRegisteredSession();
 
         $this->actingAs($this->finance(), 'web')->post(route('training.meetings.store', $session), $this->slot('2026-10-05', '14:30', '15:30'))->assertSessionHasErrors('meeting_date');
         $this->actingAs($this->finance(), 'web')->post(route('training.meetings.store', $session), $this->slot('2026-10-05', '15:00', '16:00'))->assertSessionHasNoErrors();

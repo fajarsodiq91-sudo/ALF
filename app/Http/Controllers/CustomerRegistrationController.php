@@ -10,6 +10,7 @@ use App\Models\TrainingProgram;
 use App\Services\BookedSlots;
 use App\Services\ImageCompressor;
 use App\Services\StaffNotifier;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
@@ -73,20 +74,42 @@ class CustomerRegistrationController extends Controller
 
         $photo = $request->file('photo');
         $photoPath = $photo ? ImageCompressor::store($photo, 'customer-photos', 'public') : null;
+        $programs = $request->requestedPrograms();
 
         try {
-            $customer->photo_path = $photoPath;
-            $customer->submitRegistration([
-                ...$request->safe()->except(['photo', 'programs', 'terms_accepted']),
-                'requested_programs' => $request->requestedPrograms() ?: null,
-                'terms_accepted_at' => $request->boolean('terms_accepted') ? now() : null,
-            ]);
+            $taken = BookedSlots::exclusively(function () use ($customer, $request, $photoPath, $programs) {
+                // Checked again inside the lock: someone may have taken the slot since the form was validated.
+                if ($taken = BookedSlots::firstTaken(collect($programs)->flatMap(fn ($program) => $program['meetings']))) {
+                    return $taken;
+                }
+
+                $customer->photo_path = $photoPath;
+                $customer->submitRegistration([
+                    ...$request->safe()->except(['photo', 'programs', 'terms_accepted']),
+                    'requested_programs' => $programs ?: null,
+                    'terms_accepted_at' => $request->boolean('terms_accepted') ? now() : null,
+                ]);
+
+                return null;
+            });
         } catch (Throwable $exception) {
             if ($photoPath) {
                 Storage::disk('public')->delete($photoPath);
             }
 
+            if ($exception instanceof DomainException) {
+                return back()->withInput()->withErrors(['programs' => $exception->getMessage()]);
+            }
+
             throw $exception;
+        }
+
+        if ($taken) {
+            if ($photoPath) {
+                Storage::disk('public')->delete($photoPath);
+            }
+
+            return back()->withInput()->withErrors(['programs' => BookedSlots::describe($taken['meeting_date'], $taken['start_time'], $taken['end_time']).' has just been booked by someone else. Please choose another slot.']);
         }
 
         try {

@@ -62,6 +62,9 @@ class CustomerUpdateEmailTest extends TestCase
 
     public function test_rescheduling_onto_a_booked_slot_is_refused_without_email(): void
     {
+        // Only a self-registered (approved) customer needs a free slot; manually added ones may share.
+        $this->session->customer->forceFill(['approved_at' => now()])->save();
+
         $meeting = TrainingSessionMeeting::factory()->create([
             'training_session_id' => $this->session->id, 'meeting_date' => '2026-10-06', 'start_time' => '20:00', 'end_time' => '21:30',
         ]);

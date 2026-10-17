@@ -6,6 +6,7 @@ use App\Mail\MeetingRescheduleApproved;
 use App\Mail\MeetingRescheduleRejected;
 use App\Models\Customer;
 use App\Models\MeetingRescheduleRequest;
+use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
 use App\Models\User;
@@ -208,6 +209,26 @@ class MeetingRescheduleRequestTest extends TestCase
             ->assertRedirect()->assertSessionHas('error');
 
         $this->assertSame(0, MeetingRescheduleRequest::count());
+    }
+
+    public function test_a_meeting_can_be_shifted_into_its_own_current_slot_but_not_onto_someone_elses(): void
+    {
+        $customer = $this->customer('rahasia123');
+        $program = TrainingProgram::factory()->create(['session_minutes' => 60]);
+        $meeting = $this->upcomingMeeting($customer, ['training_program_id' => $program->id], ['start_time' => '09:00', 'end_time' => '10:00']);
+        $this->loginAs($customer);
+
+        // 09:30-10:30 overlaps only the meeting's own slot, which is freed by the move.
+        $this->post(route('portal.reschedule-requests.store'), $this->requestPayload($meeting, ['requested_date' => '2026-09-19', 'requested_start_time' => '09:30', 'requested_end_time' => '10:30']))
+            ->assertSessionHasNoErrors()->assertSessionMissing('error');
+        $this->assertSame(1, MeetingRescheduleRequest::count());
+
+        $other = $this->upcomingMeeting($this->customer('lain12345'), ['training_program_id' => $program->id], ['start_time' => '11:00', 'end_time' => '12:00']);
+        MeetingRescheduleRequest::query()->delete();
+        $this->post(route('portal.reschedule-requests.store'), $this->requestPayload($meeting, ['requested_date' => '2026-09-19', 'requested_start_time' => '10:30', 'requested_end_time' => '11:30']))
+            ->assertSessionHas('error');
+        $this->assertSame(0, MeetingRescheduleRequest::count());
+        $this->assertNotNull($other);
     }
 
     public function test_customer_can_cancel_their_own_pending_request(): void
