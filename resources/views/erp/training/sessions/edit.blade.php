@@ -199,7 +199,7 @@
                             <td class="px-4 py-3 text-gray-500">{{ $meeting->topic ?: '—' }}</td>
                             <td class="px-4 py-3">
                                 @if ($meeting->is_completed)
-                                    <span class="inline-flex rounded-full bg-green-50 text-green-700 px-2 py-0.5 text-xs font-medium">Done {{ $meeting->completed_at?->format('d M') }}</span>
+                                    <span class="inline-flex rounded-full bg-green-50 text-green-700 px-2 py-0.5 text-xs font-medium">Done {{ $meeting->completed_at?->format('d M Y') }}</span>
                                 @else
                                     <span class="inline-flex rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-xs font-medium">Upcoming</span>
                                 @endif
@@ -213,11 +213,16 @@
                             </td>
                             @can('training.manage')
                                 <td class="px-4 py-3 text-right whitespace-nowrap">
-                                    <form action="{{ route('training.meetings.toggle', $meeting) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="{{ $meeting->is_completed ? 'Undo' : 'Mark done' }}" aria-label="{{ $meeting->is_completed ? 'Undo' : 'Mark done' }}"><x-erp.action-icon name="{{ $meeting->is_completed ? 'undo' : 'done' }}" /></button>
-                                    </form>
+                                    @if ($meeting->is_completed)
+                                        <form action="{{ route('training.meetings.toggle', $meeting) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Undo" aria-label="Undo"><x-erp.action-icon name="undo" /></button>
+                                        </form>
+                                        <button type="button" @click="$dispatch('open-completion-date', { url: @js(route('training.meetings.completed-date', $meeting)), title: 'Edit completion date', date: @js($meeting->completed_at?->toDateString() ?? today()->toDateString()) })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit done date" aria-label="Edit done date"><x-erp.action-icon name="edit" /></button>
+                                    @else
+                                        <button type="button" @click="$dispatch('open-completion-date', { url: @js(route('training.meetings.toggle', $meeting)), title: 'Mark meeting as done', date: @js(today()->toDateString()) })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Mark done" aria-label="Mark done"><x-erp.action-icon name="done" /></button>
+                                    @endif
                                     @unless ($meeting->is_completed)
                                         <button type="button" @click="$dispatch('open-meeting-reschedule', { url: @js(route('training.meetings.reschedule', $meeting)), current: @js($meeting->meeting_date->format('D, d M Y').' · '.($meeting->timeRange() ?? 'no time set')), meeting_date: @js($meeting->meeting_date->toDateString()), start_time: @js($meeting->start_time ? substr($meeting->start_time, 0, 5) : ''), end_time: @js($meeting->end_time ? substr($meeting->end_time, 0, 5) : '') })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Reschedule" aria-label="Reschedule"><x-erp.action-icon name="reschedule" /></button>
                                     @endunless
@@ -298,6 +303,24 @@
                 </form>
             @endcan
             @can('training.manage')
+                <div x-data="{ open: false, url: '', title: '', date: '' }"
+                     @open-completion-date.window="url = $event.detail.url; title = $event.detail.title; date = $event.detail.date; open = true"
+                     @keydown.escape.window="open = false" x-show="open" x-cloak class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
+                    <form :action="url" method="POST" class="w-full max-w-sm space-y-4 rounded-xl bg-white p-5 shadow-2xl">
+                        @csrf
+                        @method('PATCH')
+                        <h4 class="text-base font-semibold text-gray-800" x-text="title"></h4>
+                        <div>
+                            <label for="completed_date" class="block text-sm font-medium text-gray-700">Date held</label>
+                            <input type="date" id="completed_date" name="completed_date" x-model="date" max="{{ today()->toDateString() }}" required class="mt-1 {{ $inputClass }}">
+                            <p class="mt-1 text-xs text-gray-500">Defaults to today. Choose an earlier date if the meeting was held before it was recorded.</p>
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button type="button" @click="open = false" class="rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">Cancel</button>
+                            <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white shadow-sm">Save</button>
+                        </div>
+                    </form>
+                </div>
                 <div x-data="{ open: false, url: '', current: '', m: { meeting_date: '', start_time: '', end_time: '' } }"
                      @open-meeting-reschedule.window="url = $event.detail.url; current = $event.detail.current; m = { meeting_date: $event.detail.meeting_date, start_time: $event.detail.start_time, end_time: $event.detail.end_time }; open = true"
                      @keydown.escape.window="open = false" x-show="open" x-cloak class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">

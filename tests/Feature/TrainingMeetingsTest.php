@@ -67,6 +67,38 @@ class TrainingMeetingsTest extends TestCase
         $this->assertModelMissing($meeting);
     }
 
+    public function test_a_meeting_can_be_marked_done_on_an_earlier_date_and_the_date_corrected(): void
+    {
+        Carbon::setTestNow('2026-10-17 13:00:00');
+        $finance = $this->financeUser();
+        $meeting = TrainingSessionMeeting::factory()->create(['meeting_date' => '2026-09-08', 'is_completed' => false]);
+
+        $this->actingAs($finance)->patch(route('training.meetings.toggle', $meeting), ['completed_date' => '2026-09-08'])->assertRedirect();
+        $this->assertTrue($meeting->fresh()->is_completed);
+        $this->assertSame('2026-09-08', $meeting->fresh()->completed_at->toDateString());
+
+        $this->actingAs($finance)->patch(route('training.meetings.completed-date', $meeting), ['completed_date' => '2026-09-10'])->assertRedirect();
+        $this->assertSame('2026-09-10', $meeting->fresh()->completed_at->toDateString());
+
+        $this->actingAs($finance)->patch(route('training.meetings.completed-date', $meeting), ['completed_date' => '2026-10-20'])->assertSessionHasErrors('completed_date');
+        $this->assertSame('2026-09-10', $meeting->fresh()->completed_at->toDateString());
+        Carbon::setTestNow();
+    }
+
+    public function test_marking_done_without_a_date_uses_now_and_only_managers_can_edit_the_date(): void
+    {
+        Carbon::setTestNow('2026-10-17 13:00:00');
+        $meeting = TrainingSessionMeeting::factory()->create(['is_completed' => false]);
+
+        $this->actingAs($this->financeUser())->patch(route('training.meetings.toggle', $meeting))->assertRedirect();
+        $this->assertSame('2026-10-17 13:00:00', $meeting->fresh()->completed_at->toDateTimeString());
+
+        $viewer = User::factory()->create();
+        $viewer->givePermissionTo(['access-erp', 'training.view']);
+        $this->actingAs($viewer)->patch(route('training.meetings.completed-date', $meeting), ['completed_date' => '2026-09-10'])->assertForbidden();
+        Carbon::setTestNow();
+    }
+
     public function test_meeting_validation_and_permissions(): void
     {
         $session = TrainingSession::factory()->create();

@@ -16,6 +16,7 @@ use App\Services\PaymentInvoices;
 use App\Services\SessionPaymentPlan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -63,18 +64,43 @@ class TrainingSessionMeetingController extends Controller
     }
 
     /** Marks a meeting as done (realised) or back to upcoming. */
-    public function toggle(TrainingSessionMeeting $meeting): RedirectResponse
+    public function toggle(Request $request, TrainingSessionMeeting $meeting): RedirectResponse
     {
         $this->authorize('training.manage');
 
+        $data = $request->validate(['completed_date' => ['nullable', 'date', 'before_or_equal:today']]);
+
         $done = ! $meeting->is_completed;
-        $meeting->update(['is_completed' => $done, 'completed_at' => $done ? now() : null]);
+        $meeting->update(['is_completed' => $done, 'completed_at' => $done ? $this->completionTime($data['completed_date'] ?? null) : null]);
         $this->syncStatus($meeting->session);
         PaymentInvoices::sendDue($meeting->session);
         CustomerNotifier::meetingToggled($meeting);
 
         return redirect()->route('training.edit', $meeting->training_session_id)
             ->with('status', $done ? 'Meeting marked as done.' : 'Meeting marked as upcoming again.');
+    }
+
+    /** Corrects the date a finished meeting was actually held, e.g. when it is recorded after the fact. */
+    public function updateCompletedDate(Request $request, TrainingSessionMeeting $meeting): RedirectResponse
+    {
+        $this->authorize('training.manage');
+
+        if (! $meeting->is_completed) {
+            return back()->with('error', 'Only a meeting that is marked as done has a completion date.');
+        }
+
+        $data = $request->validate(['completed_date' => ['required', 'date', 'before_or_equal:today']]);
+        $meeting->update(['completed_at' => $this->completionTime($data['completed_date'])]);
+
+        return redirect()->route('training.edit', $meeting->training_session_id)->with('status', 'Completion date updated.');
+    }
+
+    /** Today keeps the current time; an earlier day is recorded at its start. */
+    private function completionTime(?string $date): Carbon
+    {
+        $day = $date ? Carbon::parse($date) : now();
+
+        return $day->isToday() ? now() : $day->startOfDay();
     }
 
     /** planned → ongoing once a meeting is done; → completed when every meeting is done (and back if one is reopened). */
