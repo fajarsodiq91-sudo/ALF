@@ -28,6 +28,11 @@ class CustomerNotifier
 
     public static function meetingAdded(TrainingSessionMeeting $meeting): void
     {
+        // A meeting added after the fact (back-filling history) is not news to the customer.
+        if ($meeting->meeting_date->lt(today())) {
+            return;
+        }
+
         self::send($meeting->session->customer, 'A meeting was added to your program', 'A new meeting has been added to your program.', self::meetingDetails($meeting));
     }
 

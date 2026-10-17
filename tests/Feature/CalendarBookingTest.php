@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Mail\CustomerRegistrationApproved;
+use App\Mail\TrainingUpdateMail;
+use App\Models\BlockedSlot;
 use App\Models\Customer;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
@@ -229,6 +231,44 @@ class CalendarBookingTest extends TestCase
         $this->assertSame(1, $session->meetings()->count());
     }
 
+    public function test_staff_can_add_a_meeting_on_a_past_date(): void
+    {
+        $session = TrainingSession::factory()->create();
+
+        // 2026-09-08 is a Tuesday, an open evening slot, and is already in the past.
+        $this->travelTo('2026-10-17');
+        $this->actingAs($this->finance())->post(route('training.meetings.store', $session), $this->slot('2026-09-08', '20:00', '21:30'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(1, $session->meetings()->count());
+    }
+
+    public function test_back_filling_a_past_meeting_does_not_email_the_customer_but_a_future_one_does(): void
+    {
+        Mail::fake();
+        $customer = Customer::factory()->create(['email' => 'budi@example.com']);
+        $session = TrainingSession::factory()->create(['customer_id' => $customer->id]);
+
+        $this->actingAs($this->finance())->post(route('training.meetings.store', $session), $this->slot('2026-09-08', '20:00', '21:30'))
+            ->assertSessionHasNoErrors();
+        Mail::assertNothingSent();
+
+        $this->actingAs($this->finance())->post(route('training.meetings.store', $session), $this->slot('2026-09-22', '20:00', '21:30'))
+            ->assertSessionHasNoErrors();
+        Mail::assertSent(TrainingUpdateMail::class, 1);
+    }
+
+    public function test_only_users_with_training_manage_can_add_meetings_on_past_dates(): void
+    {
+        $session = TrainingSession::factory()->create();
+        $viewer = User::factory()->create();
+        $viewer->givePermissionTo(['access-erp', 'training.view']);
+
+        $this->actingAs($viewer)->post(route('training.meetings.store', $session), $this->slot('2026-09-08', '20:00', '21:30'))
+            ->assertForbidden();
+        $this->assertSame(0, $session->meetings()->count());
+    }
+
     public function test_the_session_page_shows_the_calendar_picker_and_the_booked_slots(): void
     {
         $this->book('2026-10-06', '20:00', '21:30');
@@ -284,7 +324,7 @@ class CalendarBookingTest extends TestCase
         $this->actingAs($user)->post(route('masterdata.blocked.store'), ['date' => $date, 'start_time' => '20:00', 'end_time' => '21:30'])
             ->assertSessionHasErrors('date');
 
-        $this->actingAs($user)->delete(route('masterdata.blocked.destroy', \App\Models\BlockedSlot::firstOrFail()))->assertRedirect();
+        $this->actingAs($user)->delete(route('masterdata.blocked.destroy', BlockedSlot::firstOrFail()))->assertRedirect();
         $this->assertNotContains('2026-09-22|20:00-21:30', BookedSlots::keys());
     }
 

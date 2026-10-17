@@ -21,7 +21,7 @@ class PortalRescheduleRequestController extends Controller
 
         $data = $request->validate([
             'training_session_meeting_id' => ['required', 'integer', Rule::in($customer->reschedulableMeetingIds())],
-            'requested_date' => ['required', 'date'],
+            'requested_date' => ['required', 'date', 'after_or_equal:today'],
             'requested_start_time' => ['required', 'date_format:H:i'],
             'requested_end_time' => ['required', 'date_format:H:i', 'after:requested_start_time'],
             'reason' => ['nullable', 'string', 'max:1000'],

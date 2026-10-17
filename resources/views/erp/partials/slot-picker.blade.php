@@ -26,13 +26,14 @@
 
     function slotPicker() {
         return {
-            open: false, meeting: null, siblings: [], cursor: new Date(), today: window.isoDate(new Date()), minutes: null, focus: null, corporate: false,
+            open: false, meeting: null, siblings: [], cursor: new Date(), today: window.isoDate(new Date()), minutes: null, focus: null, corporate: false, allowPast: false,
 
             show(detail) {
                 this.meeting = detail.meeting;
                 this.siblings = detail.siblings || [];
                 this.minutes = detail.minutes ? parseInt(detail.minutes) : null;
                 this.corporate = !!detail.corporate;
+                this.allowPast = !!detail.allowPast;
                 this.focus = detail.meeting.meeting_date || null;
                 const start = detail.meeting.meeting_date ? new Date(detail.meeting.meeting_date + 'T00:00:00') : new Date();
                 this.cursor = new Date(start.getFullYear(), start.getMonth(), 1);
@@ -40,7 +41,7 @@
             },
             close() { this.open = false; },
 
-            firstMonth() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), 1); },
+            firstMonth() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth() - (this.allowPast ? 36 : 0), 1); },
             lastMonth() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth() + window.windowMonths, 1); },
             canPrev() { return this.cursor > this.firstMonth(); },
             canNext() { return this.cursor < this.lastMonth(); },
@@ -66,7 +67,7 @@
                         const day = new Date(start.getFullYear(), start.getMonth(), start.getDate() + w * 7 + d);
                         const iso = window.isoDate(day);
                         days.push({
-                            iso, number: day.getDate(), inMonth: day.getMonth() === this.cursor.getMonth(), past: iso < this.today,
+                            iso, number: day.getDate(), inMonth: day.getMonth() === this.cursor.getMonth(), past: !this.allowPast && iso < this.today,
                             open: window.slotsFor(iso, this.corporate).length > 0, slots: window.candidateSlots(iso, this.minutes, this.corporate).map(slot => ({ ...slot, state: this.stateOf(iso, slot) })),
                         });
                     }

@@ -274,7 +274,7 @@
                             @error('meeting_date') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                             @error('end_time') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                         </div>
-                        <button type="button" @click="$dispatch('open-slot-picker', { meeting: m, siblings: [], minutes: @js($session->program?->session_minutes), corporate: @js($session->isCorporate()) })" class="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50 hover:shadow"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> Choose on calendar</button>
+                        <button type="button" @click="$dispatch('open-slot-picker', { meeting: m, siblings: [], minutes: @js($session->program?->session_minutes), corporate: @js($session->isCorporate()), allowPast: true })" class="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50 hover:shadow"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> Choose on calendar</button>
                     </div>
                     <template x-if="hours.enforced">
                         <div class="hidden">
@@ -310,7 +310,7 @@
                         <h4 class="text-base font-semibold text-gray-800">Reschedule meeting</h4>
                         <p class="text-sm text-gray-500">Current: <span x-text="current"></span></p>
                         <p class="text-sm font-medium text-gray-800" x-text="meetingLabel(m)"></p>
-                        <button type="button" @click="$dispatch('open-slot-picker', { meeting: m, siblings: [], minutes: @js($session->program?->session_minutes), corporate: @js($session->isCorporate()) })" class="inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50">Choose new date &amp; time</button>
+                        <button type="button" @click="$dispatch('open-slot-picker', { meeting: m, siblings: [], minutes: @js($session->program?->session_minutes), corporate: @js($session->isCorporate()), allowPast: true })" class="inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-white px-3 py-1.5 text-sm font-medium text-brand shadow-sm transition hover:bg-brand-50">Choose new date &amp; time</button>
                         <p class="text-xs text-gray-500">The change applies immediately and the customer is notified by email.</p>
                         <div class="flex justify-end gap-2">
                             <button type="button" @click="open = false" class="rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">Cancel</button>
