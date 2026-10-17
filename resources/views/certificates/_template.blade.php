@@ -14,7 +14,10 @@
     $embedImages = $pdf ? true : $embedImages;
     $font = fn (string $file) => $pdf ? public_path('fonts/certificate/'.$file) : asset('fonts/certificate/'.$file);
     $background = $pdf ? \Illuminate\Support\Facades\Storage::disk('public')->path($template->background_path) : asset('storage/'.$template->background_path);
-    $box = fn (string $key) => sprintf('left:%.2fmm;top:%.2fmm;width:%.2fmm;margin-left:-%.2fmm;', $pos[$key]['x'], $pos[$key]['y'], $pos[$key]['w'], $pos[$key]['w'] / 2);
+    // dompdf sets text lower inside its line box than a browser does (more so for bigger fonts), so the PDF lifts
+    // each text field by the measured offset (CSS px) to land where the browser preview shows it.
+    $pdfLift = ['number' => 7, 'name' => 30, 'statement' => 9, 'date' => 4, 'id_number' => 5, 'signer_name' => 4, 'signer_title' => 5];
+    $box = fn (string $key) => sprintf('left:%.2fmm;top:%.2fmm;width:%.2fmm;margin-left:-%.2fmm;', $pos[$key]['x'], $pos[$key]['y'] - ($pdf ? ($pdfLift[$key] ?? 0) * 25.4 / 96 : 0), $pos[$key]['w'], $pos[$key]['w'] / 2);
 @endphp
 <style>
     @font-face { font-family: 'Great Vibes'; src: url('{{ $font('GreatVibes-Regular.ttf') }}') format('truetype'); }
