@@ -5,7 +5,10 @@
     <div class="max-w-3xl space-y-6" x-data="{ openSection: @js(request()->query('focus')) }">
         <x-erp.flash />
 
-        <div class="flex justify-end">
+        <div class="flex justify-end gap-2">
+            @if ($session->program->program_type === 'learning' && $session->status !== 'cancelled')
+                <a href="{{ route('training.certificates', $session) }}" class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Download certificates (PDF)</a>
+            @endif
             <a href="{{ route('training.attendance', $session) }}" class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Attendance report &rarr;</a>
         </div>
 

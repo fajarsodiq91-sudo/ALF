@@ -98,7 +98,7 @@ class Tutorial
             'group' => 'Sales & Training',
             'permission' => 'training.view',
             'route' => 'training.index',
-            'covers' => ['training.index', 'training.create', 'training.edit', 'training.payments.*', 'training.attendance*', 'participant.*'],
+            'covers' => ['training.index', 'training.create', 'training.edit', 'training.payments.*', 'training.attendance*', 'training.certificates', 'participant.*'],
         ],
         'projects' => [
             'title' => 'Projects',

@@ -24,7 +24,7 @@ class PublicPortfolioController extends Controller
         return view('portfolio-public.show', [
             'customer' => $customer,
             'projects' => $customer->projects()->where('in_portfolio', true)->latest()->get(),
-            'certificates' => Certificate::where('customer_id', $customer->id)->with('session.program')->latest('issued_at')->get(),
+            'certificates' => Certificate::released()->where('customer_id', $customer->id)->with('session.program')->latest('issued_at')->get(),
         ]);
     }
 

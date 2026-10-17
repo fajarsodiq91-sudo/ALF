@@ -17,6 +17,10 @@ class CertificateVerificationController extends Controller
             return response()->view('certificates.verify-invalid', [], 404);
         }
 
+        if (! $certificate->isReleased()) {
+            return response()->view('certificates.verify-pending', [], 200);
+        }
+
         return view('certificates.verify', ['certificate' => $certificate]);
     }
 }

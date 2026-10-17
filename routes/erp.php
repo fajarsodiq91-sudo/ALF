@@ -234,6 +234,7 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
         Route::get('payments/{payment}/proof', [TrainingSessionPaymentController::class, 'proof'])->name('training.payments.proof');
         Route::get('{session}/attendance', [TrainingAttendanceController::class, 'show'])->name('training.attendance');
         Route::patch('meetings/{meeting}/attendance/{customer}', [TrainingAttendanceController::class, 'toggle'])->name('training.attendance.toggle');
+        Route::get('{session}/certificates', [TrainingSessionController::class, 'certificates'])->name('training.certificates');
         Route::post('{session}/complete', [TrainingSessionController::class, 'complete'])->name('training.complete');
     });
 

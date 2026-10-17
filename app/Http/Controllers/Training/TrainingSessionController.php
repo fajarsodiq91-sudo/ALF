@@ -14,9 +14,12 @@ use App\Services\CertificateIssuer;
 use App\Services\CustomerNotifier;
 use App\Services\PaymentInvoices;
 use App\Services\SessionPaymentPlan;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class TrainingSessionController extends Controller
 {
@@ -130,6 +133,29 @@ class TrainingSessionController extends Controller
         $certificates = CertificateIssuer::issueFor($session);
 
         return redirect()->route('training.index')->with('status', 'Session marked as done.'.($certificates ? " {$certificates} certificate(s) issued." : ''));
+    }
+
+    /**
+     * Certificates of a learning session as one printable PDF (a page per holder), available before the session is
+     * completed. They carry the real number and QR code but stay hidden from the customer until completion.
+     */
+    public function certificates(TrainingSession $session): Response|RedirectResponse
+    {
+        $this->authorize('training.manage');
+
+        $certificates = CertificateIssuer::draftFor($session);
+
+        if ($certificates->isEmpty()) {
+            return back()->with('error', $session->status === 'cancelled' || $session->program?->program_type !== 'learning'
+                ? 'Certificates are only available for active learning sessions.'
+                : 'There is nobody to certify yet. Add a participant first.');
+        }
+
+        $certificates->load(['session.program', 'session.meetings', 'session.instructor', 'customer']);
+
+        return Pdf::loadView('certificates.batch-pdf', ['certificates' => $certificates, 'title' => $session->program->name.' certificates'])
+            ->setPaper('a4', 'landscape')
+            ->download('certificates-'.Str::slug($session->program->name).'-'.$session->start_date->format('Ymd').'.pdf');
     }
 
     /**

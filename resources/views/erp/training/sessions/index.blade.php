@@ -86,6 +86,9 @@
                                             <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-green-600 hover:bg-green-50 hover:text-green-800" data-tip="Mark as done" aria-label="Mark as done"><x-erp.action-icon name="done" /></button>
                                         </form>
                                     @endif
+                                    @if ($session->program->program_type === 'learning' && $session->status !== 'cancelled')
+                                        <a href="{{ route('training.certificates', $session) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800" data-tip="Download certificates (PDF)" aria-label="Download certificates (PDF)"><x-erp.action-icon name="certificate" /></a>
+                                    @endif
                                     <a href="{{ route('training.edit', array_filter(['session' => $session->id, 'focus' => request('focus')])) }}" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit" aria-label="Edit"><x-erp.action-icon name="edit" /></a>
                                     <form action="{{ route('training.destroy', $session) }}" method="POST" class="inline" onsubmit="return confirm('Delete this session?');">
                                         @csrf

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\CertificateIssuer;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -109,5 +110,98 @@ class CertificateTest extends TestCase
 
         $other = $this->customer('260902');
         $this->actingAs($other, 'customer')->get(route('portal.certificates.show', $certificate))->assertForbidden();
+    }
+
+    private function admin(): User
+    {
+        $this->seed(RolePermissionSeeder::class);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $admin = User::factory()->create();
+        $admin->assignRole('Super Admin');
+
+        return $admin;
+    }
+
+    public function test_staff_can_download_certificates_before_completion_and_they_stay_hidden_from_the_customer(): void
+    {
+        Mail::fake();
+        $admin = $this->admin();
+        $customer = $this->customer('260901');
+        $session = $this->completed($customer);
+        $session->update(['status' => 'ongoing']);
+
+        $response = $this->actingAs($admin)->get(route('training.certificates', $session))->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('content-type'));
+
+        $certificate = Certificate::firstOrFail();
+        $this->assertFalse($certificate->isReleased());
+
+        // Hidden from the holder everywhere, and the QR code does not vouch for it yet.
+        $this->actingAs($customer, 'customer')->get(route('portal.certificates.index'))->assertOk()->assertDontSee($certificate->number);
+        $this->actingAs($customer, 'customer')->get(route('portal.certificates.show', $certificate))->assertNotFound();
+        $this->actingAs($customer, 'customer')->get(route('portal.certificates.download', $certificate))->assertNotFound();
+        $this->get(route('certificates.verify', $certificate->verification_code))->assertOk()->assertSee('not issued yet')->assertDontSee('Valid certificate');
+
+        // Downloading again reuses the same certificate, so the printed number never changes.
+        $this->actingAs($admin)->get(route('training.certificates', $session))->assertOk();
+        $this->assertSame(1, Certificate::count());
+        $this->assertSame($certificate->number, Certificate::first()->number);
+    }
+
+    public function test_completing_the_session_releases_the_printed_certificate_and_notifies_the_customer_once(): void
+    {
+        $admin = $this->admin();
+        $customer = $this->customer('260901');
+        $session = $this->completed($customer);
+        $session->update(['status' => 'ongoing']);
+        $this->actingAs($admin)->get(route('training.certificates', $session))->assertOk();
+        $printed = Certificate::firstOrFail();
+
+        $session->update(['status' => 'completed']);
+        $this->assertSame(1, CertificateIssuer::issueFor($session->fresh()));
+        $this->assertSame(0, CertificateIssuer::issueFor($session->fresh()));
+
+        $this->assertSame(1, Certificate::count());
+        $this->assertSame($printed->number, Certificate::first()->number);
+        $this->assertTrue(Certificate::first()->isReleased());
+
+        $this->actingAs($customer, 'customer')->get(route('portal.certificates.show', $printed))->assertOk()->assertSee($printed->number);
+        $this->get(route('certificates.verify', $printed->verification_code))->assertOk()->assertSee('Valid certificate');
+    }
+
+    public function test_corporate_session_prints_one_certificate_per_participant_and_empty_ones_are_refused(): void
+    {
+        $admin = $this->admin();
+        $company = $this->customer('260801');
+        $company->update(['customer_type' => 'company']);
+        $session = $this->completed($company);
+        $session->update(['status' => 'planned', 'participant_limit' => 5]);
+        $session->syncParticipantToken();
+
+        $this->actingAs($admin)->from(route('training.index'))->get(route('training.certificates', $session))->assertRedirect(route('training.index'))->assertSessionHas('error');
+        $this->assertSame(0, Certificate::count());
+
+        $session->participants()->attach([$this->customer('260902')->id, $this->customer('260903')->id]);
+        $this->actingAs($admin)->get(route('training.certificates', $session))->assertOk();
+        $this->assertSame(2, Certificate::count());
+        $this->assertSame(0, Certificate::released()->count());
+    }
+
+    public function test_certificates_are_not_available_for_consulting_or_cancelled_sessions_or_without_permission(): void
+    {
+        $admin = $this->admin();
+        $customer = $this->customer('260901');
+
+        $consulting = $this->completed($customer, 'consulting');
+        $this->actingAs($admin)->from(route('training.index'))->get(route('training.certificates', $consulting))->assertSessionHas('error');
+
+        $cancelled = $this->completed($customer);
+        $cancelled->update(['status' => 'cancelled']);
+        $this->actingAs($admin)->from(route('training.index'))->get(route('training.certificates', $cancelled))->assertSessionHas('error');
+        $this->assertSame(0, Certificate::count());
+
+        $planned = $this->completed($customer);
+        $planned->update(['status' => 'planned']);
+        $this->actingAs(User::factory()->create())->get(route('training.certificates', $planned))->assertForbidden();
     }
 }

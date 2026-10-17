@@ -18,7 +18,7 @@ class PortalDashboardController extends Controller
             'sessions' => $customer->portalSessions()->with(['program', 'meetings.rescheduleRequests', 'instructor', 'payments', 'participants'])->orderBy('start_date')->get(),
             'projects' => $customer->projects()->latest()->get()->groupBy('training_session_id'),
             // Keyed by session id: the real, auto-issued certificate (with PDF/QR) takes priority over the older manual certificate_url link.
-            'certificates' => Certificate::where('customer_id', $customer->id)->get()->keyBy('training_session_id'),
+            'certificates' => Certificate::released()->where('customer_id', $customer->id)->get()->keyBy('training_session_id'),
         ]);
     }
 }

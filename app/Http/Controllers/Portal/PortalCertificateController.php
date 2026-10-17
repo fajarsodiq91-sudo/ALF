@@ -14,7 +14,7 @@ class PortalCertificateController extends Controller
 {
     public function index(Request $request): View
     {
-        $certificates = Certificate::where('customer_id', $request->user('customer')->id)->with('session.program')->latest('issued_at')->latest('id')->paginate(20);
+        $certificates = Certificate::released()->where('customer_id', $request->user('customer')->id)->with('session.program')->latest('issued_at')->latest('id')->paginate(20);
 
         return view('portal.certificates.index', ['certificates' => $certificates]);
     }
@@ -22,6 +22,7 @@ class PortalCertificateController extends Controller
     public function show(Request $request, Certificate $certificate): View
     {
         abort_unless($certificate->customer_id === $request->user('customer')->id, 403);
+        abort_unless($certificate->isReleased(), 404);
 
         return view('portal.certificates.show', ['certificate' => $this->loadCertificate($certificate)]);
     }
@@ -29,6 +30,7 @@ class PortalCertificateController extends Controller
     public function download(Request $request, Certificate $certificate): Response
     {
         abort_unless($certificate->customer_id === $request->user('customer')->id, 403);
+        abort_unless($certificate->isReleased(), 404);
 
         $certificate = $this->loadCertificate($certificate);
 

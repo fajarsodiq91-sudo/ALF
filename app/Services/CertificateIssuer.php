@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Models\Certificate;
 use App\Models\Customer;
 use App\Models\TrainingSession;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Collection;
 
 /**
  * Issues certificates when a learning session is completed.
@@ -18,7 +20,10 @@ class CertificateIssuer
 
     private const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-    /** Creates the missing certificates of a completed learning session; returns how many were created. */
+    /**
+     * Creates the missing certificates of a completed learning session and releases any that staff printed early;
+     * returns how many became visible to their holders.
+     */
     public static function issueFor(TrainingSession $session): int
     {
         $session->loadMissing('program');
@@ -27,20 +32,53 @@ class CertificateIssuer
             return 0;
         }
 
-        // Corporate sessions certify the participants; otherwise the customer themselves.
-        $holders = $session->acceptsParticipants() ? $session->participants()->get() : collect([$session->customer])->filter();
-        $created = 0;
+        $released = 0;
 
-        foreach ($holders as $holder) {
-            if (Certificate::where('training_session_id', $session->id)->where('customer_id', $holder->id)->exists()) {
+        foreach (self::holders($session) as $holder) {
+            $certificate = Certificate::where('training_session_id', $session->id)->where('customer_id', $holder->id)->first();
+
+            if (! $certificate) {
+                $certificate = self::create($session, $holder, released: true);
+            } elseif ($certificate->isReleased()) {
                 continue;
+            } else {
+                $certificate->update(['released_at' => now()]);
             }
 
-            CustomerNotifier::certificateIssued(self::create($session, $holder));
-            $created++;
+            CustomerNotifier::certificateIssued($certificate);
+            $released++;
         }
 
-        return $created;
+        return $released;
+    }
+
+    /**
+     * Staff-only certificates for printing before the session is completed: the real number and QR code, but hidden
+     * from the holder and not announced until the session is completed. Returns every holder's certificate.
+     *
+     * @return EloquentCollection<int, Certificate>
+     */
+    public static function draftFor(TrainingSession $session): EloquentCollection
+    {
+        $session->loadMissing('program');
+
+        if ($session->status === 'cancelled' || $session->program?->program_type !== 'learning') {
+            return new EloquentCollection;
+        }
+
+        // A completed session is certified the normal way (with the customer notified) before anything is printed.
+        self::issueFor($session);
+
+        return new EloquentCollection(self::holders($session)->map(
+            fn (Customer $holder) => Certificate::where('training_session_id', $session->id)->where('customer_id', $holder->id)->first()
+                ?? self::create($session, $holder, released: false)
+        )->values()->all());
+    }
+
+    /** Corporate sessions certify the participants; otherwise the customer themselves. */
+    private static function holders(TrainingSession $session): Collection
+    {
+        return $session->acceptsParticipants() ? $session->participants()->get() : collect([$session->customer])->filter();
     }
 
     /** ALF/LRN/2026/IX/001 from customer ID 260901; null when the ID does not have that shape. */
@@ -53,7 +91,7 @@ class CertificateIssuer
         return 'ALF/LRN/20'.$m[1].'/'.self::ROMAN[(int) $m[2]].'/'.str_pad($m[3], 3, '0', STR_PAD_LEFT);
     }
 
-    private static function create(TrainingSession $session, Customer $holder): Certificate
+    private static function create(TrainingSession $session, Customer $holder, bool $released): Certificate
     {
         $prefix = self::prefix($holder) ?? 'ALF/LRN/'.now()->format('Y').'/'.self::ROMAN[now()->month].'/000';
 
@@ -68,6 +106,7 @@ class CertificateIssuer
                     'number' => $prefix.'-'.$suffix,
                     'suffix' => $suffix,
                     'issued_at' => today(),
+                    'released_at' => $released ? now() : null,
                 ]);
             } catch (UniqueConstraintViolationException $exception) {
                 if (Certificate::where('training_session_id', $session->id)->where('customer_id', $holder->id)->exists()) {

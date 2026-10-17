@@ -69,6 +69,7 @@
         <li>Klik <strong>Mark as done</strong> di daftar sesi dan konfirmasi. Status berubah menjadi <em>Completed</em>.</li>
         <li>Untuk program bertipe <strong>Learning</strong>, sertifikat terbit otomatis (satu per pemegang, tidak pernah dobel). Customer melihat dan mengunduhnya di portal. Memilih status <em>Completed</em> lewat <strong>Edit</strong> juga menerbitkan sertifikat.</li>
     </x-tutorial.steps>
+    <p><strong>Mencetak sertifikat sebelum sesi selesai:</strong> klik ikon sertifikat di daftar sesi (atau <strong>Download certificates (PDF)</strong> di halaman Edit) untuk mengunduh PDF satu halaman per pemegang sertifikat. Nomor dan QR code di PDF sudah final, jadi lembar yang dicetak sama dengan yang nanti terbit. Selama sesi belum <em>Completed</em>, sertifikat itu tidak tampil di portal customer dan halaman verifikasi QR menampilkan "Certificate not issued yet". Begitu sesi ditandai selesai, sertifikat otomatis aktif dan customer diberi tahu. Mengunduh ulang tidak membuat nomor baru. Untuk sesi korporat, tambahkan peserta lebih dulu.</p>
     <p>Tanda tangan sertifikat memakai instruktur sesi, atau penandatangan default di <em>Settings → System Settings</em> bila tidak ada instruktur.</p>
     <x-tutorial.note>Menambah, mengubah, dan menyelesaikan sesi butuh permission <code>training.manage</code>; mencatat pembayaran butuh <code>finance.manage</code>.</x-tutorial.note>
 </x-tutorial.section>
