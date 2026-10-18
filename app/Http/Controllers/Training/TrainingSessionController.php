@@ -161,7 +161,9 @@ class TrainingSessionController extends Controller
 
         return Pdf::loadView('certificates.batch-pdf', ['certificates' => $certificates, 'title' => $session->program->name.' certificates'])
             ->setPaper('a4', 'landscape')
-            ->download('certificates-'.Str::slug($session->program->name).'-'.$session->start_date->format('Ymd').'.pdf');
+            ->download($certificates->count() === 1
+                ? $certificates->first()->downloadFilename()
+                : 'certificates-'.Str::slug($session->program->name).'-'.$session->start_date->format('Ymd').'.pdf');
     }
 
     /**

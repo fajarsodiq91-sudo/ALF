@@ -135,6 +135,9 @@ class CertificateTest extends TestCase
         $this->assertSame('application/pdf', $response->headers->get('content-type'));
 
         $certificate = Certificate::firstOrFail();
+        $response->assertDownload($certificate->downloadFilename());
+        $this->assertStringStartsWith('Alfajar Certificate - ', $certificate->downloadFilename());
+        $this->assertStringEndsWith(' [260901].pdf', $certificate->downloadFilename());
         $this->assertFalse($certificate->isReleased());
 
         // Hidden from the holder everywhere, and the QR code does not vouch for it yet.
