@@ -14,7 +14,7 @@
 
         @if (request()->boolean('ready_to_complete'))
             <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                Showing sessions that have ended and still need to be marked as done.
+                Showing sessions that have ended and are not completed yet.
             </div>
         @endif
 
@@ -75,12 +75,12 @@
                                     'bg-gray-100 text-gray-500' => $session->status === 'cancelled',
                                 ])>{{ \App\Models\TrainingSession::STATUSES[$session->status] ?? $session->status }}</span>
                                 @if ($readyToComplete)
-                                    <span class="mt-1 block text-xs font-medium text-amber-600">Ended — mark as done</span>
+                                    <span class="mt-1 block text-xs font-medium text-amber-600">{{ $session->meetings_count > 0 ? 'Ended — meetings not all marked done' : 'Ended — mark as done' }}</span>
                                 @endif
                             </td>
                             @can('training.manage')
                                 <td class="px-4 py-3 text-right whitespace-nowrap">
-                                    @if ($readyToComplete)
+                                    @if ($readyToComplete && $session->meetings_count === 0)
                                         <form action="{{ route('training.complete', $session) }}" method="POST" class="inline" onsubmit="return confirm('Mark this session as done? Certificates will be issued if it is a learning program.');">
                                             @csrf
                                             <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-green-600 hover:bg-green-50 hover:text-green-800" data-tip="Mark as done" aria-label="Mark as done"><x-erp.action-icon name="done" /></button>

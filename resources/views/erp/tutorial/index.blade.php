@@ -7,7 +7,7 @@
             ['Customer mengisi data diri, memilih program, dan memilih jadwal pertemuan sendiri.', 'sales-customers'],
             ['Tim meninjau pendaftaran lalu menyetujuinya. Customer mendapat ID, sesi training dibuat, dan email berisi tautan login terkirim.', 'sales-customers'],
             ['Sesi berjalan: tandai pertemuan yang sudah terlaksana, tangani permintaan reschedule, dan konfirmasi pembayaran. Pembayaran otomatis tercatat sebagai pemasukan di Finance.', 'training-sessions'],
-            ['Setelah sesi selesai, tekan Mark as done. Sertifikat untuk program bertipe Learning terbit otomatis.', 'training-sessions'],
+            ['Tandai tiap pertemuan dengan Mark done; sesi otomatis Completed saat semuanya selesai dan sertifikat Learning terbit.', 'training-sessions'],
             ['Customer mengunggah proyek hasil belajarnya di portal; tim menandainya untuk portofolio.', 'customer-portal'],
         ];
     @endphp

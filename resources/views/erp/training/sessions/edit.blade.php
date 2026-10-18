@@ -195,6 +195,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($session->meetings as $meeting)
+                        @php $lastOpen = ! $meeting->is_completed && $session->meetings->where('is_completed', false)->count() === 1; @endphp
                         <tr>
                             <td class="px-4 py-3 text-gray-800">{{ $meeting->meeting_date->format('D, d M Y') }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $meeting->timeRange() ?? '—' }}</td>
@@ -217,19 +218,19 @@
                             @can('training.manage')
                                 <td class="px-4 py-3 text-right whitespace-nowrap">
                                     @if ($meeting->is_completed)
-                                        <form action="{{ route('training.meetings.toggle', $meeting) }}" method="POST" class="inline">
+                                        <form action="{{ route('training.meetings.toggle', $meeting) }}" method="POST" class="inline" @if ($session->status === 'completed') onsubmit="return confirm('The session will go back to Ongoing{{ $session->program?->program_type === 'learning' ? ' and its certificates will be hidden from the customer until it is completed again' : '' }}. Continue?');" @endif>
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Undo" aria-label="Undo"><x-erp.action-icon name="undo" /></button>
                                         </form>
                                         <button type="button" @click="$dispatch('open-completion-date', { url: @js(route('training.meetings.completed-date', $meeting)), title: 'Edit completion date', date: @js($meeting->completed_at?->toDateString() ?? today()->toDateString()) })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit done date" aria-label="Edit done date"><x-erp.action-icon name="edit" /></button>
                                     @else
-                                        <button type="button" @click="$dispatch('open-completion-date', { url: @js(route('training.meetings.toggle', $meeting)), title: 'Mark meeting as done', date: @js(today()->toDateString()) })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Mark done" aria-label="Mark done"><x-erp.action-icon name="done" /></button>
+                                        <button type="button" @click="$dispatch('open-completion-date', { url: @js(route('training.meetings.toggle', $meeting)), title: 'Mark meeting as done', date: @js(today()->toDateString()), note: @js($lastOpen ? 'This is the last open meeting: the session will be completed'.($session->program?->program_type === 'learning' ? ' and the certificates will be issued and emailed to the customer.' : '.') : '') })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Mark done" aria-label="Mark done"><x-erp.action-icon name="done" /></button>
                                     @endif
                                     @unless ($meeting->is_completed)
                                         <button type="button" @click="$dispatch('open-meeting-reschedule', { url: @js(route('training.meetings.reschedule', $meeting)), current: @js($meeting->meeting_date->format('D, d M Y').' · '.($meeting->timeRange() ?? 'no time set')), meeting_date: @js($meeting->meeting_date->toDateString()), start_time: @js($meeting->start_time ? substr($meeting->start_time, 0, 5) : ''), end_time: @js($meeting->end_time ? substr($meeting->end_time, 0, 5) : '') })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Reschedule" aria-label="Reschedule"><x-erp.action-icon name="reschedule" /></button>
                                     @endunless
-                                    <form action="{{ route('training.meetings.destroy', $meeting) }}" method="POST" class="inline" onsubmit="return confirm('Delete this meeting?');">
+                                    <form action="{{ route('training.meetings.destroy', $meeting) }}" method="POST" class="inline" onsubmit="return confirm('{{ $lastOpen && $session->meetings->count() > 1 ? 'This is the last open meeting: deleting it completes the session'.($session->program?->program_type === 'learning' ? ' and issues the certificates' : '').'. Delete it?' : 'Delete this meeting?' }}');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-gray-400 hover:bg-red-50 hover:text-red-600" data-tip="Delete" aria-label="Delete"><x-erp.action-icon name="delete" /></button>
@@ -306,13 +307,14 @@
                 </form>
             @endcan
             @can('training.manage')
-                <div x-data="{ open: false, url: '', title: '', date: '' }"
-                     @open-completion-date.window="url = $event.detail.url; title = $event.detail.title; date = $event.detail.date; open = true"
+                <div x-data="{ open: false, url: '', title: '', date: '', note: '' }"
+                     @open-completion-date.window="url = $event.detail.url; title = $event.detail.title; date = $event.detail.date; note = $event.detail.note || ''; open = true"
                      @keydown.escape.window="open = false" x-show="open" x-cloak class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
                     <form :action="url" method="POST" class="w-full max-w-sm space-y-4 rounded-xl bg-white p-5 shadow-2xl">
                         @csrf
                         @method('PATCH')
                         <h4 class="text-base font-semibold text-gray-800" x-text="title"></h4>
+                        <p x-show="note" x-text="note" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"></p>
                         <div>
                             <label for="completed_date" class="block text-sm font-medium text-gray-700">Date held</label>
                             <input type="date" id="completed_date" name="completed_date" x-model="date" max="{{ today()->toDateString() }}" required class="mt-1 {{ $inputClass }}">

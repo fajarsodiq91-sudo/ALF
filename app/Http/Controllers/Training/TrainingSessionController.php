@@ -14,6 +14,7 @@ use App\Services\CertificateIssuer;
 use App\Services\CustomerNotifier;
 use App\Services\PaymentInvoices;
 use App\Services\SessionPaymentPlan;
+use App\Services\SessionStatus;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,6 +39,7 @@ class TrainingSessionController extends Controller
 
         $sessions = TrainingSession::query()
             ->with(['program', 'customer', 'instructor'])
+            ->withCount('meetings')
             ->tap($filters)
             ->latest('start_date')
             ->paginate(20)
@@ -59,7 +61,7 @@ class TrainingSessionController extends Controller
 
     public function store(SaveTrainingSessionRequest $request): RedirectResponse
     {
-        $session = TrainingSession::create([...$request->validated(), 'payment_plan' => $request->validated('payment_plan') ?? SessionPaymentPlan::FULL]);
+        $session = TrainingSession::create([...$request->validated(), 'status' => $request->validated('status') === 'auto' ? 'planned' : $request->validated('status'), 'payment_plan' => $request->validated('payment_plan') ?? SessionPaymentPlan::FULL]);
         SessionPaymentPlan::generate($session);
         $session->syncParticipantToken();
         CertificateIssuer::issueFor($session);
@@ -78,7 +80,7 @@ class TrainingSessionController extends Controller
 
     public function update(SaveTrainingSessionRequest $request, TrainingSession $session): RedirectResponse
     {
-        $data = [...$request->validated(), 'payment_plan' => $request->validated('payment_plan') ?? $session->payment_plan];
+        $data = [...$request->validated(), 'status' => SessionStatus::forSave($session, $request->validated('status')), 'payment_plan' => $request->validated('payment_plan') ?? $session->payment_plan];
         $changesMoney = (float) $data['fee'] !== (float) $session->fee || $data['payment_plan'] !== $session->payment_plan;
 
         if ($changesMoney && $session->payments()->whereNotNull('income_transaction_id')->exists()) {
@@ -126,6 +128,10 @@ class TrainingSessionController extends Controller
 
         if (in_array($session->status, ['completed', 'cancelled'], true)) {
             return back()->with('error', 'This session is already finished.');
+        }
+
+        if ($session->meetings()->exists()) {
+            return back()->with('error', 'This session completes by itself once every meeting is marked as done.');
         }
 
         $session->update(['status' => 'completed']);

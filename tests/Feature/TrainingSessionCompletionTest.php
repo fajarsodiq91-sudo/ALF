@@ -58,7 +58,7 @@ class TrainingSessionCompletionTest extends TestCase
             ->assertOk()
             ->assertSee('Needs your attention')
             ->assertSee('Training sessions')
-            ->assertSee('ended, mark as done');
+            ->assertSee('ended, not completed yet');
     }
 
     public function test_the_reminder_does_not_count_sessions_already_finished(): void

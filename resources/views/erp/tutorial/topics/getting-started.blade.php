@@ -30,7 +30,7 @@
     <ul>
         <li><strong>Customer registrations awaiting approval</strong> (Sales): pendaftaran customer yang perlu ditinjau.</li>
         <li><strong>Training payments awaiting confirmation</strong> (Training): pembayaran yang belum dicatat.</li>
-        <li><strong>Training sessions ended, mark as done</strong> (Training): sesi yang tanggal akhirnya lewat tetapi belum diselesaikan.</li>
+        <li><strong>Training sessions ended, not completed yet</strong> (Training): sesi yang tanggal akhirnya lewat tetapi belum Completed.</li>
         <li><strong>Reschedule requests awaiting review</strong> (Training): permintaan ubah jadwal dari customer.</li>
         <li><strong>Leave requests awaiting review</strong> (HR): pengajuan cuti pending.</li>
         <li><strong>Payroll runs still in draft</strong> (HR Payroll): slip gaji yang belum dibayar.</li>

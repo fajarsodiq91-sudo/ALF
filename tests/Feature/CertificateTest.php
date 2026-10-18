@@ -210,6 +210,7 @@ class CertificateTest extends TestCase
     {
         Mail::fake();
         $customer = $this->customer('260901');
+        $customer->update(['email' => 'client@pt.test']);
         $session = $this->completed($customer);
         $this->assertSame(1, CertificateIssuer::issueFor($session));
         $certificate = Certificate::firstOrFail();

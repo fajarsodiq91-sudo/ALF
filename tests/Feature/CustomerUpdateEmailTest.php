@@ -38,6 +38,7 @@ class CustomerUpdateEmailTest extends TestCase
     public function test_marking_a_meeting_done_emails_only_the_customer(): void
     {
         $meeting = TrainingSessionMeeting::factory()->create(['training_session_id' => $this->session->id, 'meeting_date' => '2026-10-06']);
+        TrainingSessionMeeting::factory()->create(['training_session_id' => $this->session->id, 'meeting_date' => '2026-10-13']); // keeps the session from completing
 
         $this->actingAs($this->admin)->patch(route('training.meetings.toggle', $meeting))->assertRedirect();
 

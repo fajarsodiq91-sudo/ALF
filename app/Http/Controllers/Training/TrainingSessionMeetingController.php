@@ -14,6 +14,7 @@ use App\Services\CustomerNotifier;
 use App\Services\OperatingHours;
 use App\Services\PaymentInvoices;
 use App\Services\SessionPaymentPlan;
+use App\Services\SessionStatus;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -46,6 +47,7 @@ class TrainingSessionMeetingController extends Controller
         }
 
         $meeting = $session->meetings()->create($data);
+        SessionStatus::sync($session);
         SessionPaymentPlan::syncDueMeeting($session);
         CustomerNotifier::meetingAdded($meeting);
 
@@ -81,7 +83,7 @@ class TrainingSessionMeetingController extends Controller
 
         $done = ! $meeting->is_completed;
         $meeting->update(['is_completed' => $done, 'completed_at' => $done ? $this->completionTime($data['completed_date'] ?? null) : null]);
-        $this->syncStatus($meeting->session);
+        SessionStatus::sync($meeting->session);
         PaymentInvoices::sendDue($meeting->session);
         CustomerNotifier::meetingToggled($meeting);
 
@@ -112,32 +114,12 @@ class TrainingSessionMeetingController extends Controller
         return $day->isToday() ? now() : $day->startOfDay();
     }
 
-    /** planned → ongoing once a meeting is done; → completed when every meeting is done (and back if one is reopened). */
-    private function syncStatus(TrainingSession $session): void
-    {
-        if ($session->status === 'cancelled') {
-            return;
-        }
-
-        $total = $session->meetings()->count();
-        $done = $session->meetings()->where('is_completed', true)->count();
-
-        $status = match (true) {
-            $total > 0 && $done === $total => 'completed',
-            $done > 0 => 'ongoing',
-            default => 'planned',
-        };
-
-        if ($status !== $session->status) {
-            $session->update(['status' => $status]);
-        }
-    }
-
     public function destroy(TrainingSessionMeeting $meeting): RedirectResponse
     {
         $this->authorize('training.manage');
 
         $meeting->delete();
+        SessionStatus::sync($meeting->session);
         SessionPaymentPlan::syncDueMeeting($meeting->session);
         CustomerNotifier::meetingRemoved($meeting);
 

@@ -67,13 +67,31 @@
             @error('certificate_template_id') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
     @endif
+    @php
+        // With meetings the status follows them; staff can only cancel a session or reopen a cancelled one.
+        $followsMeetings = isset($session) && $session->meetings->isNotEmpty();
+        $currentStatus = old('status', $session->status ?? 'planned');
+    @endphp
     <div class="">
         <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
         <select name="status" id="status" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
-            @foreach (\App\Models\TrainingSession::STATUSES as $value => $label)
-                <option value="{{ $value }}" @selected(old('status', $session->status ?? 'planned') === $value)>{{ $label }}</option>
-            @endforeach
+            @if ($followsMeetings)
+                @if ($session->status === 'cancelled')
+                    <option value="cancelled" @selected($currentStatus === 'cancelled')>Cancelled</option>
+                    <option value="auto" @selected($currentStatus === 'auto')>Reopen — set from meetings</option>
+                @else
+                    <option value="{{ $session->status }}" @selected($currentStatus !== 'cancelled')>{{ \App\Models\TrainingSession::STATUSES[$session->status] }} (automatic)</option>
+                    <option value="cancelled" @selected($currentStatus === 'cancelled')>Cancelled</option>
+                @endif
+            @else
+                @foreach (\App\Models\TrainingSession::STATUSES as $value => $label)
+                    <option value="{{ $value }}" @selected($currentStatus === $value)>{{ $label }}</option>
+                @endforeach
+            @endif
         </select>
+        @if ($followsMeetings)
+            <p class="mt-1 text-xs text-gray-500">Follows the meetings: Planned until one is marked done, Ongoing while some are done, Completed once all are. Certificates are issued on completion.</p>
+        @endif
         @error('status') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
     <div class="">

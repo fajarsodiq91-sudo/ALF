@@ -41,7 +41,7 @@
         if ($count > 0) {
             $followUps[] = [
                 'label' => 'Training sessions',
-                'sub' => 'ended, mark as done',
+                'sub' => 'ended, not completed yet',
                 'count' => $count,
                 'route' => route('training.index', ['ready_to_complete' => 1]),
                 'icon' => 'done',
