@@ -39,7 +39,7 @@ class CertificateIssuer
 
             if (! $certificate) {
                 $certificate = self::create($session, $holder, released: true);
-            } elseif ($certificate->isReleased()) {
+            } elseif ($certificate->released_at !== null) {
                 continue;
             } else {
                 $certificate->update(['released_at' => now()]);

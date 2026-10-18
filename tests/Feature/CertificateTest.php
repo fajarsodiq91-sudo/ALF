@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Mail\TrainingUpdateMail;
 use App\Models\Certificate;
 use App\Models\Customer;
 use App\Models\TrainingProgram;
@@ -203,5 +204,30 @@ class CertificateTest extends TestCase
         $planned = $this->completed($customer);
         $planned->update(['status' => 'planned']);
         $this->actingAs(User::factory()->create())->get(route('training.certificates', $planned))->assertForbidden();
+    }
+
+    public function test_a_session_sent_back_to_ongoing_hides_its_certificate_until_it_is_completed_again(): void
+    {
+        Mail::fake();
+        $customer = $this->customer('260901');
+        $session = $this->completed($customer);
+        $this->assertSame(1, CertificateIssuer::issueFor($session));
+        $certificate = Certificate::firstOrFail();
+        Mail::assertSent(TrainingUpdateMail::class, 1);
+
+        $session->update(['status' => 'ongoing']);
+
+        $this->actingAs($customer, 'customer')->get(route('portal.dashboard'))->assertOk()->assertDontSee(route('portal.certificates.show', $certificate));
+        $this->actingAs($customer, 'customer')->get(route('portal.certificates.index'))->assertOk()->assertDontSee($certificate->number);
+        $this->actingAs($customer, 'customer')->get(route('portal.certificates.show', $certificate))->assertNotFound();
+        $this->get(route('certificates.verify', $certificate->verification_code))->assertSee('not issued yet');
+
+        // Completing it again shows the very same certificate without announcing it a second time.
+        $session->update(['status' => 'completed']);
+        $this->assertSame(0, CertificateIssuer::issueFor($session->fresh()));
+        Mail::assertSent(TrainingUpdateMail::class, 1);
+        $this->assertSame(1, Certificate::count());
+        $this->actingAs($customer, 'customer')->get(route('portal.dashboard'))->assertSee(route('portal.certificates.show', $certificate));
+        $this->actingAs($customer, 'customer')->get(route('portal.certificates.show', $certificate))->assertOk();
     }
 }

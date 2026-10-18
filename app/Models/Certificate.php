@@ -30,16 +30,19 @@ class Certificate extends Model
         return ['issued_at' => 'date', 'released_at' => 'datetime'];
     }
 
-    /** Printed early by staff and not yet visible to the holder; released once the session is completed. */
+    /**
+     * Visible to the holder only while its session is completed. A session sent back to ongoing hides its certificate
+     * again (the record and its number are kept); completing it once more shows the same certificate.
+     */
     public function isReleased(): bool
     {
-        return $this->released_at !== null;
+        return $this->released_at !== null && $this->session?->status === 'completed';
     }
 
     /** Certificates the holder (and the public verification page) may see. */
     public function scopeReleased(Builder $query): void
     {
-        $query->whereNotNull('released_at');
+        $query->whereNotNull('released_at')->whereHas('session', fn (Builder $session) => $session->where('status', 'completed'));
     }
 
     public function session(): BelongsTo
