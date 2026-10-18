@@ -36,7 +36,7 @@ class PortalCertificateController extends Controller
 
         return Pdf::loadView('certificates.pdf', ['certificate' => $certificate])
             ->setPaper('a4', 'landscape')
-            ->download(str_replace('/', '-', $certificate->number).'.pdf');
+            ->download($certificate->downloadFilename());
     }
 
     private function loadCertificate(Certificate $certificate): Certificate

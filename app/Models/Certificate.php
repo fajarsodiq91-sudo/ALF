@@ -25,6 +25,15 @@ class Certificate extends Model
         return route('certificates.verify', $this->verification_code);
     }
 
+    /** The PDF download name, e.g. "Alfajar Certificate - Gilang Mahardika Firdaus [260927].pdf". */
+    public function downloadFilename(): string
+    {
+        $name = trim(preg_replace('/[\\\\\/:*?"<>|\x00-\x1F]+/', ' ', (string) $this->customer?->name));
+        $code = $this->customer?->customer_code;
+
+        return 'Alfajar Certificate - '.($name !== '' ? $name : $this->number).($code ? " [{$code}]" : '').'.pdf';
+    }
+
     protected function casts(): array
     {
         return ['issued_at' => 'date', 'released_at' => 'datetime'];

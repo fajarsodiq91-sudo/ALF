@@ -53,6 +53,16 @@ class CertificatePortfolioTest extends TestCase
         $this->assertGreaterThan(1000, strlen($response->getContent()));
     }
 
+    public function test_pdf_download_filename_uses_name_and_customer_code(): void
+    {
+        $certificate = $this->certificate();
+        $certificate->customer->forceFill(['name' => 'Gilang Mahardika Firdaus', 'customer_code' => '260927'])->save();
+
+        $this->actingAs($certificate->customer, 'customer')
+            ->get(route('portal.certificates.download', $certificate))
+            ->assertDownload('Alfajar Certificate - Gilang Mahardika Firdaus [260927].pdf');
+    }
+
     public function test_pdf_download_is_blocked_for_someone_elses_certificate(): void
     {
         $certificate = $this->certificate();
