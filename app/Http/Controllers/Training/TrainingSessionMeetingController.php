@@ -11,6 +11,7 @@ use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
 use App\Services\BookedSlots;
 use App\Services\CustomerNotifier;
+use App\Services\MeetingAttendance;
 use App\Services\OperatingHours;
 use App\Services\PaymentInvoices;
 use App\Services\SessionPaymentPlan;
@@ -74,15 +75,20 @@ class TrainingSessionMeetingController extends Controller
         return redirect()->route('training.edit', $session)->with('status', 'Participant removed.');
     }
 
-    /** Marks a meeting as done (realised) or back to upcoming. */
+    /** Marks a meeting as done (realised) or back to upcoming; done also records who attended, undo removes only that. */
     public function toggle(Request $request, TrainingSessionMeeting $meeting): RedirectResponse
     {
         $this->authorize('training.manage');
 
-        $data = $request->validate(['completed_date' => ['nullable', 'date', 'before_or_equal:today']]);
+        $data = $request->validate([
+            'completed_date' => ['nullable', 'date', 'before_or_equal:today'],
+            'present' => ['nullable', 'array'],
+            'present.*' => ['integer'],
+        ]);
 
         $done = ! $meeting->is_completed;
         $meeting->update(['is_completed' => $done, 'completed_at' => $done ? $this->completionTime($data['completed_date'] ?? null) : null]);
+        $done ? MeetingAttendance::recordOnDone($meeting, $data['present'] ?? []) : MeetingAttendance::clearOnUndo($meeting);
         SessionStatus::sync($meeting->session);
         PaymentInvoices::sendDue($meeting->session);
         CustomerNotifier::meetingToggled($meeting);

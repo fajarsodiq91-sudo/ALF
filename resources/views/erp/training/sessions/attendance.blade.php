@@ -44,7 +44,7 @@
                                             <button type="submit" class="rounded px-1.5 py-0.5 hover:bg-gray-100" title="{{ $attendance ? 'Click to remove' : 'Click to mark present' }}">
                                                 @if ($attendance)
                                                     <span class="font-semibold text-green-600">&#10003;</span>
-                                                    <span class="block text-xs text-gray-400">{{ $attendance->checked_in_at->format('H:i') }}{{ $attendance->method === 'manual' ? ' · manual' : '' }}</span>
+                                                    <span class="block text-xs text-gray-400">{{ $attendance->checked_in_at->format('H:i') }}{{ match ($attendance->method) { 'manual' => ' · manual', 'auto' => ' · on done', default => '' } }}</span>
                                                 @else
                                                     <span class="text-gray-300">—</span>
                                                 @endif

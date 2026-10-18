@@ -195,7 +195,13 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($session->meetings as $meeting)
-                        @php $lastOpen = ! $meeting->is_completed && $session->meetings->where('is_completed', false)->count() === 1; @endphp
+                        @php
+                            $lastOpen = ! $meeting->is_completed && $session->meetings->where('is_completed', false)->count() === 1;
+                            $recorded = $meeting->attendances->pluck('customer_id');
+                            $attendeeChoices = \App\Services\MeetingAttendance::needsChoice($session)
+                                ? \App\Services\MeetingAttendance::attendees($session)->map(fn ($person) => ['id' => $person->id, 'name' => $person->name, 'recorded' => $recorded->contains($person->id)])->values()
+                                : collect();
+                        @endphp
                         <tr>
                             <td class="px-4 py-3 text-gray-800">{{ $meeting->meeting_date->format('D, d M Y') }}</td>
                             <td class="px-4 py-3 text-gray-500">{{ $meeting->timeRange() ?? '—' }}</td>
@@ -225,7 +231,7 @@
                                         </form>
                                         <button type="button" @click="$dispatch('open-completion-date', { url: @js(route('training.meetings.completed-date', $meeting)), title: 'Edit completion date', date: @js($meeting->completed_at?->toDateString() ?? today()->toDateString()) })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Edit done date" aria-label="Edit done date"><x-erp.action-icon name="edit" /></button>
                                     @else
-                                        <button type="button" @click="$dispatch('open-completion-date', { url: @js(route('training.meetings.toggle', $meeting)), title: 'Mark meeting as done', date: @js(today()->toDateString()), note: @js($lastOpen ? 'This is the last open meeting: the session will be completed'.($session->program?->program_type === 'learning' ? ' and the certificates will be issued and emailed to the customer.' : '.') : '') })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Mark done" aria-label="Mark done"><x-erp.action-icon name="done" /></button>
+                                        <button type="button" @click="$dispatch('open-completion-date', { url: @js(route('training.meetings.toggle', $meeting)), title: 'Mark meeting as done', date: @js(today()->toDateString()), people: @js($attendeeChoices), note: @js($lastOpen ? 'This is the last open meeting: the session will be completed'.($session->program?->program_type === 'learning' ? ' and the certificates will be issued and emailed to the customer.' : '.') : '') })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Mark done" aria-label="Mark done"><x-erp.action-icon name="done" /></button>
                                     @endif
                                     @unless ($meeting->is_completed)
                                         <button type="button" @click="$dispatch('open-meeting-reschedule', { url: @js(route('training.meetings.reschedule', $meeting)), current: @js($meeting->meeting_date->format('D, d M Y').' · '.($meeting->timeRange() ?? 'no time set')), meeting_date: @js($meeting->meeting_date->toDateString()), start_time: @js($meeting->start_time ? substr($meeting->start_time, 0, 5) : ''), end_time: @js($meeting->end_time ? substr($meeting->end_time, 0, 5) : '') })" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-brand hover:bg-brand-50 hover:text-brand-dark" data-tip="Reschedule" aria-label="Reschedule"><x-erp.action-icon name="reschedule" /></button>
@@ -307,8 +313,8 @@
                 </form>
             @endcan
             @can('training.manage')
-                <div x-data="{ open: false, url: '', title: '', date: '', note: '' }"
-                     @open-completion-date.window="url = $event.detail.url; title = $event.detail.title; date = $event.detail.date; note = $event.detail.note || ''; open = true"
+                <div x-data="{ open: false, url: '', title: '', date: '', note: '', people: [] }"
+                     @open-completion-date.window="url = $event.detail.url; title = $event.detail.title; date = $event.detail.date; note = $event.detail.note || ''; people = ($event.detail.people || []).map(p => ({ ...p, present: true })); open = true"
                      @keydown.escape.window="open = false" x-show="open" x-cloak class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
                     <form :action="url" method="POST" class="w-full max-w-sm space-y-4 rounded-xl bg-white p-5 shadow-2xl">
                         @csrf
@@ -320,6 +326,18 @@
                             <input type="date" id="completed_date" name="completed_date" x-model="date" max="{{ today()->toDateString() }}" required class="mt-1 {{ $inputClass }}">
                             <p class="mt-1 text-xs text-gray-500">Defaults to today. Choose an earlier date if the meeting was held before it was recorded.</p>
                         </div>
+                        <fieldset x-show="people.length" class="space-y-1">
+                            <legend class="block text-sm font-medium text-gray-700">Who attended?</legend>
+                            <p class="text-xs text-gray-500">Everyone is ticked by default. Untick those who were absent; they will not be marked present.</p>
+                            <template x-for="person in people" :key="person.id">
+                                <label class="flex items-center gap-2 text-sm text-gray-800">
+                                    <input type="checkbox" x-model="person.present" :disabled="person.recorded" class="rounded border-gray-300 text-brand focus:ring-brand">
+                                    <span x-text="person.name"></span>
+                                    <span x-show="person.recorded" class="text-xs text-gray-400">already present</span>
+                                    <input type="hidden" name="present[]" :value="person.id" :disabled="person.recorded || !person.present">
+                                </label>
+                            </template>
+                        </fieldset>
                         <div class="flex justify-end gap-2">
                             <button type="button" @click="open = false" class="rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-100">Cancel</button>
                             <button type="submit" class="rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white shadow-sm">Save</button>
