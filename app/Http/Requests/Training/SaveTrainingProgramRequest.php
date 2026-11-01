@@ -45,6 +45,7 @@ class SaveTrainingProgramRequest extends FormRequest
             'duration_days' => ['required', 'integer', 'min:1', 'max:100'],
             'session_minutes' => ['nullable', 'integer', 'min:15', 'max:720'],
             'standard_price' => ['required', 'numeric', 'min:0'],
+            'registration_fee' => ['nullable', 'numeric', 'min:0', 'max:999999999999'],
             'is_active' => ['sometimes', 'boolean'],
             'group_max_size' => ['nullable', 'integer', 'min:1', 'max:50'],
             'group_tiers' => ['nullable', 'array', 'max:20'],

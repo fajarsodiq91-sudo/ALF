@@ -12,11 +12,11 @@
     <body class="font-sans antialiased text-gray-900 min-h-screen bg-gradient-to-br from-steel-100 via-white to-brand-50">
         @include('erp.partials.slot-picker', ['booked' => $booked])
         <script>
-            function registrationForm(initial, prices, standardPrices, discountLabels, counts, minutes, corporate, images, terms, maxGroups) {
+            function registrationForm(initial, prices, standardPrices, discountLabels, counts, minutes, corporate, images, terms, maxGroups, registrationFees) {
                 return {
                     programs: initial.map(p => ({ payment_plan: 'full', group_size: 1, ...p })),
                     prices, standardPrices, discountLabels,
-                    counts, minutes, corporate, images, terms, maxGroups,
+                    counts, minutes, corporate, images, terms, maxGroups, registrationFees,
                     minutesOf(program) { return parseInt(this.minutes[program.training_program_id]) || null; },
                     corporateOf(program) { return !!this.corporate[program.training_program_id]; },
                     imagesOf(program) { return this.images[program.training_program_id] || []; },
@@ -48,6 +48,8 @@
                     half(program) { return Math.round(this.priceOf(program) / 2 * 100) / 100; },
                     totalFee() { return this.programs.reduce((sum, p) => sum + this.priceOf(p), 0); },
                     dueNow() { return this.programs.reduce((sum, p) => sum + (p.payment_plan === 'installment' && this.installmentAllowed(p) ? this.half(p) : this.priceOf(p)), 0); },
+                    /** The one-time registration fee follows the first program on the list. */
+                    registrationFee() { const first = this.programs[0]; return first ? parseFloat(this.registrationFees[first.training_program_id]) || 0 : 0; },
                     hours: window.operatingHours,
                     attempted: false,
                     allReady() { return this.programs.every(p => p.meetings.length > 0 && p.meetings.every(m => window.meetingReady(m))); },
@@ -64,7 +66,7 @@
                 <h1 class="text-lg font-semibold text-gray-800">Customer Registration</h1>
                 <p class="mt-1 text-sm text-gray-500">Please fill in your details. Registration type: <span class="font-medium text-gray-700">{{ \App\Services\MasterData::label('customer_type', $customer->customer_type) }}</span>.</p>
 
-                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" @submit="if (!allReady()) { $event.preventDefault(); attempted = true; }" x-data='registrationForm(@json(old("programs", [])), @json($prices), @json($standardPrices), @json($discountLabels), @json($meetingCounts), @json($sessionMinutes), @json($corporateFlags), @json($programImages), @json($programTerms), @json($maxGroupSizes))'>
+                <form action="{{ route('customer-registration.store', $token) }}" method="POST" enctype="multipart/form-data" class="mt-5 space-y-4" @submit="if (!allReady()) { $event.preventDefault(); attempted = true; }" x-data='registrationForm(@json(old("programs", [])), @json($prices), @json($standardPrices), @json($discountLabels), @json($meetingCounts), @json($sessionMinutes), @json($corporateFlags), @json($programImages), @json($programTerms), @json($maxGroupSizes), @json($registrationFees))'>
                     @csrf
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700">Name / Company Name <span class="text-red-600">*</span></label>
@@ -204,9 +206,11 @@
                         </div>
                     </template>
 
-                    <div x-show="programs.length && totalFee() > 0" x-cloak class="mt-3 rounded-md border border-brand/30 bg-white px-3 py-2 text-sm">
+                    <div x-show="programs.length && (totalFee() > 0 || registrationFee() > 0)" x-cloak class="mt-3 rounded-md border border-brand/30 bg-white px-3 py-2 text-sm">
                         <div class="flex justify-between"><span class="text-gray-600">Total program fee</span><span class="font-semibold" x-text="rupiah(totalFee())"></span></div>
-                        <div class="flex justify-between"><span class="text-gray-600">To pay when you register</span><span class="font-semibold text-brand" x-text="rupiah(dueNow())"></span></div>
+                        <div x-show="registrationFee() > 0" class="flex justify-between"><span class="text-gray-600">Registration fee <span class="text-xs text-gray-400">(one-time, non-refundable)</span></span><span class="font-semibold" x-text="rupiah(registrationFee())"></span></div>
+                        <p x-show="registrationFee() > 0" class="mt-1 text-xs text-gray-500">Your program starts once the registration fee is paid.</p>
+                        <div class="flex justify-between"><span class="text-gray-600">To pay when you register</span><span class="font-semibold text-brand" x-text="rupiah(dueNow() + registrationFee())"></span></div>
                         <p class="mt-1 text-xs text-gray-400">These are standard prices. Our team confirms the final fee and payment details when approving your registration.</p>
                     </div>
 

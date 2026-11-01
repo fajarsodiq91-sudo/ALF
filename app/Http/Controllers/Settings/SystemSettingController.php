@@ -27,6 +27,7 @@ class SystemSettingController extends Controller
             'company_bank_account' => ['nullable', 'string', 'max:500'],
             'certificate_signer_name' => ['nullable', 'string', 'max:255'],
             'certificate_signer_title' => ['nullable', 'string', 'max:255'],
+            'registration_fee' => ['nullable', 'numeric', 'min:0', 'max:999999999999'],
             Tax::DEFAULT_INCOME_SETTING => ['nullable', 'exists:taxes,id'],
         ]);
 

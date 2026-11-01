@@ -29,6 +29,15 @@
                 @endforeach
 
                 <div class="border-t border-gray-100 pt-5">
+                    <label for="registration_fee" class="block text-sm font-medium text-gray-700">Registration fee (Rp)</label>
+                    <input type="number" name="registration_fee" id="registration_fee" min="0" step="1"
+                           value="{{ old('registration_fee', $values['registration_fee'] ?? '') }}" placeholder="0"
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                    <p class="mt-1 text-xs text-gray-500">Charged once per customer, on top of the program fee, and not refundable. It is added to the first program when a registration is approved, and a group pays it once. Leave empty or 0 for no fee.</p>
+                    @error('registration_fee') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="border-t border-gray-100 pt-5">
                     <label for="default_income_tax_id" class="block text-sm font-medium text-gray-700">Default income tax</label>
                     <select name="default_income_tax_id" id="default_income_tax_id"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">

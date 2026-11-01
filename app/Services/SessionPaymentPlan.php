@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Setting;
+use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 
 /**
@@ -44,10 +46,11 @@ class SessionPaymentPlan
     /**
      * Rebuilds the unpaid payments from the session's fee, plan and meetings.
      * Payments already recorded in Finance are never touched, so callers must check for those first.
+     * The registration fee is not part of the program fee, so it is left alone too.
      */
     public static function generate(TrainingSession $session): void
     {
-        $session->payments()->whereNull('income_transaction_id')->delete();
+        $session->payments()->whereNull('income_transaction_id')->where('is_registration_fee', false)->delete();
 
         $fee = round((float) $session->fee, 2);
         $plan = self::effective($session->payment_plan, $session->meetings()->count(), $session->program?->session_minutes);
@@ -85,7 +88,7 @@ class SessionPaymentPlan
 
         // Down to a single meeting: the whole fee is due upfront, unless a payment is already recorded in Finance.
         if ($session->meetings()->count() === 1 && $session->program?->session_minutes !== self::FULL_DAY_MINUTES) {
-            if ($session->payments()->whereNotNull('income_transaction_id')->doesntExist()) {
+            if ($session->payments()->whereNotNull('income_transaction_id')->where('is_registration_fee', false)->doesntExist()) {
                 self::generate($session);
             }
 
@@ -96,6 +99,31 @@ class SessionPaymentPlan
             ->whereNull('income_transaction_id')
             ->whereNotNull('due_meeting_number')
             ->update(['due_meeting_number' => self::middleMeeting($session->meetings()->count())]);
+    }
+
+    /** The program's own registration fee when it has one (0 means free), otherwise the default from System Settings; 0 when there is none. */
+    public static function registrationFee(?TrainingProgram $program = null): float
+    {
+        return max(0, round((float) ($program?->registration_fee ?? Setting::get('registration_fee', '0')), 2));
+    }
+
+    /**
+     * Adds the one-time registration fee, due upon registration, to the customer's first session; the fee
+     * is the one of that first program. A customer who was already charged (on any session) never pays it again.
+     */
+    public static function addRegistrationFee(TrainingSession $session): void
+    {
+        $fee = self::registrationFee($session->program);
+
+        $alreadyCharged = $session->customer?->sessions()
+            ->whereHas('payments', fn ($query) => $query->where('is_registration_fee', true))
+            ->exists();
+
+        if ($fee <= 0 || $alreadyCharged) {
+            return;
+        }
+
+        $session->payments()->create(['label' => 'Registration fee', 'percentage' => 0, 'amount' => $fee, 'due_meeting_number' => null, 'is_registration_fee' => true]);
     }
 
     public static function rupiah(float|string $amount): string

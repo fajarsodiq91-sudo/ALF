@@ -87,6 +87,11 @@ class TrainingSessionMeetingController extends Controller
         ]);
 
         $done = ! $meeting->is_completed;
+
+        if ($done && $meeting->session->hasUnpaidRegistrationFee()) {
+            return back()->with('error', 'The registration fee is not paid yet, so this program cannot run. Record the registration fee first.');
+        }
+
         $meeting->update(['is_completed' => $done, 'completed_at' => $done ? $this->completionTime($data['completed_date'] ?? null) : null]);
         $done ? MeetingAttendance::recordOnDone($meeting, $data['present'] ?? []) : MeetingAttendance::clearOnUndo($meeting);
         SessionStatus::sync($meeting->session);

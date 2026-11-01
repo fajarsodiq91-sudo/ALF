@@ -133,6 +133,9 @@
                         <li><span class="font-medium">{{ $entry['program']->name }}</span> ({{ \App\Services\SessionPaymentPlan::rupiah($entry['price']) }}@if ($entry['group_size'] > 1), {{ $entry['group_size'] }} people × {{ \App\Services\SessionPaymentPlan::rupiah($entry['per_person']) }}@endif, {{ \App\Services\SessionPaymentPlan::PLANS[$entry['plan']] ?? $entry['plan'] }}): {{ collect($entry['meetings'])->pluck('label')->implode(' · ') }}</li>
                     @endforeach
                 </ul>
+                @if (($registrationFee = \App\Services\SessionPaymentPlan::registrationFee($requested[0]['program'])) > 0)
+                    <p class="mt-2 text-xs text-blue-700">A one-time registration fee of {{ \App\Services\SessionPaymentPlan::rupiah($registrationFee) }} (set by {{ $requested[0]['program']->name }}, the first program) is added on approval. It is non-refundable and not part of the program fee.</p>
+                @endif
             </div>
         @endif
 

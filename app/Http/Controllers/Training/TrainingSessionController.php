@@ -83,7 +83,7 @@ class TrainingSessionController extends Controller
         $data = [...$request->validated(), 'status' => SessionStatus::forSave($session, $request->validated('status')), 'payment_plan' => $request->validated('payment_plan') ?? $session->payment_plan];
         $changesMoney = (float) $data['fee'] !== (float) $session->fee || $data['payment_plan'] !== $session->payment_plan;
 
-        if ($changesMoney && $session->payments()->whereNotNull('income_transaction_id')->exists()) {
+        if ($changesMoney && $session->payments()->whereNotNull('income_transaction_id')->where('is_registration_fee', false)->exists()) {
             return back()->withInput()->withErrors(['fee' => 'A payment for this session is already recorded in Finance. Cancel it before changing the fee or payment plan.']);
         }
 

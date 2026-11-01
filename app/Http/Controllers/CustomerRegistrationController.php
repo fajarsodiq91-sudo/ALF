@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\TrainingProgram;
 use App\Services\BookedSlots;
 use App\Services\ImageCompressor;
+use App\Services\SessionPaymentPlan;
 use App\Services\StaffNotifier;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
@@ -42,6 +43,7 @@ class CustomerRegistrationController extends Controller
         return view('customer-registration.form', [
             'customer' => $customer,
             'token' => $token,
+            'registrationFees' => $programs->mapWithKeys(fn ($program) => [$program->id => SessionPaymentPlan::registrationFee($program)]),
             'hasAgreement' => Setting::get('agreement_content') !== null,
             'programs' => $grouped,
             'prices' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->pricesBySize()]),

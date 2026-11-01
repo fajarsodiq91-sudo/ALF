@@ -114,6 +114,14 @@ class TrainingSession extends Model
         return $this->hasMany(TrainingSessionPayment::class)->orderBy('id');
     }
 
+    /** A program only runs once its customer's registration fee is paid; true while that fee is still waiting for payment. */
+    public function hasUnpaidRegistrationFee(): bool
+    {
+        return $this->relationLoaded('payments')
+            ? $this->payments->contains(fn ($payment) => $payment->is_registration_fee && ! $payment->isPaid())
+            : $this->payments()->where('is_registration_fee', true)->whereNull('income_transaction_id')->exists();
+    }
+
     public function paidAmount(): float
     {
         return (float) $this->payments->filter->isPaid()->sum('amount');

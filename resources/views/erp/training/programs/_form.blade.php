@@ -55,6 +55,13 @@
         <input type="number" name="standard_price" id="standard_price" value="{{ old('standard_price', $program->standard_price ?? 0) }}" required step="0.01" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
         @error('standard_price') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
+
+    <div>
+        <label for="registration_fee" class="block text-sm font-medium text-gray-700">Registration Fee (Rp)</label>
+        <input type="number" name="registration_fee" id="registration_fee" value="{{ old('registration_fee', $program->registration_fee ?? '') }}" step="0.01" min="0" placeholder="Empty = default ({{ \App\Services\SessionPaymentPlan::rupiah(\App\Services\SessionPaymentPlan::registrationFee()) }})" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+        <p class="mt-1 text-xs text-gray-500">One-time per customer, charged only when this is the first program they register for. Leave empty to use the default from System Settings, or enter 0 for no registration fee.</p>
+        @error('registration_fee') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
     <div class="sm:col-span-2">
         <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
         <textarea name="description" id="description" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">{{ old('description', $program->description ?? '') }}</textarea>

@@ -31,7 +31,7 @@ class CustomerApproval
             $customer->rejection_reason = null;
             $customer->save();
 
-            foreach ($programs as $entry) {
+            foreach ($programs as $index => $entry) {
                 $meetings = collect($entry['meetings'])->sortBy('meeting_date')->values();
 
                 $session = TrainingSession::create([
@@ -59,7 +59,14 @@ class CustomerApproval
                     ]);
                 }
 
+                // Only the first program decides the one-time registration fee (a free first program means no fee at all).
+                // It is created before the program payments so it is always the first payment and invoice.
+                if ($index === array_key_first($programs)) {
+                    SessionPaymentPlan::addRegistrationFee($session);
+                }
+
                 SessionPaymentPlan::generate($session);
+
                 $session->syncParticipantToken();
             }
 

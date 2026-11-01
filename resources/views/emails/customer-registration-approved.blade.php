@@ -38,6 +38,10 @@ Instructor: {{ $session->instructor->name }}
 @foreach ($session->payments as $payment)
 - {{ $payment->label }}: {{ \App\Services\SessionPaymentPlan::rupiah($payment->amount) }} ({{ $payment->dueLabel() }})
 @endforeach
+@if ($session->hasUnpaidRegistrationFee())
+
+Your program starts once the registration fee is paid; the other payments follow after it.
+@endif
 
 @endif
 @empty

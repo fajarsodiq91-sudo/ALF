@@ -32,6 +32,10 @@ class TrainingSessionPaymentController extends Controller
             return $back->with('error', 'This payment is already recorded.');
         }
 
+        if ($payment->loadMissing('session')->awaitingRegistrationFee()) {
+            return $back->with('error', 'Record the registration fee first: the program fee can only be paid after it.');
+        }
+
         $proofFile = $request->file('proof');
 
         DB::transaction(function () use ($request, $payment, $proofFile) {
@@ -72,6 +76,11 @@ class TrainingSessionPaymentController extends Controller
                 'proof_url' => $isTransfer ? $request->input('proof_url') : null,
             ]);
         });
+
+        // The program fee is invoiced only once the registration fee is in.
+        if ($payment->is_registration_fee) {
+            PaymentInvoices::sendDue($payment->session);
+        }
 
         if (! PaymentInvoices::sendThanks($payment->fresh('session.customer'))) {
             return $back->with('error', 'Payment recorded as income in Finance, but the thank-you email to the customer could NOT be sent (no email address on file, or the mail settings need checking).');

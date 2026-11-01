@@ -97,6 +97,8 @@
                             <td class="px-4 py-3">
                                 @if ($payment->isPaid())
                                     <span class="inline-flex rounded-full bg-green-50 text-green-700 px-2 py-0.5 text-xs font-medium">Paid {{ $payment->paid_date?->format('d M Y') }}</span>
+                                @elseif ($payment->awaitingRegistrationFee())
+                                    <span class="inline-flex rounded-full bg-gray-100 text-gray-500 px-2 py-0.5 text-xs font-medium">After registration fee</span>
                                 @elseif ($payment->isDue())
                                     <span class="inline-flex rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 text-xs font-medium">Due now</span>
                                 @else
@@ -119,7 +121,7 @@
                                                 <button type="submit" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-amber-600 hover:bg-amber-50 hover:text-amber-800" data-tip="Cancel payment" aria-label="Cancel payment"><x-erp.action-icon name="cancel" /></button>
                                             </form>
                                         </div>
-                                    @else
+                                    @elseif (! $payment->awaitingRegistrationFee())
                                         <button type="button" @click="paying = !paying" class="action-tip mx-0.5 inline-flex items-center justify-center rounded-md p-1.5 align-middle transition text-green-600 hover:bg-green-50 hover:text-green-800" data-tip="Record payment" aria-label="Record payment"><x-erp.action-icon name="pay" /></button>
                                     @endif
                                 </td>

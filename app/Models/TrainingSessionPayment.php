@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['training_session_id', 'label', 'percentage', 'amount', 'due_meeting_number', 'due_after_completion', 'invoice_sent_at', 'paid_date', 'income_transaction_id', 'proof_path', 'proof_original_name', 'proof_url'])]
+#[Fillable(['training_session_id', 'label', 'percentage', 'amount', 'due_meeting_number', 'due_after_completion', 'is_registration_fee', 'invoice_sent_at', 'paid_date', 'income_transaction_id', 'proof_path', 'proof_original_name', 'proof_url'])]
 class TrainingSessionPayment extends Model
 {
     /** @use HasFactory<TrainingSessionPaymentFactory> */
@@ -21,6 +21,7 @@ class TrainingSessionPayment extends Model
             'amount' => 'decimal:2',
             'paid_date' => 'date',
             'due_after_completion' => 'boolean',
+            'is_registration_fee' => 'boolean',
             'invoice_sent_at' => 'datetime',
         ];
     }
@@ -61,9 +62,19 @@ class TrainingSessionPayment extends Model
         return $this->due_meeting_number ? 'At meeting '.$this->due_meeting_number : 'Upon registration';
     }
 
-    /** Due now: upfront payments always, the others once their meeting was held or its date has come. */
+    /** The program fee is only collected after the registration fee is paid, so such a payment waits until then. */
+    public function awaitingRegistrationFee(): bool
+    {
+        return ! $this->is_registration_fee && ! $this->isPaid() && $this->session->hasUnpaidRegistrationFee();
+    }
+
+    /** Due now: upfront payments always, the others once their meeting was held or its date has come; none before the registration fee is paid. */
     public function isDue(): bool
     {
+        if ($this->awaitingRegistrationFee()) {
+            return false;
+        }
+
         if ($this->due_after_completion) {
             $meetings = $this->session->meetings;
 

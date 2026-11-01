@@ -201,6 +201,8 @@
                                         <span class="text-gray-800">{{ \App\Services\SessionPaymentPlan::rupiah($payment->amount) }}</span>
                                         @if ($payment->isPaid())
                                             <span class="rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700">Paid</span>
+                                        @elseif ($payment->awaitingRegistrationFee())
+                                            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">After registration fee</span>
                                         @elseif ($payment->isDue())
                                             <span class="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">Due</span>
                                         @else
@@ -210,6 +212,9 @@
                                 </li>
                             @endforeach
                         </ul>
+                        @if ($session->hasUnpaidRegistrationFee())
+                            <p class="mt-2 text-xs text-gray-500">Your program starts once the registration fee is paid; the other payments follow after it.</p>
+                        @endif
                     </div>
                 @endif
 
