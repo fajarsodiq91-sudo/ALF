@@ -3,14 +3,17 @@
 namespace App\Services;
 
 use App\Mail\LeaveRequestReviewed;
+use App\Mail\StaffMeetingSummary;
 use App\Mail\StaffRegistrationSubmitted;
 use App\Mail\StaffRescheduleRequested;
 use App\Models\Customer;
 use App\Models\LeaveRequest;
 use App\Models\MeetingRescheduleRequest;
+use App\Models\TrainingSessionMeeting;
 use App\Models\User;
 use Closure;
 use Illuminate\Contracts\Mail\Mailable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -32,6 +35,17 @@ class StaffNotifier
     public static function rescheduleRequested(MeetingRescheduleRequest $rescheduleRequest): void
     {
         self::sendToUsersWith('training.manage', fn () => new StaffRescheduleRequested($rescheduleRequest), ['request_id' => $rescheduleRequest->id]);
+    }
+
+    /**
+     * One daily summary of the meetings happening today and tomorrow, for everyone who manages training.
+     *
+     * @param  Collection<int, TrainingSessionMeeting>  $today
+     * @param  Collection<int, TrainingSessionMeeting>  $tomorrow
+     */
+    public static function meetingSummary(Collection $today, Collection $tomorrow): void
+    {
+        self::sendToUsersWith('training.manage', fn () => new StaffMeetingSummary($today, $tomorrow), ['today' => $today->count(), 'tomorrow' => $tomorrow->count()]);
     }
 
     /** Tells the employee how their leave request was decided; returns whether the email went out. */

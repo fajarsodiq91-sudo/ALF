@@ -79,6 +79,23 @@ class CustomerNotifier
         ]);
     }
 
+    /**
+     * Reminds the session's customer and its participants of a meeting, the day before or an hour before it starts.
+     * Returns how many emails went out.
+     */
+    public static function meetingReminder(TrainingSessionMeeting $meeting, bool $hourBefore): int
+    {
+        $meeting->loadMissing('session.customer', 'session.participants');
+        $session = $meeting->session;
+
+        $recipients = $session->participants->prepend($session->customer)->filter()->unique('id');
+
+        $heading = $hourBefore ? 'Your meeting starts in 1 hour' : 'Reminder: your meeting is tomorrow';
+        $message = $hourBefore ? 'This is a reminder that your meeting starts in about an hour.' : 'This is a reminder that you have a meeting tomorrow.';
+
+        return $recipients->filter(fn (Customer $recipient) => self::send($recipient, $heading, $message, self::meetingDetails($meeting)))->count();
+    }
+
     /** @return array<string, string> */
     private static function sessionDetails(TrainingSession $session): array
     {

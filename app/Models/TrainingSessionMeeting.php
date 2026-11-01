@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 #[Fillable(['training_session_id', 'meeting_date', 'start_time', 'end_time', 'location', 'topic', 'is_completed', 'completed_at'])]
 class TrainingSessionMeeting extends Model
@@ -21,7 +22,28 @@ class TrainingSessionMeeting extends Model
             'meeting_date' => 'date',
             'is_completed' => 'boolean',
             'completed_at' => 'datetime',
+            'day_before_reminded_at' => 'datetime',
+            'hour_before_reminded_at' => 'datetime',
         ];
+    }
+
+    /** A meeting moved to another date or time is due its reminders again. */
+    protected static function booted(): void
+    {
+        static::updating(function (self $meeting) {
+            if ($meeting->isDirty(['meeting_date', 'start_time'])) {
+                $meeting->day_before_reminded_at = null;
+                $meeting->hour_before_reminded_at = null;
+            }
+        });
+    }
+
+    /** When the meeting begins, or null when no start time is set. */
+    public function startsAt(): ?Carbon
+    {
+        return $this->start_time
+            ? $this->meeting_date->copy()->setTimeFromTimeString($this->start_time)
+            : null;
     }
 
     public function session(): BelongsTo
