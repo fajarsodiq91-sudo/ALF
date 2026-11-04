@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Mail\StaffMeetingSummary;
+use App\Mail\TrainerMeetingReminder;
 use App\Mail\TrainingUpdateMail;
 use App\Models\Customer;
+use App\Models\Employee;
 use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
 use App\Models\User;
@@ -57,6 +59,43 @@ class MeetingReminderTest extends TestCase
         Mail::assertSent(TrainingUpdateMail::class, 1);
         Mail::assertSent(TrainingUpdateMail::class, fn ($mail) => $mail->hasTo('hrd@pt.test') && str_contains($mail->heading, 'tomorrow'));
         $this->assertNotNull($meeting->refresh()->day_before_reminded_at);
+    }
+
+    public function test_the_trainer_gets_both_reminders(): void
+    {
+        $trainer = Employee::factory()->create(['email' => 'trainer@alfajar.test', 'status' => 'active']);
+        $this->meeting('2026-09-16', '09:00', ['instructor_id' => $trainer->id]);
+        $this->meeting('2026-09-15', '08:30', ['instructor_id' => $trainer->id]);
+
+        $this->artisan('meetings:send-reminders day-before');
+        $this->artisan('meetings:send-reminders hour-before');
+
+        Mail::assertSent(TrainerMeetingReminder::class, 2);
+        Mail::assertSent(TrainerMeetingReminder::class, fn ($mail) => $mail->hasTo('trainer@alfajar.test') && ! $mail->hourBefore);
+        Mail::assertSent(TrainerMeetingReminder::class, fn ($mail) => $mail->hasTo('trainer@alfajar.test') && $mail->hourBefore);
+    }
+
+    public function test_no_trainer_reminder_without_an_instructor_an_email_or_after_resigning(): void
+    {
+        $this->meeting('2026-09-16');
+        $this->meeting('2026-09-16', '10:00', ['instructor_id' => Employee::factory()->create(['email' => null])->id]);
+        $this->meeting('2026-09-16', '11:00', ['instructor_id' => Employee::factory()->create(['email' => 'gone@alfajar.test', 'status' => 'resigned'])->id]);
+
+        $this->artisan('meetings:send-reminders day-before');
+
+        Mail::assertNotSent(TrainerMeetingReminder::class);
+        Mail::assertSent(TrainingUpdateMail::class, 3);
+    }
+
+    public function test_the_trainer_email_renders(): void
+    {
+        $trainer = Employee::factory()->create(['email' => 'trainer@alfajar.test']);
+        $meeting = $this->meeting('2026-09-16', '09:00', ['instructor_id' => $trainer->id])->load('session.program', 'session.customer');
+
+        $html = (new TrainerMeetingReminder($trainer, $meeting, false))->render();
+
+        $this->assertStringContainsString($meeting->session->customer->name, $html);
+        $this->assertStringContainsString($trainer->name, $html);
     }
 
     public function test_participants_are_reminded_too(): void

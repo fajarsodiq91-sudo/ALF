@@ -41,9 +41,10 @@
 <x-tutorial.section title="Pengingat pertemuan otomatis">
     <p>Sistem mengirim pengingat tanpa Anda melakukan apa pun, selama scheduler server berjalan (<code>schedule:run</code>, sama seperti pengiriman invoice harian):</p>
     <ul>
-        <li><strong>H-1, pukul 08:00</strong>: email pengingat ke customer yang pertemuannya besok. Untuk sesi grup atau perusahaan, email juga dikirim ke setiap peserta yang sudah bergabung.</li>
-        <li><strong>1 jam sebelum mulai</strong>: email pengingat ke customer (dan pesertanya) untuk pertemuan yang dimulai dalam satu jam ke depan. Pertemuan tanpa jam mulai tidak mendapat pengingat ini.</li>
+        <li><strong>H-1, pukul 08:00</strong>: email pengingat ke customer yang pertemuannya besok. Untuk sesi grup atau perusahaan, email juga dikirim ke setiap peserta yang sudah bergabung. Trainer sesi (kolom <em>Instructor</em>) menerima email pengingat yang sama, lengkap dengan nama customer.</li>
+        <li><strong>1 jam sebelum mulai</strong>: email pengingat ke customer (dan pesertanya) untuk pertemuan yang dimulai dalam satu jam ke depan. Trainer juga mendapat pengingat ini. Pertemuan tanpa jam mulai tidak mendapat pengingat ini.</li>
         <li><strong>Ringkasan harian staf, pukul 07:00</strong>: satu email berisi pertemuan hari ini dan besok (jam, program, customer, tempat) untuk semua user aktif yang punya permission <code>training.manage</code>. Bila tidak ada pertemuan sama sekali, email tidak dikirim.</li>
+        <li>Trainer hanya diingatkan bila sesinya punya instructor yang beremail dan belum berstatus <em>Resigned</em>.</li>
     </ul>
     <ul>
         <li>Hanya pertemuan yang belum ditandai selesai dan sesi yang tidak <em>Cancelled</em> yang diingatkan.</li>

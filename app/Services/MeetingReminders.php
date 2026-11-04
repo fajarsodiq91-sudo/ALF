@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 /**
- * Reminds customers of their meetings, the day before and an hour before they start, and gives the staff one daily summary.
+ * Reminds customers and the trainer of their meetings, the day before and an hour before they start, and gives the staff one daily summary.
  * Each reminder is stamped on the meeting so it goes out once; moving the meeting clears the stamps.
  * A reminder is stamped even when the email fails (that is logged), so a broken mailbox is not retried every minute.
  */
@@ -20,6 +20,7 @@ class MeetingReminders
 
         foreach ($meetings as $meeting) {
             CustomerNotifier::meetingReminder($meeting, hourBefore: false);
+            StaffNotifier::trainerMeetingReminder($meeting, hourBefore: false);
             $meeting->forceFill(['day_before_reminded_at' => now()])->save();
         }
 
@@ -39,6 +40,7 @@ class MeetingReminders
 
         foreach ($meetings as $meeting) {
             CustomerNotifier::meetingReminder($meeting, hourBefore: true);
+            StaffNotifier::trainerMeetingReminder($meeting, hourBefore: true);
             $meeting->forceFill(['hour_before_reminded_at' => now()])->save();
         }
 
@@ -68,7 +70,7 @@ class MeetingReminders
     private static function upcoming(): Builder
     {
         return TrainingSessionMeeting::query()
-            ->with('session.program', 'session.customer')
+            ->with('session.program', 'session.customer', 'session.instructor')
             ->where('is_completed', false)
             ->whereHas('session', fn ($query) => $query->where('status', '!=', 'cancelled'));
     }

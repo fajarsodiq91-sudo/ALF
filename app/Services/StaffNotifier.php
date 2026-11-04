@@ -6,6 +6,7 @@ use App\Mail\LeaveRequestReviewed;
 use App\Mail\StaffMeetingSummary;
 use App\Mail\StaffRegistrationSubmitted;
 use App\Mail\StaffRescheduleRequested;
+use App\Mail\TrainerMeetingReminder;
 use App\Models\Customer;
 use App\Models\LeaveRequest;
 use App\Models\MeetingRescheduleRequest;
@@ -46,6 +47,27 @@ class StaffNotifier
     public static function meetingSummary(Collection $today, Collection $tomorrow): void
     {
         self::sendToUsersWith('training.manage', fn () => new StaffMeetingSummary($today, $tomorrow), ['today' => $today->count(), 'tomorrow' => $tomorrow->count()]);
+    }
+
+    /** Reminds the session's trainer of a meeting; returns whether the email went out. */
+    public static function trainerMeetingReminder(TrainingSessionMeeting $meeting, bool $hourBefore): bool
+    {
+        $meeting->loadMissing('session.instructor');
+        $trainer = $meeting->session->instructor;
+
+        if (! $trainer?->email || $trainer->status === 'resigned') {
+            return false;
+        }
+
+        try {
+            Mail::to($trainer->email)->send(new TrainerMeetingReminder($trainer, $meeting, $hourBefore));
+
+            return true;
+        } catch (Throwable $exception) {
+            Log::error('Could not send the trainer meeting reminder.', ['meeting_id' => $meeting->id, 'employee_id' => $trainer->id, 'error' => $exception->getMessage()]);
+
+            return false;
+        }
     }
 
     /** Tells the employee how their leave request was decided; returns whether the email went out. */
