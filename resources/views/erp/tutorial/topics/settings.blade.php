@@ -38,6 +38,7 @@
             <li><strong>Company name</strong>, <strong>Address</strong>, <strong>Phone</strong>, <strong>Email</strong>, dan <strong>NPWP (tax ID)</strong>. Nama perusahaan tampil di judul halaman ERP.</li>
             <li><strong>Company bank account</strong>: nomor rekening perusahaan (boleh beberapa baris). Teks ini dicantumkan di email invoice yang dikirim ke customer sebagai tujuan pembayaran.</li>
             <li><strong>Certificate default signer name</strong> dan <strong>title</strong>: penandatangan sertifikat bila sesi tidak punya instruktur.</li>
+            <li><strong>Registration fee (Rp)</strong>: biaya pendaftaran bawaan. Ditagih sekali per customer di atas harga program, tidak bisa dikembalikan, dan ditambahkan ke program pertama saat pendaftaran disetujui (grup membayarnya sekali). Kosongkan atau isi 0 bila tidak ada biaya. Program bisa menimpa nilai ini dengan biayanya sendiri (lihat topik <em>Program &amp; Kategori Training</em>).</li>
             <li><strong>Default income tax</strong>: pajak yang otomatis dipilih di setiap pemasukan baru, termasuk pembayaran training customer. Pilih <em>No automatic tax</em> bila tidak ingin pajak otomatis. Tetap bisa diubah per transaksi.</li>
         </ul>
         <p>Klik <strong>Save Settings</strong> untuk menyimpan.</p>

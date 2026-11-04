@@ -9,11 +9,21 @@
         <li>Isi <strong>Program Name</strong>, <strong>Program Type</strong> (misalnya Learning atau Consulting), dan <strong>Category</strong>.</li>
         <li><strong>Number of meetings</strong>: customer wajib memilih tanggal untuk <em>tepat</em> sejumlah ini saat mendaftar.</li>
         <li><strong>Session length (minutes)</strong>: bila diisi, customer memilih jam mulai bebas di dalam jam operasional dan jam selesai mengikuti panjang sesi. Bila kosong, customer memesan satu slot jam operasional utuh.</li>
-        <li><strong>Standard Price (Rp)</strong>, <strong>Description</strong>, dan <strong>Terms &amp; Conditions</strong>. Syarat &amp; ketentuan wajib disetujui customer saat mendaftar (misalnya kebijakan pembatalan atau kehadiran).</li>
+        <li><strong>Standard Price (Rp)</strong>, <strong>Registration Fee (Rp)</strong> (lihat bagian <em>Registration fee</em> di bawah), <strong>Description</strong>, dan <strong>Terms &amp; Conditions</strong>. Syarat &amp; ketentuan wajib disetujui customer saat mendaftar (misalnya kebijakan pembatalan atau kehadiran).</li>
         <li>Bila sudah ada template di <em>Settings → Certificate Templates</em>, pilih <strong>Certificate template</strong> untuk program ini; biarkan <em>Default template</em> untuk memakai desain utama.</li>
         <li>Centang <strong>Active</strong> agar program tampil di formulir pendaftaran. Program nonaktif tidak bisa dipilih customer, tetapi sesi lama tetap aman.</li>
         <li>Klik <strong>Create Program</strong>.</li>
     </x-tutorial.steps>
+</x-tutorial.section>
+
+<x-tutorial.section title="Registration fee (biaya pendaftaran)">
+    <p>Biaya sekali bayar yang ditagih di atas harga program, tidak bisa dikembalikan, dan hanya dikenakan satu kali per customer.</p>
+    <ul>
+        <li><strong>Kosongkan</strong> isian <strong>Registration Fee (Rp)</strong> untuk memakai biaya bawaan dari <em>Settings → System Settings</em> (nilainya tampil sebagai placeholder). Isi <strong>0</strong> bila program ini tidak memungut biaya pendaftaran, atau isi nominal khusus untuk program ini.</li>
+        <li><strong>Hanya program pertama</strong> dalam pendaftaran yang menentukan biayanya. Bila customer mendaftar beberapa program sekaligus, biaya program yang berada di urutan pertama yang dipakai; bila program pertama gratis, tidak ada biaya pendaftaran sama sekali. Customer yang sudah pernah ditagih di sesi mana pun tidak ditagih lagi.</li>
+        <li>Customer melihat biayanya di formulir pendaftaran (termasuk dalam jumlah yang dibayar saat mendaftar) dan Anda melihat catatannya di halaman review pendaftaran. Cara kerja penagihannya dijelaskan di topik <em>Sesi Training</em>: program baru berjalan setelah biaya ini dibayar.</li>
+        <li>Mengubah biaya hanya memengaruhi pendaftaran berikutnya, bukan sesi yang sudah dibuat.</li>
+    </ul>
 </x-tutorial.section>
 
 <x-tutorial.section title="Corporate training">
@@ -39,7 +49,7 @@
 
 <x-tutorial.section title="Mengubah dan menghapus">
     <ul>
-        <li>Perubahan harga, diskon, dan harga grup tidak mengubah sesi yang sudah dibuat.</li>
+        <li>Perubahan harga, biaya pendaftaran, diskon, dan harga grup tidak mengubah sesi yang sudah dibuat.</li>
         <li>Program yang sudah punya sesi <strong>tidak bisa dihapus</strong>; matikan <strong>Active</strong> saja. Kategori yang masih berisi program juga tidak bisa dihapus.</li>
         <li>Hanya program bertipe <strong>Learning</strong> yang menghasilkan sertifikat ketika sesinya selesai.</li>
     </ul>

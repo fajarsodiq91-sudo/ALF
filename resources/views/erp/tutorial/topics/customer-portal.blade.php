@@ -8,7 +8,7 @@
         <li>Klik <strong>Open as customer</strong> pada baris customer. Portal terbuka di tab baru dengan bilah kuning <strong>Preview mode</strong>.</li>
         <li>Selesai memeriksa, klik <strong>Exit preview</strong> di pojok kanan atas portal.</li>
     </x-tutorial.steps>
-    <p>Pratinjau bersifat <strong>read-only</strong>: Anda tidak bisa mengganti password, mengunggah proyek, atau mengajukan reschedule atas nama customer. Kolom <strong>Portal login</strong> memberi tahu apakah customer sudah mengganti password awalnya (<em>Active</em>), belum (<em>Initial password not changed yet</em>), atau memang tidak punya login karena ditambahkan manual oleh staf (<em>No login (added by staff)</em>).</p>
+    <p>Pratinjau bersifat <strong>read-only</strong>: Anda tidak bisa mengganti password, mengunggah proyek, atau mengajukan reschedule atas nama customer. Kolom <strong>Portal login</strong> memberi tahu apakah customer sudah mengganti password awalnya (<em>Active</em>), belum (<em>Initial password not changed yet</em>), atau belum punya login (<em>No login (added by staff)</em>). Customer manual baru otomatis mendapat login; label terakhir hanya tampil untuk customer lama yang ditambahkan sebelum fitur itu ada. Gunakan <strong>Set up portal login</strong> di halaman detail customer untuk membuatkannya.</p>
     <p>Di halaman yang sama ada tautan <strong>Login page for customers</strong> yang bisa Anda salin dan kirim ke customer.</p>
 </x-tutorial.section>
 
@@ -17,7 +17,7 @@
         <li><strong>Username</strong> adalah ID customer (misalnya <code>260901</code>). <strong>Password awal</strong> sama dengan ID tersebut.</li>
         <li>Saat login pertama, customer wajib membuat password baru: minimal 8 karakter dan tidak boleh sama dengan ID-nya. Sesudahnya, tautan <strong>Password</strong> di header portal dipakai untuk menggantinya kapan saja.</li>
         <li>Lima kali salah berturut-turut mengunci login sementara (sekitar satu menit) untuk ID dan perangkat tersebut.</li>
-        <li>Saat ini belum ada fitur reset password customer, baik di portal maupun di ERP. Customer yang lupa password perlu ditangani lewat pengembang aplikasi.</li>
+        <li><strong>Customer lupa password?</strong> Staf dengan permission <code>sales.manage</code> membuka halaman detail customer di Sales dan klik <strong>Reset portal password</strong>. Password kembali sama dengan ID customer dan customer wajib menggantinya saat login berikutnya. Portal sendiri belum punya fitur "lupa password".</li>
     </ul>
     <x-tutorial.note type="info">
         Karyawan atau anggota grup yang mendaftar lewat tautan peserta juga mendapat ID dan login portal sendiri, dengan aturan password yang sama.
@@ -28,14 +28,15 @@
     <p>Halaman utama <strong>My Programs</strong> memuat satu kartu per program:</p>
     <ul>
         <li><strong>Progres</strong> dan tabel pertemuan (tanggal, jam, tempat, topik, dan status <em>Done</em> atau <em>Upcoming</em>).</li>
-        <li><strong>Request reschedule</strong>: customer memilih tanggal dan jam baru di kalender (hanya slot kosong dan sesuai jam operasional), boleh menulis alasan, lalu mengirim. Hanya satu permintaan pending per pertemuan, dan permintaan bisa dibatalkan selama masih pending. Hanya pemilik sesi yang bisa mengajukannya, dan hanya untuk pertemuan yang belum terlaksana. Tim memprosesnya di halaman sesi (lihat topik <em>Sesi Training</em>).</li>
-        <li><strong>Payments</strong>: total biaya dan tiap termin dengan status <em>Paid</em>, <em>Due</em>, atau <em>Upcoming</em>.</li>
+        <li><strong>Request reschedule</strong>: customer memilih tanggal dan jam baru di kalender (hanya slot kosong dan sesuai jam operasional, mulai hari ini), boleh menulis alasan, lalu mengirim. Hanya satu permintaan pending per pertemuan, dan permintaan bisa dibatalkan selama masih pending. Hanya pemilik sesi yang bisa mengajukannya, dan hanya untuk pertemuan yang belum terlaksana. Tim memprosesnya di halaman sesi (lihat topik <em>Sesi Training</em>).</li>
+        <li><strong>Payments</strong>: total biaya dan tiap termin dengan status <em>Paid</em>, <em>Due</em>, <em>Upcoming</em>, atau <em>After registration fee</em> (termin program yang menunggu registration fee dibayar; portal menjelaskan bahwa program dimulai setelah biaya itu lunas).</li>
         <li><strong>Learning materials</strong> dan tombol <strong>Certificate</strong> muncul bila tautannya sudah Anda isi atau sertifikatnya sudah terbit.</li>
         <li><strong>Participants</strong> (untuk sesi perusahaan atau grup): tautan dan QR code pendaftaran peserta beserta daftar yang sudah bergabung.</li>
         <li><strong>Your project</strong>: mengunggah proyek hasil belajar berupa file (ZIP, PDF, Office, atau gambar, maks. 10 MB) atau tautan (Google Drive, GitHub, dan sebagainya), lengkap dengan judul dan deskripsi.</li>
         <li><strong>Weekly hours</strong>: jadwal mingguan hari dan jam pertemuan (bagian yang bisa dilipat). Ketersediaan slot hanya ditampilkan kepada calon customer saat mendaftar.</li>
     </ul>
-    <p>Menu <strong>Certificates</strong> di header portal mendaftar semua sertifikat customer. Setiap sertifikat bisa dilihat dan diunduh sebagai PDF.</p>
+    <p>Menu <strong>Certificates</strong> di header portal mendaftar semua sertifikat customer. Setiap sertifikat bisa dilihat dan diunduh sebagai PDF bernama <code>Alfajar Certificate - {nama} [{ID customer}].pdf</code>.</p>
+    <p>Customer juga menerima email pengingat otomatis untuk pertemuannya, sehari sebelumnya dan satu jam sebelum mulai (lihat topik <em>Sesi Training</em>).</p>
 </x-tutorial.section>
 
 <x-tutorial.section title="Sertifikat dan portofolio publik">

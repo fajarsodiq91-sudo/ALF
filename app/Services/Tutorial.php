@@ -70,7 +70,7 @@ class Tutorial
         ],
         'sales-customers' => [
             'title' => 'Customer & Pendaftaran',
-            'summary' => 'Mengundang customer lewat QR code, meninjau pendaftaran, menyetujui, dan mengelola data customer.',
+            'summary' => 'Mengundang customer lewat QR code, meninjau pendaftaran, menyetujui, mengelola data customer, reset password portal, dan memulihkan customer yang dihapus.',
             'group' => 'Sales & Training',
             'permission' => 'sales.view',
             'route' => 'sales.index',
@@ -86,7 +86,7 @@ class Tutorial
         ],
         'training-programs' => [
             'title' => 'Program & Kategori Training',
-            'summary' => 'Membuat katalog program: harga, diskon, harga grup, syarat & ketentuan, dan foto.',
+            'summary' => 'Membuat katalog program: harga, biaya pendaftaran, diskon, harga grup, syarat & ketentuan, dan foto.',
             'group' => 'Sales & Training',
             'permission' => 'training.view',
             'route' => 'training.programs.index',
@@ -94,7 +94,7 @@ class Tutorial
         ],
         'training-sessions' => [
             'title' => 'Sesi Training',
-            'summary' => 'Menjadwalkan pertemuan, mencatat pembayaran, menangani reschedule, dan menyelesaikan sesi.',
+            'summary' => 'Menjadwalkan pertemuan, pengingat otomatis, mencatat pembayaran dan registration fee, menangani reschedule, kehadiran, dan menyelesaikan sesi.',
             'group' => 'Sales & Training',
             'permission' => 'training.view',
             'route' => 'training.index',
@@ -150,7 +150,7 @@ class Tutorial
         ],
         'settings' => [
             'title' => 'Settings: User, Role & Sistem',
-            'summary' => 'Membuat akun staf, mengatur role dan permission, profil perusahaan, serta template sertifikat.',
+            'summary' => 'Membuat akun staf, mengatur role dan permission, profil perusahaan, biaya pendaftaran bawaan, template sertifikat, dan tap device.',
             'group' => 'Pengaturan',
             'permission' => ['settings.manage-users', 'settings.manage-roles', 'settings.manage-system'],
             'route' => null,
