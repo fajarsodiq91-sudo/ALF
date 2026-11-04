@@ -21,7 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withSchedule(function (Schedule $schedule): void {
-        $schedule->command('finance:charge-bank-admin-fees')->monthlyOn(1, '01:00');
+        // Runs daily and is idempotent per account per month, so a missed run on the 1st is caught up the next day.
+        $schedule->command('finance:charge-bank-admin-fees')->dailyAt('01:00');
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup('web', EnsureUserIsActive::class);
