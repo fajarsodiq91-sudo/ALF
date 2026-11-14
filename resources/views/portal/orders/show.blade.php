@@ -48,6 +48,10 @@
                     @foreach ($order->quote_items as $item)
                         <tr class="border-b border-gray-100"><td class="py-1.5 text-gray-700">{{ $item['label'] }}</td><td class="py-1.5 text-right text-gray-800">{{ $rupiah($item['amount']) }}</td></tr>
                     @endforeach
+                    @if ($order->hasDiscount())
+                        <tr><td class="pt-2 text-gray-600">Subtotal</td><td class="pt-2 text-right text-gray-600">{{ $rupiah($order->quoteSubtotal()) }}</td></tr>
+                        <tr><td class="text-green-700">Discount @if ($order->discount_label)({{ $order->discount_label }}) @endif· {{ $order->discountDescription() }}</td><td class="text-right text-green-700">- {{ $rupiah($order->discount_amount) }}</td></tr>
+                    @endif
                     <tr><td class="pt-2 font-semibold text-gray-800">Total</td><td class="pt-2 text-right font-semibold text-gray-900">{{ $rupiah($order->quote_total) }}</td></tr>
                 </table>
                 <dl class="mt-3 grid grid-cols-1 gap-2 text-xs text-gray-600 sm:grid-cols-2">
@@ -176,6 +180,7 @@
                 @endforeach
                 <div class="flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-600">
                     @if ($order->deadline)<span>Deadline {{ $order->deadline->format('d M Y') }}</span>@endif
+                    @if ($order->timeline_days)<span>Requested turnaround: {{ $order->timeline_days }} working days</span>@endif
                     <span>{{ $order->needs_refresh ? 'Regular data refresh needed' : 'One-time data' }}</span>
                 </div>
                 @if ($order->addons)

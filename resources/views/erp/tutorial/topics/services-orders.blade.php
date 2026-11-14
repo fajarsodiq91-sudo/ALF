@@ -8,6 +8,7 @@
     <ul>
         <li><strong>Starting price</strong>, <strong>Revisions included</strong>, dan <strong>Estimated working days</strong> menjadi nilai awal di formulir penawaran.</li>
         <li><strong>What is included</strong>: satu poin per baris, tampil sebagai daftar di formulir customer.</li>
+        <li><strong>Turnaround options</strong>: satu per baris dengan format <em>hari kerja | selisih harga</em>, misalnya <em>3 | 750000</em> (kilat, lebih mahal), <em>7 | 0</em> (standar), dan <em>14 | -150000</em> (lebih lama, lebih murah). Customer memilih salah satu di brief; harganya makin tinggi untuk pengerjaan yang makin cepat. Selisihnya masuk sebagai baris di penawaran dan jumlah harinya mengisi <em>Estimated working days</em>. Kosongkan bila tidak ada pilihan.</li>
         <li><strong>Add-ons</strong>: satu per baris dengan format <em>nama | harga</em>, misalnya <em>Extra dashboard page | 300000</em>. Customer mencentangnya di brief, lalu setiap add-on menjadi baris di penawaran.</li>
         <li>Paket yang sudah punya pesanan tidak bisa dihapus; tandai <strong>Inactive</strong> saja. Customer tetap bisa mengirim brief tanpa memilih paket (<em>Custom / not sure yet</em>).</li>
     </ul>
@@ -27,6 +28,7 @@
         <li>Buka <strong>Services → Orders</strong>, lalu klik <strong>Open</strong> pada pesanan berstatus <em>Brief received</em>. Filter dan pencarian tersedia di atas daftar.</li>
         <li>Baca brief dan unduh file dari customer. Perlu klarifikasi? Hubungi customer lewat email atau WhatsApp di bagian atas halaman.</li>
         <li>Di kartu <strong>Prepare the quote</strong>, baris awal sudah terisi dari harga paket dan add-on. Sesuaikan baris, tambah baris dengan <strong>+ Add line</strong>, dan lihat total di bawahnya.</li>
+        <li>Isi <strong>Discount</strong> bila ada: pilih <em>Rp</em> atau <em>%</em> lalu isi nilainya (kosongkan nilainya bila tidak ada diskon), dan bila perlu beri <strong>Discount label</strong> seperti <em>Early-bird</em>. Diskon dihitung dari subtotal dan tampil di penawaran customer; DP dan pelunasan dihitung dari total setelah diskon. Total setelah diskon harus lebih dari nol. Baris penawaran boleh bernilai negatif untuk potongan lain.</li>
         <li>Isi <strong>Down payment %</strong> (10–100; bawaan 50%, isi 100 bila bayar lunas di awal), <strong>Estimated working days</strong>, <strong>Revisions included</strong>, dan <strong>Quote valid until</strong>. Tulis catatan lingkup dan asumsi di <strong>Notes to the customer</strong>.</li>
         <li>Klik <strong>Send quote</strong>. Customer menerima email dan melihat penawaran di portalnya. Selama belum diterima, penawaran masih bisa Anda ubah dengan <strong>Update &amp; resend quote</strong>.</li>
     </x-tutorial.steps>

@@ -8,15 +8,16 @@
         'description' => $package->description,
         'features' => $package->featureList(),
         'addons' => $package->addons ?? [],
+        'timelines' => $package->timelines ?? [],
     ]]);
 @endphp
-<div x-data='{ catalog: @json($catalog), packageId: @json((string) old("service_package_id", "")), picked: @json(old("addons", [])),
+<div x-data='{ catalog: @json($catalog), packageId: @json((string) old("service_package_id", "")), picked: @json(old("addons", [])), timeline: @json((string) old("timeline_days", "")),
               rupiah(n) { return "Rp " + new Intl.NumberFormat("id-ID").format(n); },
               get current() { return this.catalog[this.packageId] || null; } }' class="space-y-4">
     @if ($packages->isNotEmpty())
         <div>
             <label for="service_package_id" class="block text-sm font-medium text-gray-700">Package</label>
-            <select name="service_package_id" id="service_package_id" x-model="packageId" @change="picked = []" class="{{ $input }}">
+            <select name="service_package_id" id="service_package_id" x-model="packageId" @change="picked = []; timeline = ''" class="{{ $input }}">
                 <option value="">Custom / not sure yet: quote it for me</option>
                 @foreach ($packages as $package)
                     <option value="{{ $package->id }}">{{ $package->name }}: from Rp {{ number_format((float) $package->starting_price, 0, ',', '.') }}</option>
@@ -35,6 +36,22 @@
                     · <span x-text="current && current.revisions"></span> revision(s) included.
                     The final price is confirmed in your quote, based on your brief.
                 </p>
+                <div x-show="current && current.timelines.length" x-cloak class="mt-3">
+                    <p class="text-xs font-semibold text-gray-700">How fast do you need it?</p>
+                    <label class="mt-1 flex items-center gap-2 text-sm text-gray-700">
+                        <input type="radio" name="timeline_days" value="" x-model="timeline" class="border-gray-300 text-brand focus:ring-brand">
+                        <span>No preference: we propose the timing in the quote</span>
+                    </label>
+                    <template x-for="option in (current ? current.timelines : [])" :key="option.days">
+                        <label class="mt-1 flex items-center gap-2 text-sm text-gray-700">
+                            <input type="radio" name="timeline_days" :value="String(option.days)" x-model="timeline" class="border-gray-300 text-brand focus:ring-brand">
+                            <span><span x-text="option.days"></span> working days
+                                <span class="text-gray-500" x-text="option.price > 0 ? '(+ ' + rupiah(option.price) + ', rush)' : (option.price < 0 ? '(- ' + rupiah(-option.price) + ' for the longer time)' : '(standard price)')"></span>
+                            </span>
+                        </label>
+                    </template>
+                    <p class="mt-1 text-xs text-gray-500">The faster we deliver, the higher the price may be. The final price and date are confirmed in your quote.</p>
+                </div>
                 <div x-show="current && current.addons.length" class="mt-3">
                     <p class="text-xs font-semibold text-gray-700">Optional add-ons</p>
                     <template x-for="addon in (current ? current.addons : [])" :key="addon.label">

@@ -42,6 +42,10 @@ class ServiceOrderNotifier
             ],
             [
                 'Order' => $order->orderNumber(),
+                ...($order->hasDiscount() ? [
+                    'Subtotal' => SessionPaymentPlan::rupiah($order->quoteSubtotal()),
+                    'Discount'.($order->discount_label ? " ({$order->discount_label})" : '') => '- '.SessionPaymentPlan::rupiah($order->discount_amount),
+                ] : []),
                 'Total' => SessionPaymentPlan::rupiah($order->quote_total),
                 'Down payment' => $order->dp_percentage.'%',
                 'Estimated time' => $order->estimated_days ? $order->estimated_days.' working days after the down payment' : 'To be agreed',

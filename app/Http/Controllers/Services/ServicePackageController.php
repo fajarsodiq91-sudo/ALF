@@ -61,8 +61,9 @@ class ServicePackageController extends Controller
     private function attributes(SaveServicePackageRequest $request): array
     {
         return [
-            ...$request->safe()->except(['addons_text', 'is_active', 'sort_order']),
+            ...$request->safe()->except(['addons_text', 'timelines_text', 'is_active', 'sort_order']),
             'addons' => ServicePackage::parseAddons($request->input('addons_text')) ?: null,
+            'timelines' => ServicePackage::parseTimelines($request->input('timelines_text')) ?: null,
             'is_active' => $request->boolean('is_active'),
             'sort_order' => (int) $request->input('sort_order', 0),
         ];

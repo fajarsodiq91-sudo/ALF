@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'description', 'features', 'starting_price', 'included_revisions', 'estimated_days', 'addons', 'is_active', 'sort_order'])]
+#[Fillable(['name', 'description', 'features', 'starting_price', 'included_revisions', 'estimated_days', 'addons', 'timelines', 'is_active', 'sort_order'])]
 class ServicePackage extends Model
 {
     /** @use HasFactory<ServicePackageFactory> */
@@ -19,6 +19,7 @@ class ServicePackage extends Model
         return [
             'starting_price' => 'decimal:2',
             'addons' => 'array',
+            'timelines' => 'array',
             'is_active' => 'boolean',
         ];
     }
@@ -53,5 +54,29 @@ class ServicePackage extends Model
     public function addonsText(): string
     {
         return collect($this->addons ?? [])->map(fn ($addon) => $addon['label'].' | '.(int) $addon['price'])->implode("\n");
+    }
+
+    /**
+     * Turns the "days | price change" lines staff type into the stored turnaround options, fastest first.
+     * The price change may be negative (a longer wait costs less) or 0; lines without a valid day count or price are dropped.
+     *
+     * @return list<array{days: int, price: float}>
+     */
+    public static function parseTimelines(?string $text): array
+    {
+        return collect(preg_split('/\R/', (string) $text))
+            ->map(fn ($line) => array_map('trim', explode('|', $line, 2)))
+            ->filter(fn ($parts) => count($parts) === 2 && ctype_digit($parts[0]) && (int) $parts[0] > 0 && (int) $parts[0] <= 365 && preg_match('/^-?[\d.,]+$/', $parts[1]))
+            ->map(fn ($parts) => ['days' => (int) $parts[0], 'price' => (float) str_replace(['.', ','], '', $parts[1])])
+            ->unique('days')
+            ->sortBy('days')
+            ->values()
+            ->all();
+    }
+
+    /** The turnaround options back as editable text, one "days | price change" per line. */
+    public function timelinesText(): string
+    {
+        return collect($this->timelines ?? [])->map(fn ($option) => $option['days'].' | '.(int) $option['price'])->implode("\n");
     }
 }

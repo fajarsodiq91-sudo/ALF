@@ -48,6 +48,7 @@ class ServiceOrders
             'notes' => ['nullable', 'string', 'max:3000'],
             'addons' => ['nullable', 'array', 'max:20'],
             'addons.*' => ['string', 'max:120'],
+            'timeline_days' => ['nullable', 'integer', 'min:1', 'max:365'],
             'files' => ['nullable', 'array', 'max:'.self::MAX_FILES],
             'files.*' => ['file', 'mimes:'.ServiceOrder::FILE_MIMES, 'max:'.ServiceOrder::FILE_MAX_KB],
         ];
@@ -62,12 +63,18 @@ class ServiceOrders
     {
         $order = DB::transaction(function () use ($customer, $data) {
             $order = new ServiceOrder([
-                ...collect($data)->except(['files', 'addons'])->all(),
+                ...collect($data)->except(['files', 'addons', 'timeline_days'])->all(),
                 'needs_refresh' => (bool) ($data['needs_refresh'] ?? false),
                 'addons' => self::chosenAddons($data['service_package_id'] ?? null, $data['addons'] ?? []),
             ]);
             $order->customer_id = $customer->id;
             $order->status = ServiceOrder::BRIEF;
+
+            if ($timeline = self::chosenTimeline($data['service_package_id'] ?? null, $data['timeline_days'] ?? null)) {
+                $order->timeline_days = $timeline['days'];
+                $order->timeline_price = $timeline['price'];
+            }
+
             $order->save();
 
             foreach ($data['files'] ?? [] as $file) {
@@ -99,6 +106,18 @@ class ServiceOrders
     }
 
     /**
+     * The turnaround the customer picked, if the package really offers it, with its price change as listed today.
+     *
+     * @return array{days: int, price: float}|null
+     */
+    public static function chosenTimeline(?int $packageId, ?int $days): ?array
+    {
+        $package = $packageId ? ServicePackage::find($packageId) : null;
+
+        return collect($package?->timelines ?? [])->first(fn ($option) => (int) $option['days'] === (int) $days);
+    }
+
+    /**
      * What the quote form starts with: the package's starting price plus each add-on the customer ticked.
      *
      * @return list<array{label: string, amount: float}>
@@ -119,6 +138,10 @@ class ServiceOrders
             $items[] = ['label' => $addon['label'], 'amount' => (float) $addon['price']];
         }
 
+        if ($order->timeline_days !== null && (float) $order->timeline_price !== 0.0) {
+            $items[] = ['label' => "Delivery in {$order->timeline_days} working days", 'amount' => (float) $order->timeline_price];
+        }
+
         return $items ?: [['label' => $order->title, 'amount' => 0.0]];
     }
 
@@ -134,11 +157,17 @@ class ServiceOrders
         }
 
         $items = collect($data['items'])->map(fn ($item) => ['label' => trim($item['label']), 'amount' => round((float) $item['amount'], 2)])->values();
+        $subtotal = round((float) $items->sum('amount'), 2);
+        [$discountType, $discountValue, $discountAmount] = self::discount($subtotal, $data['discount_type'] ?? null, $data['discount_value'] ?? null);
 
         $order->forceFill([
             'status' => ServiceOrder::QUOTED,
             'quote_items' => $items->all(),
-            'quote_total' => $items->sum('amount'),
+            'discount_type' => $discountType,
+            'discount_value' => $discountValue,
+            'discount_amount' => $discountAmount,
+            'discount_label' => $discountAmount > 0 ? ($data['discount_label'] ?? null) : null,
+            'quote_total' => round($subtotal - $discountAmount, 2),
             'dp_percentage' => (int) $data['dp_percentage'],
             'estimated_days' => $data['estimated_days'] ?? null,
             'included_revisions' => (int) $data['included_revisions'],
@@ -146,6 +175,24 @@ class ServiceOrders
             'quote_notes' => $data['quote_notes'] ?? null,
             'quoted_at' => now(),
         ])->save();
+    }
+
+    /**
+     * The discount on a subtotal. An empty value means no discount; a percentage is of the subtotal and a fixed
+     * amount never exceeds it.
+     *
+     * @return array{0: string|null, 1: float|null, 2: float} type, value as typed, amount taken off
+     */
+    public static function discount(float $subtotal, ?string $type, mixed $value): array
+    {
+        if ($value === null || $value === '' || (float) $value <= 0 || ! in_array($type, ['amount', 'percent'], true)) {
+            return [null, null, 0.0];
+        }
+
+        $value = round((float) $value, 2);
+        $amount = $type === 'percent' ? round($subtotal * min($value, 100) / 100, 2) : min($value, $subtotal);
+
+        return [$type, $value, max(0.0, $amount)];
     }
 
     /** The customer accepts the quote: the invoices are created and the down payment is invoiced at once. */

@@ -13,6 +13,7 @@ use App\Models\ServiceOrder;
 use App\Models\ServiceOrderFile;
 use App\Models\ServicePackage;
 use App\Models\User;
+use App\Services\ServiceOrders;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -464,5 +465,113 @@ class ServiceOrdersTest extends TestCase
         $approved = (new CustomerRegistrationApproved($customer))->render();
         $this->assertStringContainsString('send you a quote', $approved);
         $this->assertStringNotContainsString('Your program schedule will be shared soon', $approved);
+    }
+
+    // ---- Turnaround options and discounts ----
+
+    public function test_turnaround_options_are_parsed_sorted_and_may_be_negative(): void
+    {
+        $this->assertEquals(
+            [['days' => 3, 'price' => 750000], ['days' => 7, 'price' => 0], ['days' => 14, 'price' => -150000]],
+            ServicePackage::parseTimelines("14 | -150.000\nnot a line\n7 | 0\n3 | 750000\n3 | 999\n0 | 5\n9 | abc"),
+        );
+    }
+
+    public function test_the_package_form_saves_turnaround_options(): void
+    {
+        $staff = $this->staff();
+
+        $this->actingAs($staff)->post(route('services.packages.store'), [
+            'name' => 'Starter', 'starting_price' => 750000, 'included_revisions' => 1, 'is_active' => '1', 'timelines_text' => "7 | 0\n3 | 500000",
+        ])->assertRedirect();
+
+        $package = ServicePackage::firstOrFail();
+        $this->assertEquals([['days' => 3, 'price' => 500000], ['days' => 7, 'price' => 0]], $package->timelines);
+        $this->actingAs($staff)->get(route('services.packages.edit', $package))->assertOk()->assertSee('3 | 500000', false);
+    }
+
+    public function test_the_customer_picks_a_turnaround_and_the_quote_starts_with_its_price_change(): void
+    {
+        $customer = $this->customer();
+        $this->staff();
+        $package = ServicePackage::factory()->create(['starting_price' => 1000000, 'timelines' => [['days' => 3, 'price' => 500000], ['days' => 7, 'price' => 0]]]);
+
+        $this->actingAs($customer, 'customer')->get(route('portal.orders.create'))->assertOk()->assertSee('How fast do you need it?');
+
+        $this->actingAs($customer, 'customer')->post(route('portal.orders.store'), $this->brief(['service_package_id' => $package->id, 'timeline_days' => 3]))->assertRedirect();
+        $order = ServiceOrder::firstOrFail();
+        $this->assertSame(3, $order->timeline_days);
+        $this->assertEquals(500000, $order->timeline_price);
+
+        $this->actingAs($this->staff())->get(route('services.orders.show', $order))->assertOk()->assertSee('Delivery in 3 working days')->assertSee('3 working days');
+
+        $items = ServiceOrders::suggestedQuoteItems($order->load('package'));
+        $this->assertEquals([['label' => $package->name, 'amount' => 1000000], ['label' => 'Delivery in 3 working days', 'amount' => 500000]], $items);
+    }
+
+    public function test_a_turnaround_the_package_does_not_offer_is_ignored(): void
+    {
+        $package = ServicePackage::factory()->create(['timelines' => [['days' => 3, 'price' => 500000]]]);
+
+        $this->actingAs($this->customer(), 'customer')->post(route('portal.orders.store'), $this->brief(['service_package_id' => $package->id, 'timeline_days' => 1]))->assertRedirect();
+
+        $this->assertNull(ServiceOrder::firstOrFail()->timeline_days);
+        $this->assertNull(ServiceOrder::firstOrFail()->timeline_price);
+    }
+
+    public function test_a_percentage_discount_lowers_the_total_and_the_payments(): void
+    {
+        $staff = $this->staff();
+        $customer = $this->customer();
+        $order = ServiceOrder::factory()->create(['customer_id' => $customer->id]);
+
+        $this->actingAs($staff)->post(route('services.orders.quote', $order), $this->quote(['discount_type' => 'percent', 'discount_value' => 10, 'discount_label' => 'Early-bird']))->assertRedirect();
+
+        $order->refresh();
+        $this->assertEquals(2000000, $order->quoteSubtotal());
+        $this->assertEquals(200000, $order->discount_amount);
+        $this->assertEquals(1800000, $order->quote_total);
+        $this->assertSame('Early-bird', $order->discount_label);
+        Mail::assertSent(ServiceOrderMail::class, fn ($mail) => array_key_exists('Discount (Early-bird)', $mail->details) && $mail->details['Total'] === 'Rp 1.800.000');
+        $this->actingAs($customer, 'customer')->get(route('portal.orders.show', $order))->assertSee('Early-bird')->assertSee('Rp 1.800.000')->assertSee('10%');
+
+        $this->actingAs($customer, 'customer')->post(route('portal.orders.accept', $order));
+        $this->assertEquals([900000, 900000], $order->payments()->pluck('amount')->map(fn ($a) => (float) $a)->all());
+    }
+
+    public function test_a_fixed_discount_and_an_empty_discount(): void
+    {
+        $staff = $this->staff();
+        $order = ServiceOrder::factory()->create();
+
+        $this->actingAs($staff)->post(route('services.orders.quote', $order), $this->quote(['discount_type' => 'amount', 'discount_value' => 150000]));
+        $this->assertEquals(1850000, $order->fresh()->quote_total);
+
+        // Clearing the amount removes the discount again; the label goes with it
+        $this->actingAs($staff)->post(route('services.orders.quote', $order), $this->quote(['discount_type' => 'amount', 'discount_value' => '', 'discount_label' => 'Gone']));
+        $order->refresh();
+        $this->assertEquals(2000000, $order->quote_total);
+        $this->assertFalse($order->hasDiscount());
+        $this->assertNull($order->discount_label);
+        $this->assertNull($order->discount_type);
+    }
+
+    public function test_a_discount_cannot_make_the_quote_free_and_a_percentage_stops_at_100(): void
+    {
+        $staff = $this->staff();
+        $order = ServiceOrder::factory()->create();
+
+        $this->actingAs($staff)->post(route('services.orders.quote', $order), $this->quote(['discount_type' => 'amount', 'discount_value' => 2000000]))->assertSessionHasErrors('items');
+        $this->actingAs($staff)->post(route('services.orders.quote', $order), $this->quote(['discount_type' => 'percent', 'discount_value' => 150]))->assertSessionHasErrors('discount_value');
+        $this->assertSame(ServiceOrder::BRIEF, $order->fresh()->status);
+    }
+
+    public function test_a_quote_line_may_be_negative(): void
+    {
+        $order = ServiceOrder::factory()->create();
+
+        $this->actingAs($this->staff())->post(route('services.orders.quote', $order), $this->quote(['items' => [['label' => 'Dashboard', 'amount' => 2000000], ['label' => 'Longer turnaround', 'amount' => -150000]]]))->assertRedirect();
+
+        $this->assertEquals(1850000, $order->fresh()->quote_total);
     }
 }

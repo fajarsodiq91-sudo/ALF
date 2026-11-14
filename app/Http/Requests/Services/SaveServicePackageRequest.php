@@ -24,6 +24,7 @@ class SaveServicePackageRequest extends FormRequest
             'included_revisions' => ['required', 'integer', 'min:0', 'max:20'],
             'estimated_days' => ['nullable', 'integer', 'min:1', 'max:365'],
             'addons_text' => ['nullable', 'string', 'max:3000'],
+            'timelines_text' => ['nullable', 'string', 'max:2000'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:1000'],
             'is_active' => ['nullable', 'boolean'],
         ];

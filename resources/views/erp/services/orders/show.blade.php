@@ -54,6 +54,7 @@
                 <div><dt class="text-xs text-gray-500">Data volume</dt><dd class="text-gray-800">{{ $order->data_volume ?: '—' }}</dd></div>
                 <div><dt class="text-xs text-gray-500">Excel version</dt><dd class="text-gray-800">{{ $order->excel_version ?: '—' }}</dd></div>
                 <div><dt class="text-xs text-gray-500">Deadline</dt><dd class="text-gray-800">{{ $order->deadline?->format('d M Y') ?? '—' }}</dd></div>
+                <div><dt class="text-xs text-gray-500">Turnaround chosen</dt><dd class="text-gray-800">{{ $order->timeline_days ? $order->timeline_days.' working days ('.($order->timeline_price > 0 ? '+ '.$rupiah($order->timeline_price) : ($order->timeline_price < 0 ? '- '.$rupiah(-$order->timeline_price) : 'standard price')).')' : 'No preference' }}</dd></div>
                 <div><dt class="text-xs text-gray-500">Data refresh</dt><dd class="text-gray-800">{{ $order->needs_refresh ? 'Needed regularly' : 'One-time data' }}</dd></div>
                 @if ($order->addons)
                     <div class="sm:col-span-2"><dt class="text-xs text-gray-500">Add-ons ticked</dt><dd class="text-gray-800">{{ collect($order->addons)->map(fn ($addon) => $addon['label'].' ('.$rupiah($addon['price']).')')->implode(', ') }}</dd></div>
@@ -74,7 +75,10 @@
         @if ($order->canBeQuoted() && auth()->user()->can('sales.manage'))
             <form action="{{ route('services.orders.quote', $order) }}" method="POST" class="bg-white rounded-lg shadow-md border border-gray-200 p-6"
                   x-data='{ items: @json(array_values($quoteItems)), dp: {{ (int) old("dp_percentage", $order->dp_percentage) }},
-                            get total() { return this.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0); },
+                            discountType: @json(old("discount_type", $order->discount_type ?? "amount")), discountValue: @json(old("discount_value", $order->discount_value ? (float) $order->discount_value : "")),
+                            get subtotal() { return this.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0); },
+                            get discount() { const v = parseFloat(this.discountValue) || 0; if (v <= 0) { return 0; } return Math.min(this.discountType === "percent" ? this.subtotal * Math.min(v, 100) / 100 : v, this.subtotal); },
+                            get total() { return this.subtotal - this.discount; },
                             rupiah(n) { return "Rp " + new Intl.NumberFormat("id-ID").format(Math.round(n)); } }'>
                 @csrf
                 <h3 class="text-sm font-semibold text-gray-800">{{ $order->hasStatus('quoted') ? 'Quote (sent: you can still revise it until the customer accepts)' : 'Prepare the quote' }}</h3>
@@ -84,14 +88,37 @@
                     <template x-for="(item, i) in items" :key="i">
                         <div class="flex items-center gap-2">
                             <input type="text" :name="`items[${i}][label]`" x-model="item.label" required maxlength="255" placeholder="Scope item" class="{{ $input }}">
-                            <input type="number" :name="`items[${i}][amount]`" x-model="item.amount" min="0" step="1" required placeholder="Rp" class="w-40 shrink-0 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                            <input type="number" :name="`items[${i}][amount]`" x-model="item.amount" step="1" required placeholder="Rp" class="w-40 shrink-0 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
                             <button type="button" x-show="items.length > 1" @click="items.splice(i, 1)" class="text-sm text-gray-400 hover:text-red-600">Remove</button>
                         </div>
                     </template>
                 </div>
                 <button type="button" @click="items.push({ label: '', amount: '' })" class="mt-2 text-sm font-medium text-brand hover:text-brand-dark">+ Add line</button>
 
-                <p class="mt-3 text-right text-sm font-semibold text-gray-800">Total <span x-text="rupiah(total)"></span></p>
+                <p class="mt-1 text-xs text-gray-500">Use a negative amount for a reduction, for example a longer turnaround that costs less.</p>
+
+                <div class="mt-4 flex flex-wrap items-end gap-3 rounded-md bg-gray-50 p-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600">Discount (leave the amount empty for none)</label>
+                        <div class="mt-1 flex gap-2">
+                            <select name="discount_type" x-model="discountType" class="rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                                <option value="amount">Rp</option>
+                                <option value="percent">%</option>
+                            </select>
+                            <input type="number" name="discount_value" x-model="discountValue" min="0" step="any" placeholder="No discount" class="w-36 rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-[10rem]">
+                        <label class="block text-xs font-medium text-gray-600">Discount label (optional)</label>
+                        <input type="text" name="discount_label" maxlength="100" value="{{ old('discount_label', $order->discount_label) }}" placeholder="e.g. Early-bird, returning customer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
+                    </div>
+                </div>
+
+                <div class="mt-3 space-y-0.5 text-right text-sm">
+                    <p class="text-gray-600" x-show="discount > 0" x-cloak>Subtotal <span x-text="rupiah(subtotal)"></span></p>
+                    <p class="text-green-700" x-show="discount > 0" x-cloak>Discount - <span x-text="rupiah(discount)"></span></p>
+                    <p class="font-semibold text-gray-800">Total <span x-text="rupiah(total)"></span></p>
+                </div>
 
                 <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
                     <div>
@@ -101,7 +128,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600">Estimated working days</label>
-                        <input type="number" name="estimated_days" min="1" max="365" value="{{ old('estimated_days', $order->estimated_days ?? $order->package?->estimated_days) }}" class="{{ $input }}">
+                        <input type="number" name="estimated_days" min="1" max="365" value="{{ old('estimated_days', $order->estimated_days ?? $order->timeline_days ?? $order->package?->estimated_days) }}" class="{{ $input }}">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600">Revisions included</label>
@@ -125,6 +152,10 @@
                     @foreach ($order->quote_items as $item)
                         <tr class="border-b border-gray-100"><td class="py-1.5 text-gray-700">{{ $item['label'] }}</td><td class="py-1.5 text-right text-gray-800">{{ $rupiah($item['amount']) }}</td></tr>
                     @endforeach
+                    @if ($order->hasDiscount())
+                        <tr><td class="pt-2 text-gray-600">Subtotal</td><td class="pt-2 text-right text-gray-600">{{ $rupiah($order->quoteSubtotal()) }}</td></tr>
+                        <tr><td class="text-green-700">Discount @if ($order->discount_label)({{ $order->discount_label }}) @endif· {{ $order->discountDescription() }}</td><td class="text-right text-green-700">- {{ $rupiah($order->discount_amount) }}</td></tr>
+                    @endif
                     <tr><td class="pt-2 font-semibold text-gray-800">Total</td><td class="pt-2 text-right font-semibold">{{ $rupiah($order->quote_total) }}</td></tr>
                 </table>
                 <p class="mt-2 text-xs text-gray-500">{{ $order->dp_percentage }}% down payment · {{ $order->included_revisions }} revision(s) · {{ $order->estimated_days ? $order->estimated_days.' working days' : 'no time estimate' }}@if ($order->accepted_at) · accepted {{ $order->accepted_at->format('d M Y') }}@endif</p>

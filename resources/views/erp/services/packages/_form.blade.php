@@ -38,6 +38,12 @@
         <p class="mt-1 text-xs text-gray-500">Customers can tick these in their brief; each one becomes a line in the quote. Lines without a valid price are ignored.</p>
         @error('addons_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>
+    <div>
+        <label for="timelines_text" class="block text-sm font-medium text-gray-700">Turnaround options (one per line: working days | price change)</label>
+        <textarea name="timelines_text" id="timelines_text" rows="4" class="{{ $input }}" placeholder="3 | 750000&#10;7 | 0&#10;14 | -150000">{{ old('timelines_text', $package->timelinesText()) }}</textarea>
+        <p class="mt-1 text-xs text-gray-500">The customer picks one and its price change is added to the quote. Use a positive number for a rush (faster) job, 0 for the standard time, and a negative number when a longer wait is cheaper. Leave empty to offer no choice (the estimated days above apply).</p>
+        @error('timelines_text') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
             <label for="sort_order" class="block text-sm font-medium text-gray-700">Sort order</label>

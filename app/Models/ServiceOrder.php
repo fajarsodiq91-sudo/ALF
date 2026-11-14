@@ -74,6 +74,9 @@ class ServiceOrder extends Model
             'addons' => 'array',
             'quote_items' => 'array',
             'quote_total' => 'decimal:2',
+            'timeline_price' => 'decimal:2',
+            'discount_value' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
             'quote_valid_until' => 'date',
             'quoted_at' => 'datetime',
             'accepted_at' => 'datetime',
@@ -150,6 +153,25 @@ class ServiceOrder extends Model
     public function isWorkable(): bool
     {
         return $this->hasStatus(self::IN_PROGRESS, self::DELIVERED, self::COMPLETED);
+    }
+
+    /** The quote's lines added up, before any discount. */
+    public function quoteSubtotal(): float
+    {
+        return round((float) collect($this->quote_items ?? [])->sum('amount'), 2);
+    }
+
+    public function hasDiscount(): bool
+    {
+        return (float) $this->discount_amount > 0;
+    }
+
+    /** "10%" or "Rp 150.000", for showing next to the discount line. */
+    public function discountDescription(): string
+    {
+        return $this->discount_type === 'percent'
+            ? rtrim(rtrim(number_format((float) $this->discount_value, 2, ',', '.'), '0'), ',').'%'
+            : 'Rp '.number_format((float) $this->discount_amount, 0, ',', '.');
     }
 
     public function totalCharged(): float
