@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Sales;
 
+use App\Models\Customer;
 use App\Services\MasterData;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -20,6 +21,7 @@ class InviteCustomerRequest extends FormRequest
     {
         return [
             'customer_type' => ['required', Rule::in(MasterData::codes('customer_type'))],
+            'registration_track' => ['nullable', Rule::in([Customer::TRACK_LEARNING, Customer::TRACK_SERVICE])],
         ];
     }
 }

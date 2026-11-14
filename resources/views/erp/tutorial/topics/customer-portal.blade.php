@@ -52,3 +52,7 @@
 <x-tutorial.section title="ID Card di portal">
     <p>Di dashboard portal, ikon <strong>ID Card</strong> di sebelah kanan <em>Welcome</em> membuka ID Card customer sendiri di tab baru, siap dicetak. Isinya sama dengan kartu yang dicetak dari menu Customer, dan customer hanya bisa melihat kartunya sendiri.</p>
 </x-tutorial.section>
+
+<x-tutorial.section title="Orders (jasa custom)">
+    <p>Menu <strong>Orders</strong> di header portal dipakai customer untuk memesan pengerjaan seperti Excel dashboard, menerima penawaran, membayar, meninjau hasil, dan mengunduh file final. Alur lengkapnya, termasuk sisi staf, ada di topik <em>Jasa Custom (Excel Dashboard)</em>.</p>
+</x-tutorial.section>

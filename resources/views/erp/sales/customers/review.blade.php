@@ -124,6 +124,27 @@
             <p class="mt-3 text-xs text-gray-500">Need to correct something first? <a href="{{ route('sales.edit', $customer) }}" class="text-brand hover:text-brand-dark font-medium">Edit the details</a>.</p>
         </div>
 
+        @if ($customer->isServiceTrack())
+            @foreach ($customer->serviceOrders as $order)
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+                    <h3 class="text-sm font-semibold text-gray-800">Custom work request: {{ $order->title }}</h3>
+                    <p class="mt-1 text-xs text-gray-500">{{ $order->package?->name ?? 'Custom / not sure yet' }}@if ($order->deadline) · deadline {{ $order->deadline->format('d M Y') }}@endif</p>
+                    <dl class="mt-3 space-y-2 text-sm">
+                        <div><dt class="text-gray-500">Purpose</dt><dd class="whitespace-pre-line text-gray-800">{{ $order->purpose }}</dd></div>
+                        <div><dt class="text-gray-500">Data sources</dt><dd class="whitespace-pre-line text-gray-800">{{ $order->data_sources }}</dd></div>
+                    </dl>
+                    <p class="mt-3 text-xs text-gray-500">The full brief and attachments are in the order. Approve this registration first, then prepare the quote there.</p>
+                    <a href="{{ route('services.orders.show', $order) }}" class="mt-2 inline-block text-sm font-medium text-brand hover:text-brand-dark">Open the order</a>
+                </div>
+            @endforeach
+
+            <form action="{{ route('sales.approve', $customer) }}" method="POST" class="flex flex-wrap items-center gap-3">
+                @csrf
+                <button type="submit" class="inline-flex items-center rounded-md bg-gradient-to-br from-brand-light to-brand-dark px-4 py-2 text-sm font-medium text-white hover:from-brand-dark hover:to-brand-dark shadow-sm hover:shadow-md hover:-translate-y-px active:translate-y-0 transition-all duration-150">Approve &amp; Send Email</button>
+                <a href="{{ route('sales.index') }}" class="text-sm text-gray-500 hover:text-gray-700">Cancel</a>
+                <p class="w-full text-xs text-gray-500">Approving assigns the permanent customer ID and emails the portal login (username and initial password are both the customer ID). No program is created: their request becomes a quote next.</p>
+            </form>
+        @else
         @if ($requested)
             <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                 <p class="font-medium">Requested by the customer</p>
@@ -307,6 +328,7 @@
                 (username and initial password are both the customer ID; they must choose a new password at first login).
             </p>
         </form>
+        @endif
 
         <form action="{{ route('sales.reject', $customer) }}" method="POST" class="bg-white rounded-lg shadow-md border border-gray-200 p-6" onsubmit="return confirm('Reject this registration?');">
             @csrf

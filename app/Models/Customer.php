@@ -41,6 +41,11 @@ class Customer extends Authenticatable
 
     public const REGISTRATION_REJECTED = 'rejected';
 
+    /** What an invitation's form asks for: programs to take, or a piece of custom work (e.g. an Excel dashboard). */
+    public const TRACK_LEARNING = 'learning';
+
+    public const TRACK_SERVICE = 'service';
+
     public const TOKEN_VALID_DAYS = 7;
 
     protected $hidden = ['password', 'remember_token'];
@@ -174,6 +179,17 @@ class Customer extends Authenticatable
     public function projects(): HasMany
     {
         return $this->hasMany(CustomerProject::class);
+    }
+
+    public function serviceOrders(): HasMany
+    {
+        return $this->hasMany(ServiceOrder::class);
+    }
+
+    /** Invited to order custom work rather than to take programs. */
+    public function isServiceTrack(): bool
+    {
+        return $this->registration_track === self::TRACK_SERVICE;
     }
 
     public function rescheduleRequests(): HasMany

@@ -26,6 +26,9 @@ use App\Http\Controllers\Projects\ProjectTaskController;
 use App\Http\Controllers\Sales\CustomerController;
 use App\Http\Controllers\Sales\CustomerPortalPreviewController;
 use App\Http\Controllers\Sales\CustomerProjectController;
+use App\Http\Controllers\Services\ServiceOrderController;
+use App\Http\Controllers\Services\ServiceOrderPaymentController;
+use App\Http\Controllers\Services\ServicePackageController;
 use App\Http\Controllers\Settings\AgreementController;
 use App\Http\Controllers\Settings\BlockedSlotController;
 use App\Http\Controllers\Settings\CertificateTemplateController;
@@ -211,6 +214,24 @@ Route::middleware(['auth', 'verified'])->prefix('erp')->group(function () {
             'update' => 'sales.update',
             'destroy' => 'sales.destroy',
         ]);
+    });
+
+    // Custom work (e.g. Excel dashboards): packages, quotes, payments and hand-over. Part of Sales.
+    Route::middleware('permission:sales.view')->prefix('services')->name('services.')->group(function () {
+        Route::get('orders', [ServiceOrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [ServiceOrderController::class, 'show'])->name('orders.show');
+        Route::post('orders/{order}/quote', [ServiceOrderController::class, 'quote'])->name('orders.quote');
+        Route::post('orders/{order}/deliver', [ServiceOrderController::class, 'deliver'])->name('orders.deliver');
+        Route::post('orders/{order}/cancel', [ServiceOrderController::class, 'cancel'])->name('orders.cancel');
+        Route::post('orders/{order}/files', [ServiceOrderController::class, 'storeFile'])->name('orders.files.store');
+        Route::post('orders/{order}/charges', [ServiceOrderController::class, 'storeCharge'])->name('orders.charges.store');
+        Route::get('files/{file}', [ServiceOrderController::class, 'downloadFile'])->name('files.download');
+        Route::delete('files/{file}', [ServiceOrderController::class, 'destroyFile'])->name('files.destroy');
+        Route::post('revisions/{revision}/resolve', [ServiceOrderController::class, 'resolveRevision'])->name('revisions.resolve');
+        Route::post('payments/{payment}/pay', [ServiceOrderPaymentController::class, 'pay'])->name('payments.pay');
+        Route::post('payments/{payment}/cancel', [ServiceOrderPaymentController::class, 'cancel'])->name('payments.cancel');
+        Route::get('payments/{payment}/proof', [ServiceOrderPaymentController::class, 'proof'])->name('payments.proof');
+        Route::resource('packages', ServicePackageController::class)->except(['show'])->parameters(['packages' => 'package'])->names('packages');
     });
 
     Route::middleware('permission:training.view')->prefix('training')->group(function () {

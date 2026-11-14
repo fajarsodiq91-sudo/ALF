@@ -5,15 +5,18 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Sales\RegisterCustomerRequest;
 use App\Mail\CustomerRegistrationReceived;
 use App\Models\Customer;
+use App\Models\ServicePackage;
 use App\Models\Setting;
 use App\Models\TrainingProgram;
 use App\Services\BookedSlots;
 use App\Services\ImageCompressor;
+use App\Services\ServiceOrders;
 use App\Services\SessionPaymentPlan;
 use App\Services\StaffNotifier;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -29,6 +32,13 @@ class CustomerRegistrationController extends Controller
 
         if (! $customer) {
             return response()->view('customer-registration.invalid', [], 410);
+        }
+
+        if ($customer->isServiceTrack()) {
+            return view('customer-registration.service-form', [
+                'customer' => $customer,
+                'packages' => ServicePackage::where('is_active', true)->orderBy('sort_order')->orderBy('starting_price')->get(),
+            ]);
         }
 
         $programs = TrainingProgram::with(['category', 'images'])->where('is_active', true)->orderBy('name')->get();
@@ -72,6 +82,10 @@ class CustomerRegistrationController extends Controller
 
         if (! $customer) {
             return response()->view('customer-registration.invalid', [], 410);
+        }
+
+        if ($customer->isServiceTrack()) {
+            return $this->storeServiceRegistration($request, $customer);
         }
 
         $photo = $request->file('photo');
@@ -118,6 +132,31 @@ class CustomerRegistrationController extends Controller
             Mail::to($customer->email)->send(new CustomerRegistrationReceived($customer));
         } catch (Throwable $exception) {
             // The registration itself is saved; a mail problem must not make the customer resubmit.
+            Log::error('Could not send the registration confirmation email.', ['customer_id' => $customer->id, 'error' => $exception->getMessage()]);
+        }
+
+        StaffNotifier::registrationSubmitted($customer);
+
+        session(['registration_status_token' => $customer->status_token]);
+
+        return redirect()->route('customer-registration.status', $customer->status_token);
+    }
+
+    /** A customer invited for custom work: their details and brief are saved together, and the company reviews both. */
+    private function storeServiceRegistration(RegisterCustomerRequest $request, Customer $customer): RedirectResponse
+    {
+        $contact = ['name', 'email', 'phone', 'city', 'address'];
+        $photo = $request->file('photo');
+        $customer->photo_path = $photo ? ImageCompressor::store($photo, 'customer-photos', 'public') : null;
+
+        DB::transaction(function () use ($request, $customer, $contact) {
+            $customer->submitRegistration([...$request->safe()->only($contact), 'requested_programs' => null, 'terms_accepted_at' => null]);
+            ServiceOrders::createFromBrief($customer, $request->safe()->except([...$contact, 'photo']), notify: false);
+        });
+
+        try {
+            Mail::to($customer->email)->send(new CustomerRegistrationReceived($customer));
+        } catch (Throwable $exception) {
             Log::error('Could not send the registration confirmation email.', ['customer_id' => $customer->id, 'error' => $exception->getMessage()]);
         }
 

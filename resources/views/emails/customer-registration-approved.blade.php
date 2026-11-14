@@ -16,8 +16,10 @@ Your registration at PT Alfajar Logic Futura has been **approved**.
 | Address | {{ $customer->address ?: '—' }} |
 </x-mail::table>
 
+@if ($sessions->isNotEmpty() || ! $customer->isServiceTrack())
 ## Your programs
 
+@endif
 @forelse ($sessions as $session)
 ### {{ $session->program->name }} ({{ \App\Services\MasterData::label('program_type', $session->program->program_type) }})
 
@@ -45,7 +47,13 @@ Your program starts once the registration fee is paid; the other payments follow
 
 @endif
 @empty
+@if ($customer->isServiceTrack())
+## Your request
+
+We have your brief and will send you a quote in your customer portal and by email. You can follow every step of the order there.
+@else
 Your program schedule will be shared soon.
+@endif
 @endforelse
 
 @php $hours = \App\Services\OperatingHours::formatted($sessions->contains(fn ($s) => $s->isCorporate())); @endphp
@@ -63,7 +71,7 @@ Your program schedule will be shared soon.
 @endif
 ## Log in to your customer portal
 
-There you can see your meeting schedule and progress, open your learning materials and certificate, and upload the project you build so we can add it to our portfolio.
+There you can see your meeting schedule and progress, open your learning materials and certificate, follow your custom-work orders (quotes, invoices, drafts and final files), and upload the project you build so we can add it to our portfolio.
 
 <x-mail::button :url="$loginUrl">
 Log in

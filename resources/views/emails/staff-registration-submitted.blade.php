@@ -23,6 +23,10 @@
 @endforeach
 @endforeach
 
+@elseif ($customer->isServiceTrack())
+@php $order = $customer->serviceOrders()->latest('id')->first(); @endphp
+They signed up for **custom work**@if ($order): **{{ $order->title }}**@endif. Approving the registration gives them their customer ID and portal login; then prepare the quote.
+
 @else
 They have not chosen a program yet. You can add one while reviewing.
 

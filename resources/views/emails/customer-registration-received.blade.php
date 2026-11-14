@@ -3,7 +3,7 @@
 
 We have received your registration at PT Alfajar Logic Futura.
 
-**Your registration is now waiting for approval.** Our team will review it and set up your program and schedule.
+**Your registration is now waiting for approval.** Our team will review it and @if ($customer->isServiceTrack())prepare a quote for your request. @else set up your program and schedule. @endif
 Once it is approved, you will receive another email with your customer ID and a link to log in.
 
 @php $requested = $customer->requestedProgramSummaries(); @endphp

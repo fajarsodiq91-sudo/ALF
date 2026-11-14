@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Mail\LeaveRequestReviewed;
+use App\Mail\ServiceOrderMail;
 use App\Mail\StaffMeetingSummary;
 use App\Mail\StaffRegistrationSubmitted;
 use App\Mail\StaffRescheduleRequested;
@@ -30,6 +31,17 @@ class StaffNotifier
     public static function registrationSubmitted(Customer $customer): void
     {
         self::sendToUsersWith('sales.manage', fn () => new StaffRegistrationSubmitted($customer), ['customer_id' => $customer->id]);
+    }
+
+    /**
+     * Something happened on a service order that sales staff should act on.
+     *
+     * @param  list<string>  $lines
+     * @param  array<string, string>  $details
+     */
+    public static function serviceOrderActivity(string $subject, string $heading, array $lines, array $details = [], ?string $buttonLabel = null, ?string $buttonUrl = null): void
+    {
+        self::sendToUsersWith('sales.manage', fn () => new ServiceOrderMail($subject, $heading, $lines, $details, $buttonLabel, $buttonUrl), ['subject' => $subject]);
     }
 
     /** A customer asked to move one of their meetings. */

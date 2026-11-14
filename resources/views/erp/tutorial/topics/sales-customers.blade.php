@@ -12,7 +12,7 @@
 <x-tutorial.section title="Mengundang customer lewat QR code (cara utama)">
     <x-tutorial.steps>
         <li>Buka <strong>Sales</strong>, klik <strong>Add Customer</strong>, lalu pilih tab <strong>Customer fills in (QR code)</strong>.</li>
-        <li>Pilih <strong>Type</strong> customer dan klik <strong>Generate QR Code</strong>. Anda tidak perlu mengisi data lain.</li>
+        <li>Pilih <strong>Type</strong> customer dan <strong>Signing up for</strong> (<em>Learning or consulting</em> untuk program dan sesi, atau <em>Custom work</em> untuk pesanan seperti Excel dashboard; lihat topik <em>Jasa Custom</em>), lalu klik <strong>Generate QR Code</strong>. Anda tidak perlu mengisi data lain.</li>
         <li>Tunjukkan QR code kepada customer untuk dipindai dengan HP, atau salin tautannya dengan tombol <strong>Copy</strong> lalu kirim lewat WhatsApp atau email.</li>
         <li>Tautan berlaku <strong>7 hari</strong> dan hanya bisa dipakai sekali: setelah customer mengirim formulir, tautan tertutup. Bila kedaluwarsa atau salah kirim, buka lagi QR-nya dari daftar (tautan <strong>QR Code</strong> pada baris customer) dan klik <strong>Generate new link</strong>. QR code lama otomatis mati.</li>
     </x-tutorial.steps>

@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\TrainingProgram;
 use App\Services\BookedSlots;
 use App\Services\OperatingHours;
+use App\Services\ServiceOrders;
 use App\Services\SessionPaymentPlan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -24,12 +25,22 @@ class RegisterCustomerRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $contact = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:50'],
             'city' => ['nullable', 'string', 'max:100'],
             'address' => ['nullable', 'string', 'max:1000'],
+            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ];
+
+        // An invitation for custom work asks for a brief instead of programs and dates.
+        if ($this->isServiceTrack()) {
+            return [...$contact, ...ServiceOrders::briefRules()];
+        }
+
+        return [
+            ...$contact,
             'programs' => ['nullable', 'array', 'max:5'],
             'programs.*.training_program_id' => ['required', Rule::exists(TrainingProgram::class, 'id')->where('is_active', true)],
             'programs.*.group_size' => ['nullable', 'integer', 'min:1', 'max:50'],
@@ -38,9 +49,13 @@ class RegisterCustomerRequest extends FormRequest
             'programs.*.meetings.*.meeting_date' => ['required', 'date', 'after_or_equal:today'],
             'programs.*.meetings.*.start_time' => ['nullable', 'date_format:H:i'],
             'programs.*.meetings.*.end_time' => ['nullable', 'date_format:H:i', 'after:programs.*.meetings.*.start_time'],
-            'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'terms_accepted' => [$this->filled('programs') ? 'accepted' : 'sometimes'],
         ];
+    }
+
+    public function isServiceTrack(): bool
+    {
+        return Customer::findByValidRegistrationToken((string) $this->route('token'))?->isServiceTrack() === true;
     }
 
     /**
@@ -65,7 +80,7 @@ class RegisterCustomerRequest extends FormRequest
     public function after(): array
     {
         return [function (Validator $validator): void {
-            if ($validator->errors()->isNotEmpty()) {
+            if ($validator->errors()->isNotEmpty() || $this->isServiceTrack()) {
                 return;
             }
 

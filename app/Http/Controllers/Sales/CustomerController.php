@@ -79,6 +79,7 @@ class CustomerController extends Controller
     {
         $customer = new Customer(['customer_type' => $request->validated('customer_type'), 'is_active' => true]);
         $customer->registration_status = Customer::REGISTRATION_AWAITING;
+        $customer->registration_track = $request->validated('registration_track') ?? Customer::TRACK_LEARNING;
         $customer->save();
         $customer->issueRegistrationToken();
 
@@ -134,7 +135,7 @@ class CustomerController extends Controller
         }
 
         return view('erp.sales.customers.review', [
-            'customer' => $customer,
+            'customer' => $customer->loadMissing('serviceOrders'),
             'programs' => TrainingProgram::where('is_active', true)->orderBy('name')->get(),
             'programTypes' => MasterData::options('program_type'),
             'instructors' => Employee::where('status', '!=', 'resigned')->orderBy('name')->get(),
@@ -151,7 +152,7 @@ class CustomerController extends Controller
 
         try {
             $taken = BookedSlots::exclusively(function () use ($request, $customer) {
-                $programs = $request->validated('programs');
+                $programs = $request->validated('programs') ?? [];
 
                 if ($taken = BookedSlots::firstTaken(collect($programs)->flatMap(fn ($program) => $program['meetings']), $customer->id)) {
                     return $taken;

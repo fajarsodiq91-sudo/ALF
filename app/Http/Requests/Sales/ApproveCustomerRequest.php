@@ -24,7 +24,8 @@ class ApproveCustomerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'programs' => ['required', 'array', 'min:1'],
+            // A customer who only asked for custom work is approved without programs; their order is quoted afterwards.
+            'programs' => [$this->route('customer')?->isServiceTrack() ? 'nullable' : 'required', 'array', 'min:1'],
             'programs.*.training_program_id' => ['required', Rule::exists(TrainingProgram::class, 'id')->where('is_active', true)],
             'programs.*.delivery_mode' => ['required', Rule::in(MasterData::codes('delivery_mode'))],
             'programs.*.instructor_id' => ['nullable', Rule::exists('employees', 'id')->where(fn ($query) => $query->where('status', '!=', 'resigned'))],

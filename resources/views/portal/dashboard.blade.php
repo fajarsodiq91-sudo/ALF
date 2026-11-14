@@ -13,6 +13,16 @@
             <a href="{{ route('portal.id-card') }}" target="_blank" title="My ID Card" aria-label="My ID Card" class="ml-auto inline-flex items-center justify-center rounded-md p-2 text-brand transition hover:bg-brand-50 hover:text-brand-dark"><x-erp.action-icon name="id-card" class="h-6 w-6" /></a>
         </div>
 
+        @unless ($customer->isParticipant())
+            <a href="{{ route('portal.orders.index') }}" class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-brand/30 bg-brand-50 px-5 py-4 transition hover:shadow-md">
+                <div>
+                    <p class="text-sm font-semibold text-gray-800">Custom work</p>
+                    <p class="text-xs text-gray-600">Need an Excel dashboard or another spreadsheet built? Send us a brief and get a quote.</p>
+                </div>
+                <span class="text-sm font-medium text-brand">{{ $openOrders ? $openOrders.' open '.\Illuminate\Support\Str::plural('order', $openOrders).' · ' : '' }}Open orders &rarr;</span>
+            </a>
+        @endunless
+
         @include('erp.partials.slot-picker', ['booked' => \App\Services\BookedSlots::keys($customer->id)])
 
         <div x-data="rescheduleRequestForm()" @open-reschedule.window="show($event.detail)" @keydown.escape.window="close()" @click.self="close()"

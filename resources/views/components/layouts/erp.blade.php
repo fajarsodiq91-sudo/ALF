@@ -51,6 +51,10 @@
 
                     @can('sales.view')
                         <x-erp.nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')" icon="sales">Sales</x-erp.nav-link>
+                        <x-erp.nav-group label="Services" :active="request()->routeIs('services.*')" icon="projects">
+                            <x-erp.nav-link :href="route('services.orders.index')" :active="request()->routeIs('services.orders.*')" nested>Orders</x-erp.nav-link>
+                            <x-erp.nav-link :href="route('services.packages.index')" :active="request()->routeIs('services.packages.*')" nested>Packages</x-erp.nav-link>
+                        </x-erp.nav-group>
                     @endcan
                     @can('training.view')
                         <x-erp.nav-group label="Training" :active="request()->routeIs('training.*')" icon="training">

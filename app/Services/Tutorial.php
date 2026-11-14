@@ -76,6 +76,14 @@ class Tutorial
             'route' => 'sales.index',
             'covers' => ['sales.*', 'customer-registration.*'],
         ],
+        'services-orders' => [
+            'title' => 'Jasa Custom (Excel Dashboard)',
+            'summary' => 'Menerima pesanan pembuatan dashboard atau spreadsheet: paket, brief, penawaran, DP, pengerjaan, revisi, serah terima, dan pelunasan.',
+            'group' => 'Sales & Training',
+            'permission' => 'sales.view',
+            'route' => 'services.orders.index',
+            'covers' => ['services.*'],
+        ],
         'customer-portal' => [
             'title' => 'Customer Portal',
             'summary' => 'Apa yang dilihat dan dilakukan customer di portal, cara membuka pratinjau, dan portofolio publik.',
