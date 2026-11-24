@@ -79,12 +79,32 @@ class CustomerRequestedProgramsTest extends TestCase
         $token = $this->token();
 
         $this->get(route('customer-registration.show', $token))->assertOk()
-            ->assertSee('Programs you would like to take')
+            ->assertSee('Next: choose a program')->assertSee('Would you like to take another program?')->assertSee('Review &amp; payment', false)
             ->assertSee('Power BI Dasar')->assertSee('Komputer Basic')
             ->assertSee('Data Analyst')->assertSee('Operating Komputer')->assertSee('Lainnya')
             ->assertDontSee('Program Nonaktif')
             ->assertSee('Our operating hours')->assertSee('"start":"20:00","end":"21:30"', false)
             ->assertSee('window.operatingHours', false)->assertSee('window.bookedSlots', false);
+    }
+
+    public function test_form_is_split_into_details_program_schedule_more_and_payment_steps(): void
+    {
+        TrainingProgram::factory()->create(['name' => 'Excel Basic']);
+        $token = $this->token();
+
+        $this->get(route('customer-registration.show', $token))->assertOk()
+            ->assertSeeInOrder(['Your details', 'choose your program', 'book your schedule', 'Yes, add another program', 'No, continue to payment', 'Total to pay when you register', 'Submit'], false)
+            ->assertSee("registrationForm(", false)->assertSee('"identity"', false);
+    }
+
+    public function test_form_reopens_on_the_review_step_when_the_programs_fail_validation(): void
+    {
+        TrainingProgram::factory()->create(['name' => 'Excel Basic']);
+        $token = $this->token();
+
+        $this->followingRedirects()->from(route('customer-registration.show', $token))
+            ->post(route('customer-registration.store', $token), ['name' => 'Budi', 'email' => 'budi@example.com', 'phone' => '0812', 'programs' => [['training_program_id' => 999999, 'meetings' => []]]])
+            ->assertSee('"summary"', false);
     }
 
     public function test_form_groups_programs_without_a_category_under_lainnya(): void

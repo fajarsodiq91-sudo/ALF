@@ -65,6 +65,7 @@ class CustomerRegistrationController extends Controller
             'meetingCounts' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->duration_days]),
             'corporateFlags' => $programs->mapWithKeys(fn ($program) => [$program->id => (bool) $program->is_corporate]),
             'programImages' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->images->map->url()]),
+            'programNames' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->name]),
             'programTerms' => $programs->mapWithKeys(fn ($program) => [$program->id => $program->terms]),
         ]);
     }
