@@ -13,6 +13,7 @@ use Illuminate\Support\Collection;
  * Issues certificates when a learning session is completed.
  * Number: ALF/LRN/{year}/{month in roman}/{running number}-{unique code}, where year, month and running number
  * come from the holder's customer ID (YYMMNN) and the code is three random letters/digits that are never reused.
+ * Dated on the session's scheduled end date, however early it is printed or late the session is completed.
  */
 class CertificateIssuer
 {
@@ -105,7 +106,7 @@ class CertificateIssuer
                     'customer_id' => $holder->id,
                     'number' => $prefix.'-'.$suffix,
                     'suffix' => $suffix,
-                    'issued_at' => today(),
+                    'issued_at' => $session->end_date,
                     'released_at' => $released ? now() : null,
                 ]);
             } catch (UniqueConstraintViolationException $exception) {

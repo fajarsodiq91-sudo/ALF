@@ -152,6 +152,28 @@ class CertificateTest extends TestCase
         $this->assertSame($certificate->number, Certificate::first()->number);
     }
 
+    public function test_certificate_is_dated_on_the_session_end_date_even_when_printed_early_or_completed_late(): void
+    {
+        $admin = $this->admin();
+        $session = $this->completed($this->customer('260901'));
+        $session->update(['status' => 'ongoing', 'start_date' => '2026-12-01', 'end_date' => '2026-12-10']);
+
+        $this->travelTo('2026-11-26');
+        $this->actingAs($admin)->get(route('training.certificates', $session))->assertOk();
+        $this->assertSame('2026-12-10', Certificate::firstOrFail()->issued_at->toDateString());
+
+        $this->travelTo('2026-12-20');
+        $session->update(['status' => 'completed']);
+        CertificateIssuer::issueFor($session->fresh());
+        $this->assertSame('2026-12-10', Certificate::firstOrFail()->issued_at->toDateString());
+
+        // Without an early print, a late completion still uses the scheduled end date.
+        $late = $this->completed($this->customer('260902'));
+        $late->update(['end_date' => '2026-12-10']);
+        CertificateIssuer::issueFor($late->fresh());
+        $this->assertSame('2026-12-10', $late->certificates()->firstOrFail()->issued_at->toDateString());
+    }
+
     public function test_completing_the_session_releases_the_printed_certificate_and_notifies_the_customer_once(): void
     {
         $admin = $this->admin();
