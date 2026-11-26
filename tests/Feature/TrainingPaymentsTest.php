@@ -370,7 +370,7 @@ class TrainingPaymentsTest extends TestCase
         $this->get(route('customer-registration.show', $token))->assertOk()
             ->assertSee('Program fee')->assertSee('How would you like to pay?')
             ->assertSee('Pay in full upfront')->assertSee('50% upfront, 50% at the middle meeting')
-            ->assertSee('Total program fee')->assertSee('To pay when you register')
+            ->assertSee('Total program fee')->assertSee('Total to pay when you register')
             ->assertSee('"1":7500000', false);
     }
 
