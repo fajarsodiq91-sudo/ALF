@@ -27,7 +27,7 @@
 
                 <div class="border-t border-gray-100 pt-5">
                     <h2 class="text-sm font-semibold text-gray-800">Field positions (mm)</h2>
-                    <p class="mb-3 text-xs text-gray-500">X is the horizontal centre of the field, Y its top edge, both measured from the page's top-left corner (page is 297 × 210). Width is the text box width, or the image size for QR and signature. Save, then use Preview to check.</p>
+                    <p class="mb-3 text-xs text-gray-500">X is the horizontal centre of the field, Y its top edge, both measured from the page's top-left corner (page is 297 × 210). Width is the text box width, or the image size for QR and signature. For the recipient name, set Y for a one-line name: a longer name keeps its last line there and adds lines upward. Save, then use Preview to check.</p>
                     <div class="grid grid-cols-4 items-center gap-x-3 gap-y-2 text-sm">
                         <span class="font-medium text-gray-500">Field</span><span class="font-medium text-gray-500">X</span><span class="font-medium text-gray-500">Y</span><span class="font-medium text-gray-500">Width</span>
                         @foreach (\App\Models\CertificateTemplate::FIELDS as $key => [$label])

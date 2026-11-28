@@ -9,6 +9,7 @@ use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
 use App\Models\User;
 use App\Services\CertificateIssuer;
+use App\Services\CertificateNameLines;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -124,5 +125,22 @@ class CertificateTemplateTest extends TestCase
         $certificate->session->update(['certificate_template_id' => $session->id]);
 
         $this->assertSame($session->id, CertificateTemplate::forSession($certificate->session->fresh())->id);
+    }
+
+    public function test_long_names_keep_their_last_line_in_place_and_grow_upward(): void
+    {
+        $this->template(true)->update(['layout' => ['name' => ['x' => 148.5, 'y' => 85, 'w' => 170]]]);
+        $certificate = $this->certificate();
+
+        $this->assertSame(['Budi Santoso'], CertificateNameLines::split('Budi Santoso', 170));
+        $this->assertSame(['Baidarus Naizaki Putra', 'Madyatama'], CertificateNameLines::split('Baidarus Naizaki Putra Madyatama', 170));
+
+        $certificate->customer->update(['name' => 'Budi Santoso']);
+        $this->actingAs($certificate->customer, 'customer')->get(route('portal.certificates.show', $certificate))->assertOk()
+            ->assertSeeInOrder(['top:85.00mm', 'Budi Santoso'], false);
+
+        $certificate->customer->update(['name' => 'Baidarus Naizaki Putra Madyatama']);
+        $this->actingAs($certificate->customer, 'customer')->get(route('portal.certificates.show', $certificate))->assertOk()
+            ->assertSeeInOrder(['top:70.00mm', 'Baidarus Naizaki Putra</div>', 'top:85.00mm', 'Madyatama</div>'], false);
     }
 }
