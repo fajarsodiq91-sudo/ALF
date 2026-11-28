@@ -137,7 +137,7 @@ class PublicSiteTest extends TestCase
             $response = $this->get($path);
 
             $response->assertOk();
-            $response->assertSee('href="'.route('login').'"', false);
+            $response->assertSee('<a class="nav-staff" href="'.route('login').'"', false);
         }
     }
 

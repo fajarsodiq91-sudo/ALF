@@ -266,6 +266,20 @@ h1, h2, h3 {
   color: #fff;
 }
 
+.site-nav a.nav-staff {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 22px;
+  border-left: 1px solid var(--color-border);
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.site-nav a.nav-staff:hover {
+  color: var(--color-primary);
+}
+
 .site-nav a.is-current {
   color: var(--color-primary);
   font-weight: 700;
@@ -1713,6 +1727,11 @@ h1, h2, h3 {
 
   .site-nav.is-open {
     display: flex;
+  }
+
+  .site-nav a.nav-staff {
+    padding-left: 0;
+    border-left: 0;
   }
 
   .services-grid,
