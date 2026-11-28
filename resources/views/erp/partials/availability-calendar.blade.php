@@ -17,16 +17,61 @@
         const pad = n => String(n).padStart(2, '0');
         const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
         const now = new Date();
+        const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+        const monday = d => addDays(new Date(d.getFullYear(), d.getMonth(), d.getDate()), -((d.getDay() + 6) % 7));
 
         return {
             booked, blocks, manage, details, cursor: new Date(now.getFullYear(), now.getMonth(), 1), today: iso(now), months: 6,
             pending: null,
             viewing: null,
+            mode: (() => { try { return localStorage.getItem('erp.calendarMode') === 'week' ? 'week' : 'month'; } catch (e) { return 'month'; } })(),
+            weekStart: monday(now),
+            selected: iso(now),
 
-            canPrev() { return this.cursor > new Date(now.getFullYear(), now.getMonth(), 1); },
-            canNext() { return this.cursor < new Date(now.getFullYear(), now.getMonth() + this.months, 1); },
-            move(delta) { this.cursor = new Date(this.cursor.getFullYear(), this.cursor.getMonth() + delta, 1); },
-            monthLabel() { return this.cursor.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }); },
+            setMode(m) {
+                this.mode = m;
+                try { localStorage.setItem('erp.calendarMode', m); } catch (e) {}
+                if (m === 'week') { this.weekStart = monday(new Date(this.selected + 'T00:00:00')); }
+            },
+            limitEnd() { return new Date(now.getFullYear(), now.getMonth() + this.months + 1, 0); },
+            canPrev() {
+                return this.mode === 'week' ? this.weekStart > monday(now) : this.cursor > new Date(now.getFullYear(), now.getMonth(), 1);
+            },
+            canNext() {
+                return this.mode === 'week'
+                    ? addDays(this.weekStart, 7) <= this.limitEnd()
+                    : this.cursor < new Date(now.getFullYear(), now.getMonth() + this.months, 1);
+            },
+            move(delta) {
+                if (this.mode === 'week') {
+                    this.weekStart = addDays(this.weekStart, 7 * delta);
+                    this.cursor = new Date(this.weekStart.getFullYear(), this.weekStart.getMonth(), 1);
+                } else {
+                    this.cursor = new Date(this.cursor.getFullYear(), this.cursor.getMonth() + delta, 1);
+                    const first = iso(this.cursor);
+                    this.selected = this.today.slice(0, 7) === first.slice(0, 7) ? this.today : first;
+                }
+            },
+            label() {
+                if (this.mode === 'month') { return this.cursor.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }); }
+                const end = addDays(this.weekStart, 6);
+                const sameMonth = end.getMonth() === this.weekStart.getMonth();
+                return this.weekStart.toLocaleDateString('en-GB', sameMonth ? { day: 'numeric' } : { day: 'numeric', month: 'short' })
+                    + ' – ' + end.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            },
+
+            /** Opens a day: shows its slots under the month grid. */
+            select(day) { if (day.inMonth) { this.selected = day.iso; } },
+            openWeek(isoDate) { this.selected = isoDate; this.setMode('week'); },
+            selectedDay() { return this.makeDay(new Date(this.selected + 'T00:00:00')); },
+            longDate(isoDate) { return new Date(isoDate + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }); },
+
+            /** "4 slots · 1 booked" for a month cell. */
+            summary(day) {
+                const n = day.windows.length;
+                const taken = day.windows.filter(w => w.state !== 'available').length;
+                return n + (n === 1 ? ' slot' : ' slots') + (taken ? ' · ' + taken + ' booked' : '');
+            },
 
             /** An operating window with the bookings inside it and how much of it is taken: 'available' | 'partial' | 'booked'. */
             windowState(date, w) {
@@ -44,24 +89,30 @@
                 return { ...w, bookings, state: covered === 0 ? 'available' : (covered >= to - from ? 'booked' : 'partial') };
             },
 
+            makeDay(day) {
+                const date = iso(day);
+                return {
+                    iso: date, number: day.getDate(), past: date < this.today,
+                    inMonth: this.mode === 'week' || day.getMonth() === this.cursor.getMonth(),
+                    weekday: day.toLocaleDateString('en-GB', { weekday: 'short' }),
+                    windows: window.slotsFor(date).map(slot => this.windowState(date, slot)),
+                };
+            },
+
+            /** Month grid, only as many week rows as the month needs. */
             weeks() {
                 const first = new Date(this.cursor);
-                const start = new Date(first.getFullYear(), first.getMonth(), 1 - (first.getDay() + 6) % 7);
+                const lead = (first.getDay() + 6) % 7;
+                const daysInMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+                const start = addDays(first, -lead);
                 const weeks = [];
-                for (let w = 0; w < 6; w++) {
-                    const days = [];
-                    for (let d = 0; d < 7; d++) {
-                        const day = new Date(start.getFullYear(), start.getMonth(), start.getDate() + w * 7 + d);
-                        const date = iso(day);
-                        days.push({
-                            iso: date, number: day.getDate(), inMonth: day.getMonth() === this.cursor.getMonth(), past: date < this.today,
-                            windows: window.slotsFor(date).map(slot => this.windowState(date, slot)),
-                        });
-                    }
-                    weeks.push(days);
+                for (let w = 0; w < Math.ceil((lead + daysInMonth) / 7); w++) {
+                    weeks.push([...Array(7)].map((_, d) => this.makeDay(addDays(start, w * 7 + d))));
                 }
                 return weeks;
             },
+
+            weekDays() { return [...Array(7)].map((_, d) => this.makeDay(addDays(this.weekStart, d))); },
 
             blockable(day, w) { return this.manage && !day.past && w.state !== 'booked'; },
 
@@ -106,9 +157,13 @@
 <div x-data='availabilityCalendar(@json($booked), @json($blocks), @json($manage), @json($details))'>
     <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
-            <button type="button" @click="move(-1)" :disabled="!canPrev()" class="rounded-md border border-gray-300 px-2.5 py-1 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-30" aria-label="Previous month">&larr;</button>
-            <h3 class="min-w-[9rem] text-center text-base font-semibold text-gray-800" x-text="monthLabel()"></h3>
-            <button type="button" @click="move(1)" :disabled="!canNext()" class="rounded-md border border-gray-300 px-2.5 py-1 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-30" aria-label="Next month">&rarr;</button>
+            <button type="button" @click="move(-1)" :disabled="!canPrev()" class="rounded-md border border-gray-300 px-2.5 py-1 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-30" :aria-label="mode === 'week' ? 'Previous week' : 'Previous month'">&larr;</button>
+            <h3 class="min-w-[10rem] text-center text-base font-semibold text-gray-800" x-text="label()"></h3>
+            <button type="button" @click="move(1)" :disabled="!canNext()" class="rounded-md border border-gray-300 px-2.5 py-1 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-30" :aria-label="mode === 'week' ? 'Next week' : 'Next month'">&rarr;</button>
+            <div class="ml-2 inline-flex rounded-md bg-gray-100 p-0.5 text-xs font-medium">
+                <button type="button" @click="setMode('month')" class="rounded px-2.5 py-1 transition-colors" :class="mode === 'month' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'">Month</button>
+                <button type="button" @click="setMode('week')" class="rounded px-2.5 py-1 transition-colors" :class="mode === 'week' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'">Week</button>
+            </div>
         </div>
         <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
             <span class="inline-flex items-center gap-1.5"><span class="h-3 w-3 rounded bg-green-100 ring-1 ring-green-400"></span> Available</span>
@@ -120,46 +175,67 @@
         </div>
     </div>
 
-    <div class="overflow-x-auto">
-        <div class="min-w-[44rem]">
-            <div class="grid grid-cols-7 gap-1 pb-1 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">
-                <template x-for="name in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" :key="name"><div x-text="name"></div></template>
+    {{-- Month: one compact cell per day (dots per slot); click a day for its slots --}}
+    <div x-show="mode === 'month'">
+        <div class="grid grid-cols-7 gap-1 pb-1 text-center text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+            <template x-for="name in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" :key="name"><div x-text="name"></div></template>
+        </div>
+        <template x-for="(week, wi) in weeks()" :key="wi">
+            <div class="mb-1 grid grid-cols-7 gap-1">
+                <template x-for="day in week" :key="day.iso">
+                    <button type="button" @click="select(day)" :disabled="!day.inMonth"
+                            class="flex h-14 flex-col rounded-md border p-1.5 text-left transition-colors sm:h-16"
+                            :class="!day.inMonth
+                                ? 'border-transparent'
+                                : [selected === day.iso ? 'border-brand ring-1 ring-brand bg-white' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50', day.past ? 'opacity-50' : '']">
+                        <template x-if="day.inMonth">
+                            <div class="flex h-full w-full flex-col">
+                                <span class="text-xs" :class="day.iso === today ? 'self-start rounded-full bg-brand px-1.5 font-semibold text-white' : 'font-medium text-gray-700'" x-text="day.number"></span>
+                                <div class="mt-auto flex flex-wrap items-center gap-1">
+                                    <template x-for="w in day.windows" :key="w.value">
+                                        <span class="h-2 w-2 rounded-full"
+                                              :class="{ 'bg-green-400': w.state === 'available', 'bg-amber-400': w.state === 'partial', 'bg-red-400': w.state === 'booked' }"></span>
+                                    </template>
+                                    <span x-show="!day.windows.length" class="text-[10px] uppercase text-gray-300">Closed</span>
+                                </div>
+                                <span x-show="day.windows.length" class="hidden truncate text-[10px] text-gray-500 md:block" x-text="summary(day)"></span>
+                            </div>
+                        </template>
+                    </button>
+                </template>
             </div>
-            <template x-for="(week, w) in weeks()" :key="w">
-                <div class="mb-1 grid grid-cols-7 gap-1">
-                    <template x-for="day in week" :key="day.iso">
-                        <div class="min-h-[5.5rem] rounded-md border p-1" :class="[day.inMonth ? 'border-gray-200 bg-white' : 'border-gray-100 bg-gray-50', day.past ? 'opacity-50' : '']">
-                            <div class="flex items-center justify-between px-0.5 text-xs">
-                                <span :class="day.iso === today ? 'rounded-full bg-brand px-1.5 font-semibold text-white' : (day.inMonth ? 'font-medium text-gray-700' : 'text-gray-400')" x-text="day.number"></span>
-                                <span x-show="!day.windows.length && day.inMonth && !day.past" class="text-[10px] uppercase text-gray-300">Closed</span>
-                            </div>
-                            <div class="mt-1 space-y-1">
-                                <template x-for="w in day.windows" :key="w.value">
-                                    <div>
-                                        <button type="button" @click="block(day, w)" :disabled="!blockable(day, w)"
-                                                :title="w.state === 'booked' ? 'Fully booked' : (w.state === 'partial' ? 'Partly booked' : 'Available') + (blockable(day, w) ? ': click to block a time' : '')"
-                                                class="block w-full rounded px-1 py-0.5 text-left text-[11px] leading-tight ring-1"
-                                                :class="{
-                                                    'bg-green-100 text-green-800 ring-green-300': w.state === 'available',
-                                                    'bg-amber-100 text-amber-800 ring-amber-300': w.state === 'partial',
-                                                    'bg-red-100 text-red-700 ring-red-300': w.state === 'booked',
-                                                    'cursor-pointer hover:ring-2': blockable(day, w),
-                                                    'cursor-default': !blockable(day, w),
-                                                }"
-                                                x-text="w.label"></button>
-                                        <template x-for="b in w.bookings" :key="b.key">
-                                            <button type="button" @click="b.blockId ? unblock(day, b) : view(day, b)"
-                                                    :disabled="!(manage && b.blockId && !day.past) && !(b.detail && b.detail.length)"
-                                                    :title="tooltipFor(b)"
-                                                    class="mt-0.5 block w-full rounded px-1 text-left text-[10px] leading-tight"
-                                                    :class="b.blockId ? 'bg-slate-200 text-slate-700 cursor-pointer hover:bg-slate-300' : (b.detail && b.detail.length ? 'bg-red-50 text-red-600 cursor-pointer hover:bg-red-100' : 'bg-red-50 text-red-600 cursor-default')"
-                                                    x-text="b.start + '–' + b.end + (b.blockId ? ' blocked' : ' booked')"></button>
-                                        </template>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </template>
+        </template>
+
+        {{-- Slots of the selected day --}}
+        <div class="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <template x-if="selected">
+                <div x-data="{ get day() { return selectedDay() } }">
+                    <div class="mb-2 flex items-center justify-between gap-2">
+                        <p class="text-sm font-semibold text-gray-800" x-text="longDate(selected)"></p>
+                        <button type="button" @click="openWeek(selected)" class="text-xs font-medium text-brand hover:underline">View week &rarr;</button>
+                    </div>
+                    <p x-show="!day.windows.length" class="text-xs text-gray-500">Closed on this day.</p>
+                    <div class="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-4">
+                        @include('erp.partials.availability-day-slots')
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    {{-- Week: seven columns with every slot --}}
+    <div x-show="mode === 'week'" x-cloak class="overflow-x-auto">
+        <div class="grid min-w-[44rem] grid-cols-7 gap-1">
+            <template x-for="day in weekDays()" :key="day.iso">
+                <div class="rounded-md border border-gray-200 bg-white p-1" :class="day.past ? 'opacity-50' : ''">
+                    <div class="mb-1 flex items-center justify-between px-0.5 text-xs">
+                        <span class="font-semibold uppercase tracking-wide text-gray-500" x-text="day.weekday"></span>
+                        <span :class="day.iso === today ? 'rounded-full bg-brand px-1.5 font-semibold text-white' : 'font-medium text-gray-700'" x-text="day.number"></span>
+                    </div>
+                    <p x-show="!day.windows.length" class="px-0.5 text-[10px] uppercase text-gray-300">Closed</p>
+                    <div class="space-y-1">
+                        @include('erp.partials.availability-day-slots')
+                    </div>
                 </div>
             </template>
         </div>
