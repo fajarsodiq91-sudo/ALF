@@ -1,5 +1,5 @@
 {{-- Password input with a lock icon, show/hide toggle and a Caps Lock warning. Optional `aside` slot sits right of the label. --}}
-@props(['name' => 'password', 'label', 'aside' => null])
+@props(['name' => 'password', 'label', 'aside' => null, 'bag' => 'default'])
 
 @php($id = $attributes->get('id', $name))
 
@@ -13,7 +13,7 @@
         <x-text-input :id="$id" :name="$name" type="password" x-bind:type="show ? 'text' : 'password'"
                       @keyup="caps = $event.getModifierState && $event.getModifierState('CapsLock')"
                       @keydown="caps = $event.getModifierState && $event.getModifierState('CapsLock')"
-                      {{ $attributes->except('id')->class(['block w-full pl-10 pr-10 py-2.5 focus:border-brand focus:ring-brand', 'border-red-300' => $errors->has($name)]) }} />
+                      {{ $attributes->except('id')->class(['block w-full pl-10 pr-10 py-2.5 focus:border-brand focus:ring-brand', 'border-red-300' => $errors->getBag($bag)->has($name)]) }} />
         <button type="button" @click="show = !show" class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-steel-400 hover:text-steel-600 focus:outline-none focus:ring-2 focus:ring-brand"
                 :aria-label="show ? @js(__('Hide password')) : @js(__('Show password'))">
             <svg x-show="!show" class="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.46 12C3.73 7.94 7.52 5 12 5c4.48 0 8.27 2.94 9.54 7-1.27 4.06-5.06 7-9.54 7-4.48 0-8.27-2.94-9.54-7z"/></svg>

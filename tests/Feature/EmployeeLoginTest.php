@@ -69,16 +69,35 @@ class EmployeeLoginTest extends TestCase
         $this->assertAuthenticatedAs($employee->user);
 
         $this->get(route('dashboard'))->assertRedirect(route('profile.edit'));
-        $this->get(route('profile.edit'))->assertOk()->assertSee('Please set a new password');
+        $this->get(route('profile.edit'))->assertOk()
+            ->assertSee('Please set a new password')
+            ->assertSee('Set your new password')
+            ->assertSee($employee->employee_number)
+            ->assertDontSee('Delete Account');
 
         $this->put(route('password.update'), [
             'current_password' => $employee->employee_number,
             'password' => 'new-secret-password',
             'password_confirmation' => 'new-secret-password',
-        ])->assertSessionHasNoErrors();
+        ])->assertSessionHasNoErrors()->assertRedirect(route('dashboard'));
 
         $this->assertFalse($employee->user->fresh()->must_change_password);
         $this->get(route('dashboard'))->assertOk();
+        $this->get(route('profile.edit'))->assertOk()->assertDontSee('Set your new password');
+    }
+
+    public function test_a_wrong_current_password_is_shown_on_the_first_login_page(): void
+    {
+        $employee = Employee::factory()->create(['email' => null]);
+        $this->actingAs($employee->user);
+
+        $this->from(route('profile.edit'))->followingRedirects()->put(route('password.update'), [
+            'current_password' => 'not-it',
+            'password' => 'new-secret-password',
+            'password_confirmation' => 'new-secret-password',
+        ])->assertOk()->assertSee('Set your new password')->assertSee('role="alert"', false);
+
+        $this->assertTrue($employee->user->fresh()->must_change_password);
     }
 
     public function test_an_unknown_employee_number_cannot_log_in(): void

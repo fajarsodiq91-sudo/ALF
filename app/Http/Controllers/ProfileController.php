@@ -16,6 +16,11 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        // Staff still on their initial password get a focused page that only sets a new one.
+        if ($request->user()->must_change_password) {
+            return view('auth.change-password', ['user' => $request->user()->loadMissing('employee')]);
+        }
+
         return view('profile.edit', [
             'user' => $request->user(),
         ]);

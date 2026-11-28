@@ -20,10 +20,17 @@ class PasswordController extends Controller
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
+        $wasRequired = $request->user()->must_change_password;
+
         $request->user()->forceFill([
             'password' => Hash::make($validated['password']),
             'must_change_password' => false,
         ])->save();
+
+        // The first change unlocks the ERP, so go straight to it.
+        if ($wasRequired) {
+            return redirect()->route('dashboard')->with('status', __('Your new password is set. Welcome!'));
+        }
 
         return back()->with('status', 'password-updated');
     }
