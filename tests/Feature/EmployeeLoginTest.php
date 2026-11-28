@@ -82,7 +82,8 @@ class EmployeeLoginTest extends TestCase
         ])->assertSessionHasNoErrors()->assertRedirect(route('dashboard'));
 
         $this->assertFalse($employee->user->fresh()->must_change_password);
-        $this->get(route('dashboard'))->assertOk();
+        $this->get(route('dashboard'))->assertOk()->assertSee('Your new password is set. Welcome to the ERP!');
+        $this->get(route('dashboard'))->assertOk()->assertDontSee('Your new password is set');
         $this->get(route('profile.edit'))->assertOk()->assertDontSee('Set your new password');
     }
 

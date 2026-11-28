@@ -29,7 +29,7 @@ class PasswordController extends Controller
 
         // The first change unlocks the ERP, so go straight to it.
         if ($wasRequired) {
-            return redirect()->route('dashboard')->with('status', __('Your new password is set. Welcome!'));
+            return redirect()->route('dashboard')->with('toast', __('Your new password is set. Welcome to the ERP!'));
         }
 
         return back()->with('status', 'password-updated');

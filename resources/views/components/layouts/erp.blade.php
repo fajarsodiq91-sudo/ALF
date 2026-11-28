@@ -199,6 +199,8 @@
                     </div>
                 </header>
 
+                <x-erp.toast />
+
                 <main class="flex-1 p-4 sm:p-6">
                     {{ $slot }}
                 </main>
