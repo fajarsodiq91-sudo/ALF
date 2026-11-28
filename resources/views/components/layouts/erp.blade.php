@@ -11,23 +11,46 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
         <link rel="icon" type="image/png" href="{{ asset('assets/icons/alf.png') }}" />
 
+        {{-- Apply the saved collapse state before paint so the sidebar doesn't jump --}}
+        <script>
+            try { if (localStorage.getItem('erp.sidebarCollapsed') === '1') document.documentElement.classList.add('sb-collapsed'); } catch (e) {}
+        </script>
+
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased bg-gradient-to-br from-steel-50 to-steel-100 text-gray-900 min-h-screen" x-data="{ sidebarOpen: false }">
+    <body class="font-sans antialiased bg-gradient-to-br from-steel-50 to-steel-100 text-gray-900 min-h-screen" x-data="{
+        sidebarOpen: false,
+        collapsed: document.documentElement.classList.contains('sb-collapsed'),
+    }" x-init="$watch('collapsed', v => {
+        document.documentElement.classList.toggle('sb-collapsed', v);
+        try { localStorage.setItem('erp.sidebarCollapsed', v ? '1' : '0') } catch (e) {}
+    })">
         <div class="min-h-screen flex">
             {{-- Sidebar --}}
             <aside
-                class="fixed inset-y-0 left-0 z-40 w-64 h-screen bg-gradient-to-b from-steel-900 via-steel-800 to-brand-950 text-steel-300 transform transition-transform duration-200 ease-in-out lg:translate-x-0"
+                class="erp-sidebar fixed inset-y-0 left-0 z-40 h-screen bg-gradient-to-b from-steel-900 via-steel-800 to-brand-950 text-steel-300 lg:translate-x-0"
                 :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
             >
-                <div class="h-14 flex items-center gap-2 px-4 border-b border-white/10 bg-gradient-to-r from-brand-dark/50 to-transparent">
+                <div class="relative h-14 flex items-center gap-2 pl-[22px] pr-4 border-b border-white/10 bg-gradient-to-r from-brand-dark/50 to-transparent">
                     <img src="{{ asset('assets/icons/alf-sidebar.png') }}" alt="" class="h-7 w-7 shrink-0 object-contain" />
-                    <span class="font-semibold text-white leading-tight text-[13px]">
+                    <span class="sb-label font-semibold text-white leading-tight text-[13px]">
                         PT. Alfajar Logic Futura
                     </span>
+
+                    {{-- Collapse / expand (desktop only) --}}
+                    <button
+                        type="button"
+                        @click="collapsed = !collapsed"
+                        class="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 z-50 h-6 w-6 items-center justify-center rounded-full bg-white text-brand-dark shadow-md ring-1 ring-black/5 transition-transform duration-200 hover:scale-110"
+                        :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform duration-500" :class="collapsed ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
                 </div>
 
-                <nav x-data="{ openGroup: null }" class="sidebar-scroll py-3 px-2.5 space-y-0.5 overflow-y-auto" style="height: calc(100% - 3.5rem);">
+                <nav x-data="{ openGroup: null }" class="erp-nav sidebar-scroll py-3 px-2.5 space-y-0.5 overflow-y-auto" style="height: calc(100% - 3.5rem);">
                     <x-erp.nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" icon="dashboard">
                         Dashboard
                     </x-erp.nav-link>
@@ -126,7 +149,7 @@
             ></div>
 
             {{-- Main column --}}
-            <div class="flex-1 flex flex-col min-w-0 lg:ml-64">
+            <div class="erp-main flex-1 flex flex-col min-w-0">
                 <header class="h-14 bg-white border-b border-gray-200 shadow-sm flex items-center justify-between px-4 sm:px-6 sticky top-0 z-20">
                     <div class="flex items-center gap-3">
                         <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-gray-500 hover:text-gray-700" aria-label="Toggle sidebar">
