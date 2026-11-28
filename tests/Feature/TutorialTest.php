@@ -19,7 +19,7 @@ class TutorialTest extends TestCase
 
     /** Pages that are not part of the ERP or the customer-facing flows, so the tutorial does not explain them. */
     private const NOT_DOCUMENTED = [
-        'home', 'about', 'services', 'portfolio', 'contact', 'thank-you', // public company website
+        'home', 'about', 'services', 'portfolio', 'contact', 'thank-you', 'programs.show', // public company website
         'login', 'register', 'password.*', 'verification.*', // sign-in screens
         'storage.*',
     ];
