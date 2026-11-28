@@ -84,7 +84,29 @@ class SiteItem extends Model
                 'subtitle' => ['label' => 'Role / company'],
                 'body' => ['label' => 'Review', 'required' => true],
                 'link_url' => ['label' => 'Link to the original review', 'external' => true, 'hint' => 'Optional, e.g. the Google Maps review.'],
+                'number' => ['label' => 'Star rating', 'hint' => 'Optional, 1 to 5. Leave empty to hide the stars.'],
                 'image' => ['label' => 'Photo'],
+            ],
+        ],
+        'client' => [
+            'label' => 'Client Logos',
+            'singular' => 'client',
+            'description' => 'The strip of client and partner logos under the hero on the Home page. Hidden until one is added.',
+            'page' => 'home',
+            'fields' => [
+                'title' => ['label' => 'Client name', 'required' => true, 'hint' => 'Shown as text when there is no logo, and as the logo description.'],
+                'link_url' => ['label' => 'Website', 'external' => true, 'hint' => 'Optional.'],
+                'image' => ['label' => 'Logo', 'hint' => 'A PNG with a transparent background looks best.'],
+            ],
+        ],
+        'faq' => [
+            'label' => 'FAQ',
+            'singular' => 'question',
+            'description' => 'The frequently asked questions above the call-to-action on the Home page. Hidden until one is added.',
+            'page' => 'home',
+            'fields' => [
+                'title' => ['label' => 'Question', 'required' => true],
+                'body' => ['label' => 'Answer', 'required' => true],
             ],
         ],
         'portfolio' => [

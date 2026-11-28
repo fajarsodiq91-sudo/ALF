@@ -45,7 +45,9 @@ class SaveSiteItemRequest extends FormRequest
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'icon' => [$presence, 'string', 'max:16'],
             'body' => [$presence, 'string', 'max:2000'],
-            'number' => [$presence, 'integer', 'min:0', 'max:1000000'],
+            'number' => $this->route('type') === 'testimonial'
+                ? [$presence, 'integer', 'min:1', 'max:5']
+                : [$presence, 'integer', 'min:0', 'max:1000000'],
             'category' => [$presence, Rule::in(array_keys(MasterData::options('portfolio_category', $this->route('item')?->category)))],
             'link_url' => ($field['external'] ?? false)
                 ? [$presence, 'url:http,https', 'max:500']

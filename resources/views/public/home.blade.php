@@ -50,6 +50,35 @@
     @endif
   </section>
 
+  @if ($clients->isNotEmpty())
+    <section class="clients" aria-label="{{ SiteContent::text('home.clients_title') }}">
+      <div class="container">
+        <p class="clients__title">{{ SiteContent::text('home.clients_title') }}</p>
+        <div @class(['clients__track', 'is-marquee' => $clients->count() > 5])>
+          @foreach ($clients->count() > 5 ? [$clients, $clients] : [$clients] as $set)
+            <ul class="clients__list" @if (! $loop->first) aria-hidden="true" @endif>
+              @foreach ($set as $client)
+                <li>
+                  @if ($client->href())
+                    <a href="{{ $client->href() }}" target="_blank" rel="noopener noreferrer" @if (! $loop->parent->first) tabindex="-1" @endif>
+                  @endif
+                  @if ($client->imageUrl())
+                    <img src="{{ $client->imageUrl() }}" alt="{{ $client->title }}" loading="lazy" />
+                  @else
+                    <span>{{ $client->title }}</span>
+                  @endif
+                  @if ($client->href())
+                    </a>
+                  @endif
+                </li>
+              @endforeach
+            </ul>
+          @endforeach
+        </div>
+      </div>
+    </section>
+  @endif
+
   <section class="section" id="about-teaser">
     <div class="container about__grid">
       <div class="about__content reveal">
@@ -105,6 +134,24 @@
     </section>
   @endif
 
+  <section class="section section--alt" id="how-it-works">
+    <div class="container">
+      <div class="section-heading reveal">
+        <p class="eyebrow">{{ SiteContent::text('home.process_eyebrow') }}</p>
+        <h2>{{ SiteContent::text('home.process_title') }}</h2>
+      </div>
+      <ol class="process">
+        @foreach (range(1, 4) as $step)
+          <li class="process__step reveal">
+            <span class="process__number">{{ str_pad($step, 2, '0', STR_PAD_LEFT) }}</span>
+            <h3>{{ SiteContent::text("home.process_step_{$step}_title") }}</h3>
+            <p>{{ SiteContent::multiline("home.process_step_{$step}_text") }}</p>
+          </li>
+        @endforeach
+      </ol>
+    </div>
+  </section>
+
   @if ($testimonials->isNotEmpty())
     <section class="section" id="testimonials">
       <div class="container">
@@ -122,6 +169,13 @@
               @if ($testimonial->imageUrl())
                 <img src="{{ $testimonial->imageUrl() }}" alt="{{ $testimonial->title }}" />
               @endif
+              @if ($testimonial->number)
+                <div class="stars" role="img" aria-label="{{ min(5, $testimonial->number) }} out of 5 stars">
+                  @foreach (range(1, 5) as $star)
+                    <svg viewBox="0 0 20 20" @class(['is-on' => $star <= $testimonial->number]) aria-hidden="true"><path d="M10 1.5l2.6 5.3 5.9.9-4.25 4.1 1 5.85L10 14.9l-5.25 2.75 1-5.85L1.5 7.7l5.9-.9z"/></svg>
+                  @endforeach
+                </div>
+              @endif
               <p>&ldquo;{{ $testimonial->body }}&rdquo;</p>
               <strong>{{ $testimonial->title }}</strong>
               @if ($testimonial->subtitle)
@@ -134,6 +188,25 @@
             </article>
           @endforeach
           <div class="dots" aria-label="Testimonial navigation"></div>
+        </div>
+      </div>
+    </section>
+  @endif
+
+  @if ($faqs->isNotEmpty())
+    <section class="section section--alt" id="faq">
+      <div class="container faq">
+        <div class="section-heading reveal">
+          <p class="eyebrow">{{ SiteContent::text('home.faq_eyebrow') }}</p>
+          <h2>{{ SiteContent::text('home.faq_title') }}</h2>
+        </div>
+        <div class="faq__list reveal">
+          @foreach ($faqs as $faq)
+            <details class="faq__item" @if ($loop->first) open @endif>
+              <summary>{{ $faq->title }}</summary>
+              <div class="faq__answer">{!! nl2br(e($faq->body)) !!}</div>
+            </details>
+          @endforeach
         </div>
       </div>
     </section>

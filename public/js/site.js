@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initPortfolioFilter();
   initTestimonialSlider();
   initStatCounters();
+  initHeaderScroll();
 });
 
 function initLoader() {
@@ -155,3 +156,13 @@ function initStatCounters() {
 
   stats.forEach((el) => observer.observe(el));
 }
+
+function initHeaderScroll() {
+  const header = document.querySelector(".site-header");
+  if (!header) return;
+
+  const update = () => header.classList.toggle("is-scrolled", window.scrollY > 10);
+  update();
+  window.addEventListener("scroll", update, { passive: true });
+}
+

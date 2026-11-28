@@ -91,7 +91,9 @@ class WebsiteContentTest extends TestCase
         foreach (SiteItem::types() as $type) {
             $this->get(route('masterdata.site.items.index', $type))->assertOk()->assertSee(SiteItem::TYPES[$type]['label']);
             $this->get(route('masterdata.site.items.create', $type))->assertOk();
-            $this->get(route('masterdata.site.items.edit', [$type, SiteItem::where('type', $type)->firstOrFail()]))->assertOk();
+            // Client logos and FAQs start empty, so give them a row to edit.
+            $item = SiteItem::where('type', $type)->first() ?? SiteItem::create(['type' => $type, 'title' => 'Example', 'body' => 'Example']);
+            $this->get(route('masterdata.site.items.edit', [$type, $item]))->assertOk();
         }
     }
 

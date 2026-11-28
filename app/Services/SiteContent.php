@@ -55,6 +55,7 @@ class SiteContent
                     'cta_eyebrow' => ['type' => 'text', 'label' => 'Small heading', 'default' => 'Ready to Move Forward?'],
                     'cta_title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Ready to Transform Your Business?'],
                     'cta_button' => ['type' => 'text', 'label' => 'Button label', 'default' => 'Contact Us', 'max' => 60],
+                    'whatsapp_float_label' => ['type' => 'text', 'label' => 'Floating WhatsApp button label', 'default' => 'Chat with us', 'max' => 40, 'hint' => 'The round WhatsApp button shown in the corner of every page.'],
                 ],
                 'Contact details' => [
                     'contact_address' => ['type' => 'text', 'label' => 'Address', 'default' => 'Karawang, Indonesia'],
@@ -72,7 +73,7 @@ class SiteContent
         'home' => [
             'label' => 'Home',
             'description' => 'The landing page.',
-            'lists' => ['service', 'testimonial', 'stat'],
+            'lists' => ['home_service', 'stat', 'client', 'testimonial', 'faq'],
             'sections' => [
                 'Search engines & browser tab' => [
                     'meta_title' => ['type' => 'text', 'label' => 'Page title', 'default' => 'PT Alfajar Logic Futura | Empowering Business Through Technology'],
@@ -112,6 +113,25 @@ class SiteContent
                     'programs_text' => ['type' => 'textarea', 'label' => 'Paragraph', 'default' => 'Programs come straight from our current catalogue. Ask us for a schedule that fits your team.'],
                     'programs_card_button' => ['type' => 'text', 'label' => 'Link on each card', 'default' => 'View details', 'max' => 60],
                     'programs_corporate_label' => ['type' => 'text', 'label' => 'Corporate badge', 'default' => 'Corporate', 'max' => 40],
+                ],
+                'Client logos' => [
+                    'clients_title' => ['type' => 'text', 'label' => 'Heading above the logos', 'default' => 'Trusted by organizations across industries', 'hint' => 'The logos are managed in Website lists → Client Logos.'],
+                ],
+                'How it works' => [
+                    'process_eyebrow' => ['type' => 'text', 'label' => 'Small heading', 'default' => 'How It Works'],
+                    'process_title' => ['type' => 'text', 'label' => 'Title', 'default' => 'From first conversation to certified team.'],
+                    'process_step_1_title' => ['type' => 'text', 'label' => 'Step 1 title', 'default' => 'Consultation', 'max' => 60],
+                    'process_step_1_text' => ['type' => 'textarea', 'label' => 'Step 1 text', 'default' => 'Tell us your goals and the skills your team needs.'],
+                    'process_step_2_title' => ['type' => 'text', 'label' => 'Step 2 title', 'default' => 'Choose a program', 'max' => 60],
+                    'process_step_2_text' => ['type' => 'textarea', 'label' => 'Step 2 text', 'default' => 'We recommend a program or tailor one to your organization.'],
+                    'process_step_3_title' => ['type' => 'text', 'label' => 'Step 3 title', 'default' => 'Schedule', 'max' => 60],
+                    'process_step_3_text' => ['type' => 'textarea', 'label' => 'Step 3 text', 'default' => 'Pick dates that fit, online or on site.'],
+                    'process_step_4_title' => ['type' => 'text', 'label' => 'Step 4 title', 'default' => 'Certificate', 'max' => 60],
+                    'process_step_4_text' => ['type' => 'textarea', 'label' => 'Step 4 text', 'default' => 'Participants receive a verifiable certificate when they finish.'],
+                ],
+                'FAQ section' => [
+                    'faq_eyebrow' => ['type' => 'text', 'label' => 'Small heading', 'default' => 'FAQ'],
+                    'faq_title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Frequently asked questions', 'hint' => 'The questions are managed in Website lists → FAQ.'],
                 ],
                 'Training program detail page' => [
                     'program_back' => ['type' => 'text', 'label' => 'Back link', 'default' => 'All training programs', 'max' => 60],

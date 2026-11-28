@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
+use App\Models\SiteItem;
 use App\Models\TrainingProgram;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -62,6 +63,30 @@ class PublicSiteTest extends TestCase
     public function test_home_page_hides_the_programs_section_without_active_programs(): void
     {
         $this->get('/')->assertOk()->assertDontSee('id="programs"', false);
+    }
+
+    public function test_home_page_shows_client_logos_faqs_and_testimonial_stars(): void
+    {
+        SiteItem::create(['type' => 'client', 'title' => 'Acme Manufacturing']);
+        SiteItem::create(['type' => 'faq', 'title' => 'Do you train on site?', 'body' => 'Yes, anywhere in Indonesia.']);
+        SiteItem::create(['type' => 'testimonial', 'title' => 'Rina', 'body' => 'Great class.', 'number' => 4]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Acme Manufacturing')
+            ->assertSee('Do you train on site?')
+            ->assertSee('Yes, anywhere in Indonesia.')
+            ->assertSee('4 out of 5 stars')
+            ->assertSee('id="how-it-works"', false)
+            ->assertSee('class="wa-float"', false);
+    }
+
+    public function test_home_page_hides_empty_client_and_faq_sections(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('class="clients"', false)
+            ->assertDontSee('id="faq"', false);
     }
 
     public function test_about_page_loads(): void

@@ -15,6 +15,8 @@ class PublicSiteController extends Controller
             'homeServices' => SiteItem::active('home_service'),
             'testimonials' => SiteItem::active('testimonial'),
             'stats' => SiteItem::active('stat'),
+            'clients' => SiteItem::active('client'),
+            'faqs' => SiteItem::active('faq'),
             'programs' => TrainingProgram::query()
                 ->where('is_active', true)
                 ->with(['category', 'images' => fn ($query) => $query->orderBy('sort_order')])
