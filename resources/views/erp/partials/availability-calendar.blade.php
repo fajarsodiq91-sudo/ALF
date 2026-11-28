@@ -8,12 +8,13 @@
 @php
     $manage = $manage ?? false;
     $blocks = $blocks ?? [];
-    $booked = $booked ?? \App\Services\BookedSlots::keys();
+    $booked = $booked ?? \App\Services\BookedSlots::keys(null, true);
+    $pastMonths = \App\Services\BookedSlots::PAST_MONTHS;
     $details = $details ?? [];
 @endphp
 @include('erp.partials.operating-hours')
 <script>
-    function availabilityCalendar(booked, blocks, manage, details) {
+    function availabilityCalendar(booked, blocks, manage, details, pastMonths) {
         const pad = n => String(n).padStart(2, '0');
         const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
         const now = new Date();
@@ -35,7 +36,9 @@
             },
             limitEnd() { return new Date(now.getFullYear(), now.getMonth() + this.months + 1, 0); },
             canPrev() {
-                return this.mode === 'week' ? this.weekStart > monday(now) : this.cursor > new Date(now.getFullYear(), now.getMonth(), 1);
+                // History is browsable as far back as bookings are loaded (BookedSlots::PAST_MONTHS).
+                const earliest = new Date(now.getFullYear(), now.getMonth() - pastMonths, 1);
+                return this.mode === 'week' ? addDays(this.weekStart, 6) >= earliest : this.cursor > earliest;
             },
             canNext() {
                 return this.mode === 'week'
@@ -154,7 +157,7 @@
     }
 </script>
 
-<div x-data='availabilityCalendar(@json($booked), @json($blocks), @json($manage), @json($details))'>
+<div x-data='availabilityCalendar(@json($booked), @json($blocks), @json($manage), @json($details), @json($pastMonths))'>
     <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
             <button type="button" @click="move(-1)" :disabled="!canPrev()" class="rounded-md border border-gray-300 px-2.5 py-1 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-30" :aria-label="mode === 'week' ? 'Previous week' : 'Previous month'">&larr;</button>
