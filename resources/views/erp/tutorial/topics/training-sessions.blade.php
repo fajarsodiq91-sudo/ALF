@@ -55,7 +55,7 @@
 </x-tutorial.section>
 
 <x-tutorial.section title="Pembayaran">
-    <p>Bagian <strong>Payments</strong> menampilkan tiap termin dengan status <em>Paid</em>, <em>Due now</em>, <em>Not yet due</em>, atau <em>After registration fee</em>. Termin dibuat sesuai <strong>Payment Plan</strong>:</p>
+    <p>Bagian <strong>Payments</strong> menampilkan tiap termin dengan status <em>Paid</em>, <em>Due now</em>, atau <em>Not yet due</em>. Termin dibuat sesuai <strong>Payment Plan</strong>:</p>
     <ul>
         <li><strong>Pay in full upfront</strong>: satu termin <em>Full payment</em> sebesar seluruh fee.</li>
         <li><strong>50% upfront, 50% at the middle meeting</strong>: <em>Down payment (50%)</em> di awal dan <em>Final payment (50%)</em> pada pertemuan tengah (pertemuan ke-4 dari 6, ke-7 dari 12; rumusnya jumlah pertemuan dibagi dua, ditambah satu). Untuk program sehari penuh (7 jam), termin kedua jatuh tempo setelah pelatihan selesai.</li>
@@ -63,8 +63,9 @@
     </ul>
     <p><strong>Registration fee.</strong> Bila program pertama customer punya biaya pendaftaran (lihat topik <em>Program &amp; Kategori Training</em> dan <em>Settings</em>), sesi pertama customer itu mendapat termin tambahan <em>Registration fee</em> yang jatuh tempo saat pendaftaran dan selalu menjadi termin serta invoice pertama. Biaya ini sekali seumur customer, tidak bisa dikembalikan, dan bukan bagian dari fee program.</p>
     <ul>
-        <li>Selama registration fee belum dicatat, termin program berstatus <em>After registration fee</em>: tidak dianggap jatuh tempo, invoicenya belum dikirim, ikon <strong>Record payment</strong>-nya tidak tampil, dan pertemuan sesi itu belum bisa ditandai <em>Done</em> (muncul pesan merah agar registration fee dicatat dulu).</li>
-        <li>Begitu registration fee dicatat, invoice termin program yang sudah jatuh tempo langsung dikirim.</li>
+        <li>Registration fee dan termin program yang jatuh tempo saat pendaftaran (<em>Full payment</em> atau <em>Down payment (50%)</em>) ditagih bersamaan dalam <strong>satu email invoice</strong>. Masing-masing tetap menjadi termin tersendiri dengan nomor invoicenya sendiri.</li>
+        <li>Keduanya boleh dicatat dengan urutan apa pun, misalnya DP lebih dulu bila customer baru membayar DP. Email terima kasih merinci sisa tagihan yang harus dibayar sekarang (beserta rekening tujuan) dan termin yang jatuh tempo kemudian.</li>
+        <li>Selama registration fee belum dicatat, pertemuan sesi itu belum bisa ditandai <em>Done</em> (muncul pesan merah agar registration fee dicatat dulu).</li>
         <li>Registration fee tidak ikut dihitung saat Anda mengubah <strong>Fee</strong> atau <strong>Payment Plan</strong>: termin itu tetap ada dan tidak menghalangi perubahan, sekalipun sudah dibayar.</li>
     </ul>
     <p><strong>Mencatat pembayaran</strong> (butuh permission <code>finance.manage</code>):</p>

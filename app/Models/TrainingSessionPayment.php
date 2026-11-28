@@ -62,19 +62,9 @@ class TrainingSessionPayment extends Model
         return $this->due_meeting_number ? 'At meeting '.$this->due_meeting_number : 'Upon registration';
     }
 
-    /** The program fee is only collected after the registration fee is paid, so such a payment waits until then. */
-    public function awaitingRegistrationFee(): bool
-    {
-        return ! $this->is_registration_fee && ! $this->isPaid() && $this->session->hasUnpaidRegistrationFee();
-    }
-
-    /** Due now: upfront payments always, the others once their meeting was held or its date has come; none before the registration fee is paid. */
+    /** Due now: upfront payments always, the others once their meeting was held or its date has come. */
     public function isDue(): bool
     {
-        if ($this->awaitingRegistrationFee()) {
-            return false;
-        }
-
         if ($this->due_after_completion) {
             $meetings = $this->session->meetings;
 

@@ -1,21 +1,26 @@
 <x-mail::message>
-# Invoice {{ $payment->invoiceNumber() }}
+# Invoice {{ $invoiceNumbers }}
 
 Dear {{ $session->customer->name }},
 
 Here is the invoice for your program at PT Alfajar Logic Futura.
 
+**Program:** {{ $session->program->name }}<br>
+**Program fee:** {{ \App\Services\SessionPaymentPlan::rupiah($session->fee) }}
+
 <x-mail::table>
-| | |
-|:--|:--|
-| Invoice | **{{ $payment->invoiceNumber() }}** |
-| Program | {{ $session->program->name }} |
-| Payment | {{ $payment->label }} |
-| Due | {{ $payment->dueLabel() }} |
-| Amount due | **{{ \App\Services\SessionPaymentPlan::rupiah($payment->amount) }}** |
-| Total fee | {{ \App\Services\SessionPaymentPlan::rupiah($session->fee) }} |
+| Invoice | Payment | Due | Amount |
+|:--|:--|:--|--:|
+@foreach ($payments as $payment)
+| {{ $payment->invoiceNumber() }} | {{ $payment->label }} | {{ $payment->dueLabel() }} | {{ \App\Services\SessionPaymentPlan::rupiah($payment->amount) }} |
+@endforeach
+| | | **Amount due** | **{{ \App\Services\SessionPaymentPlan::rupiah($total) }}** |
 </x-mail::table>
 
+@if ($payments->contains->is_registration_fee)
+The registration fee is paid once, is non-refundable, and is not part of the program fee.
+
+@endif
 @if ($bankAccount)
 Please transfer the amount due to the following account:
 

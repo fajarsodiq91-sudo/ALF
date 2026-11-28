@@ -72,7 +72,7 @@ class PaymentInvoiceEmailTest extends TestCase
         $session = $this->corporateSession();
 
         $this->assertSame(1, PaymentInvoices::sendDue($session));
-        Mail::assertSent(PaymentInvoiceMail::class, fn ($mail) => $mail->hasTo('hrd@pt.test') && $mail->payment->label === 'Down payment (50%)');
+        Mail::assertSent(PaymentInvoiceMail::class, fn ($mail) => $mail->hasTo('hrd@pt.test') && $mail->payments->pluck('label')->all() === ['Down payment (50%)']);
 
         $this->assertSame(0, PaymentInvoices::sendDue($session), 'no second invoice for the same payment');
         $this->assertSame(0, PaymentInvoices::sendAllDue());

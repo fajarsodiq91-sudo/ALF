@@ -29,7 +29,7 @@
     <ul>
         <li><strong>Progres</strong> dan tabel pertemuan (tanggal, jam, tempat, topik, dan status <em>Done</em> atau <em>Upcoming</em>).</li>
         <li><strong>Request reschedule</strong>: customer memilih tanggal dan jam baru di kalender (hanya slot kosong dan sesuai jam operasional, mulai hari ini), boleh menulis alasan, lalu mengirim. Hanya satu permintaan pending per pertemuan, dan permintaan bisa dibatalkan selama masih pending. Hanya pemilik sesi yang bisa mengajukannya, dan hanya untuk pertemuan yang belum terlaksana. Tim memprosesnya di halaman sesi (lihat topik <em>Sesi Training</em>).</li>
-        <li><strong>Payments</strong>: total biaya dan tiap termin dengan status <em>Paid</em>, <em>Due</em>, <em>Upcoming</em>, atau <em>After registration fee</em> (termin program yang menunggu registration fee dibayar; portal menjelaskan bahwa program dimulai setelah biaya itu lunas).</li>
+        <li><strong>Payments</strong>: total biaya dan tiap termin dengan status <em>Paid</em>, <em>Due</em>, atau <em>Upcoming</em>. Selama registration fee belum lunas, portal menjelaskan bahwa program dimulai setelah biaya itu dibayar.</li>
         <li><strong>Learning materials</strong> dan tombol <strong>Certificate</strong> muncul bila tautannya sudah Anda isi atau sertifikatnya sudah terbit.</li>
         <li><strong>Participants</strong> (untuk sesi perusahaan atau grup): tautan dan QR code pendaftaran peserta beserta daftar yang sudah bergabung.</li>
         <li><strong>Your project</strong>: mengunggah proyek hasil belajar berupa file (ZIP, PDF, Office, atau gambar, maks. 10 MB) atau tautan (Google Drive, GitHub, dan sebagainya), lengkap dengan judul dan deskripsi.</li>

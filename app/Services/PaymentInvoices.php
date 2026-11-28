@@ -10,10 +10,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
-/** Emails the customer an invoice for each payment as it falls due, and a thank-you once it is confirmed. */
+/** Emails the customer an invoice for the payments that fall due, and a thank-you once it is confirmed. */
 class PaymentInvoices
 {
-    /** Sends the invoices of a session that are due, unpaid and not yet emailed; returns how many went out. */
+    /** Emails every payment of a session that is due, unpaid and not yet invoiced, together in one email; returns how many payments were invoiced. */
     public static function sendDue(TrainingSession $session): int
     {
         $session->unsetRelation('payments');
@@ -23,23 +23,25 @@ class PaymentInvoices
             return 0;
         }
 
-        $sent = 0;
+        $due = $session->payments
+            ->filter(fn (TrainingSessionPayment $payment) => ! $payment->isPaid() && $payment->invoice_sent_at === null && $payment->isDue())
+            ->values();
 
-        foreach ($session->payments as $payment) {
-            if ($payment->isPaid() || $payment->invoice_sent_at !== null || ! $payment->isDue()) {
-                continue;
-            }
-
-            try {
-                Mail::to($session->customer->email)->send(new PaymentInvoiceMail($payment));
-                $payment->forceFill(['invoice_sent_at' => now()])->save();
-                $sent++;
-            } catch (Throwable $exception) {
-                Log::error('Could not send the payment invoice.', ['payment_id' => $payment->id, 'error' => $exception->getMessage()]);
-            }
+        if ($due->isEmpty()) {
+            return 0;
         }
 
-        return $sent;
+        try {
+            Mail::to($session->customer->email)->send(new PaymentInvoiceMail($due));
+        } catch (Throwable $exception) {
+            Log::error('Could not send the payment invoice.', ['payment_ids' => $due->modelKeys(), 'error' => $exception->getMessage()]);
+
+            return 0;
+        }
+
+        $due->each(fn (TrainingSessionPayment $payment) => $payment->forceFill(['invoice_sent_at' => now()])->save());
+
+        return $due->count();
     }
 
     /** For the daily schedule: every session that still has a due invoice waiting. */

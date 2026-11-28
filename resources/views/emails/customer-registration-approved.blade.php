@@ -42,7 +42,7 @@ Instructor: {{ $session->instructor->name }}
 @endforeach
 @if ($session->hasUnpaidRegistrationFee())
 
-Your program starts once the registration fee is paid; the other payments follow after it.
+Your program starts once the registration fee is paid.
 @endif
 
 @endif

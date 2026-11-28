@@ -18,6 +18,7 @@ use App\Models\Employee;
 use App\Models\LeaveRequest;
 use App\Models\MeetingRescheduleRequest;
 use App\Models\ProjectTask;
+use App\Models\Setting;
 use App\Models\TrainingSession;
 use App\Models\TrainingSessionMeeting;
 use App\Services\CustomerCodeGenerator;
@@ -82,13 +83,13 @@ class MailRenderingTest extends TestCase
         $payment = $this->sessionWithPayments($customer)->payments->first();
         $payment->forceFill(['paid_date' => '2026-09-15'])->save();
 
-        $invoice = (new PaymentInvoiceMail($payment))->render();
+        $invoice = (new PaymentInvoiceMail($payment->newCollection([$payment])))->render();
         $this->assertStringContainsString($payment->invoiceNumber(), $invoice);
         $this->assertStringContainsString('PT Maju Jaya', $invoice);
         $this->assertStringNotContainsString('1234567890', $invoice);
 
-        \App\Models\Setting::put(['company_bank_account' => "BCA 1234567890\na.n. PT Alfajar Logic Futura"]);
-        $withAccount = (new PaymentInvoiceMail($payment))->render();
+        Setting::put(['company_bank_account' => "BCA 1234567890\na.n. PT Alfajar Logic Futura"]);
+        $withAccount = (new PaymentInvoiceMail($payment->newCollection([$payment])))->render();
         $this->assertStringContainsString('BCA 1234567890', $withAccount);
         $this->assertStringContainsString('a.n. PT Alfajar Logic Futura', $withAccount);
 

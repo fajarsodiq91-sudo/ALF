@@ -44,8 +44,8 @@
     <p>Saat disetujui, sistem otomatis:</p>
     <ul>
         <li>membuat <strong>ID customer</strong> permanen dan password awal portal yang <em>sama dengan ID</em> tersebut (customer wajib menggantinya saat login pertama);</li>
-        <li>membuat <strong>sesi training</strong> beserta semua pertemuannya dan jadwal pembayarannya (lihat topik <em>Sesi Training</em>). Bila ada, <strong>registration fee</strong> ditambahkan sebagai termin pertama di sesi pertama; termin program baru jatuh tempo setelah biaya itu dibayar;</li>
-        <li>mengirim <strong>email persetujuan</strong> berisi detail dan tautan login portal, lalu invoice yang sudah jatuh tempo (dengan registration fee, invoice pertama adalah invoice biaya itu).</li>
+        <li>membuat <strong>sesi training</strong> beserta semua pertemuannya dan jadwal pembayarannya (lihat topik <em>Sesi Training</em>). Bila ada, <strong>registration fee</strong> ditambahkan sebagai termin pertama di sesi pertama; program baru berjalan setelah biaya itu dibayar;</li>
+        <li>mengirim <strong>email persetujuan</strong> berisi detail dan tautan login portal, lalu invoice yang sudah jatuh tempo (registration fee dan <em>Full payment</em> atau <em>Down payment (50%)</em> digabung dalam satu email per sesi).</li>
     </ul>
     <p>Jadwal diperiksa lagi tepat saat Anda menekan <strong>Approve &amp; Send Email</strong>. Bila ada slot yang baru saja dipesan customer lain, persetujuan dibatalkan dengan pesan merah; pilih slot lain lalu setujui ulang.</p>
     <p>Untuk <strong>menolak</strong>, gunakan formulir di bagian bawah halaman review: isi alasan (opsional) lalu klik <strong>Reject Registration</strong>. Customer menerima email penolakan. Pendaftaran yang ditolak tetap ada di daftar dengan status <strong>Rejected</strong>.</p>

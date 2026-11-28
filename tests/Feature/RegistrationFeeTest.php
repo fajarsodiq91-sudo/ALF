@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Mail\PaymentInvoiceMail;
+use App\Mail\PaymentReceivedMail;
 use App\Models\Customer;
+use App\Models\IncomeTransaction;
 use App\Models\Setting;
 use App\Models\TrainingProgram;
 use App\Models\TrainingSession;
@@ -177,7 +180,21 @@ class RegistrationFeeTest extends TestCase
         $this->assertNull($program->fresh()->registration_fee);
     }
 
-    public function test_the_program_waits_for_the_registration_fee(): void
+    public function test_the_registration_fee_and_the_first_program_payment_share_one_invoice_email(): void
+    {
+        Setting::put(['registration_fee' => '250000']);
+        $session = $this->sessionWithFee();
+
+        $this->assertSame(2, PaymentInvoices::sendDue($session));
+
+        Mail::assertSent(PaymentInvoiceMail::class, 1);
+        Mail::assertSent(PaymentInvoiceMail::class, fn (PaymentInvoiceMail $mail) => $mail->payments->pluck('label')->all() === ['Full payment', 'Registration fee']
+            || $mail->payments->pluck('label')->all() === ['Registration fee', 'Full payment']);
+        $this->assertSame(2, $session->payments()->whereNotNull('invoice_sent_at')->count());
+        $this->assertSame(0, PaymentInvoices::sendDue($session));
+    }
+
+    public function test_the_program_payment_can_be_recorded_before_the_registration_fee_but_meetings_wait(): void
     {
         Setting::put(['registration_fee' => '250000']);
         $session = $this->sessionWithFee();
@@ -185,21 +202,36 @@ class RegistrationFeeTest extends TestCase
         $admin = $this->userWithRole('Super Admin');
         [$fee, $program] = [$session->payments()->where('is_registration_fee', true)->first(), $session->payments()->where('is_registration_fee', false)->first()];
 
-        // Not due, not invoiced, cannot be recorded, and no meeting can be marked done.
-        $this->assertFalse($program->fresh()->isDue());
-        $this->assertSame(1, PaymentInvoices::sendDue($session)); // only the registration fee invoice goes out
         $this->actingAs($finance)->post(route('training.payments.pay', $program), ['paid_date' => '2026-11-01', 'payment_method' => 'Cash'])
-            ->assertSessionHas('error');
-        $this->assertFalse($program->fresh()->isPaid());
+            ->assertSessionHasNoErrors()->assertSessionMissing('error');
+
+        $this->assertTrue($program->fresh()->isPaid());
+        Mail::assertSent(PaymentReceivedMail::class, fn (PaymentReceivedMail $mail) => $mail->payment->is($program));
+        Mail::assertNotSent(PaymentInvoiceMail::class);
         $this->actingAs($admin)->patch(route('training.meetings.toggle', $session->meetings()->first()))->assertSessionHas('error');
         $this->assertFalse($session->meetings()->first()->is_completed);
 
-        // Once the registration fee is paid, the program fee is invoiced and the program can run.
         $this->actingAs($finance)->post(route('training.payments.pay', $fee), ['paid_date' => '2026-11-01', 'payment_method' => 'Cash']);
-        $this->assertTrue($program->fresh()->isDue());
-        $this->assertNotNull($program->fresh()->invoice_sent_at);
+
+        Mail::assertNotSent(PaymentInvoiceMail::class);
         $this->actingAs($admin)->patch(route('training.meetings.toggle', $session->meetings()->first()))->assertSessionHasNoErrors();
         $this->assertTrue($session->meetings()->first()->is_completed);
+    }
+
+    public function test_the_thank_you_email_separates_what_is_due_now_from_what_comes_later(): void
+    {
+        Setting::put(['registration_fee' => '250000']);
+        $session = $this->sessionWithFee();
+        $session->meetings()->update(['meeting_date' => '2026-12-01']);
+        $session->update(['payment_plan' => 'installment']);
+        SessionPaymentPlan::generate($session);
+        $downPayment = $session->payments()->where('label', 'Down payment (50%)')->first();
+        $downPayment->update(['income_transaction_id' => IncomeTransaction::factory()->create()->id, 'paid_date' => '2026-11-01']);
+
+        $mail = new PaymentReceivedMail($downPayment->fresh());
+
+        $mail->assertSeeInOrderInText(['Still to be paid now', 'Registration fee', 'Rp 250.000', 'Due later', 'Final payment (50%)', 'Rp 500.000']);
+        $mail->assertDontSeeInText('Your program is now fully paid.');
     }
 
     public function test_a_session_without_a_registration_fee_is_not_held_back(): void
