@@ -22,7 +22,12 @@
                     @foreach ($users as $user)
                         <tr>
                             <td class="px-4 py-3 font-medium text-gray-800">{{ $user->name }}</td>
-                            <td class="px-4 py-3 text-gray-500">{{ $user->email }}</td>
+                            <td class="px-4 py-3 text-gray-500">
+                                {{ $user->email ?? '—' }}
+                                @if ($user->employee)
+                                    <span class="block text-xs text-gray-400">Employee {{ $user->employee->employee_number }}</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-3 text-gray-800">{{ $user->roles->pluck('name')->join(', ') ?: '—' }}</td>
                             <td class="px-4 py-3">
                                 @if ($user->is_active)

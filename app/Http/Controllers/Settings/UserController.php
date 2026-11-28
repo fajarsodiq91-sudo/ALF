@@ -15,7 +15,7 @@ class UserController extends Controller
 {
     public function index(): View
     {
-        $users = User::query()->with('roles')->orderBy('name')->get();
+        $users = User::query()->with(['roles', 'employee'])->orderBy('name')->get();
 
         return view('erp.settings.users.index', compact('users'));
     }
@@ -56,7 +56,8 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            // Employee accounts log in with their employee number, so they may have no email.
+            'email' => [Rule::requiredIf(! $user->employee_id), 'nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'password' => ['nullable', Password::defaults()],
             'role' => ['required', Rule::exists('roles', 'name')],
             'is_active' => ['sometimes', 'boolean'],

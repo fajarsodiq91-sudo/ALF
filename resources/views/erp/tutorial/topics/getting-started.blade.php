@@ -1,10 +1,10 @@
 <x-tutorial.section title="Masuk ke ERP">
     <x-tutorial.steps>
-        <li>Buka halaman login, lalu isi <strong>email</strong> dan <strong>password</strong> akun Anda.</li>
+        <li>Buka halaman login, lalu isi <strong>email</strong> atau <strong>nomor karyawan</strong> dan <strong>password</strong> akun Anda.</li>
         <li>Centang <strong>Remember me</strong> bila ingin tetap masuk di perangkat pribadi.</li>
-        <li>Lupa password? Klik <strong>Forgot your password?</strong> di halaman login dan ikuti tautan yang dikirim ke email Anda.</li>
+        <li>Lupa password? Klik <strong>Forgot your password?</strong> di halaman login dan ikuti tautan yang dikirim ke email Anda. Akun tanpa email meminta Super Admin mengganti passwordnya di Settings → Users.</li>
     </x-tutorial.steps>
-    <p>Akun staf dibuat oleh Super Admin lewat <strong>Settings → Users</strong>. Akun yang dinonaktifkan tidak bisa masuk. Jika setelah login muncul halaman <strong>403 Forbidden</strong>, akun Anda belum diberi role, jadi minta Super Admin memberikannya.</p>
+    <p>Karyawan yang terdaftar di HR → Employees dan belum <em>Resigned</em> otomatis punya akun: login dengan nomor karyawan, password awal juga nomor karyawan, lalu wajib diganti di halaman Profile sebelum memakai ERP. Akun lain dibuat oleh Super Admin lewat <strong>Settings → Users</strong>. Akun yang dinonaktifkan tidak bisa masuk. Jika setelah login muncul halaman <strong>403 Forbidden</strong>, akun Anda belum diberi role, jadi minta Super Admin memberikannya.</p>
 </x-tutorial.section>
 
 <x-tutorial.section title="Mengenal tampilan">

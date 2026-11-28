@@ -19,7 +19,9 @@ class ProfileUpdateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
-                'required',
+                // Employee accounts log in with their employee number, so they may have no email.
+                Rule::requiredIf(! $this->user()->employee_id),
+                'nullable',
                 'string',
                 'lowercase',
                 'email',

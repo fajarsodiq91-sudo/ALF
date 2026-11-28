@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\Employee;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,7 +29,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string', 'max:255'], // an email address or an employee number
             'password' => ['required', 'string'],
         ];
     }
@@ -42,7 +43,9 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt([...$this->only('email', 'password'), 'is_active' => true], $this->boolean('remember'))) {
+        $credentials = $this->loginCredentials();
+
+        if (! $credentials || ! Auth::attempt([...$credentials, 'password' => $this->string('password')->toString(), 'is_active' => true], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -51,6 +54,25 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * Staff log in with their email; employees may use their employee number instead.
+     * Null when no employee has that number (never look up a null employee_id: it would match every non-employee account).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function loginCredentials(): ?array
+    {
+        $login = trim($this->string('email'));
+
+        if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
+            return ['email' => $login];
+        }
+
+        $employeeId = Employee::query()->where('employee_number', $login)->value('id');
+
+        return $employeeId ? ['employee_id' => $employeeId] : null;
     }
 
     /**

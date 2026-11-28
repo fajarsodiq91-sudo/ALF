@@ -10,7 +10,7 @@
 
     <div>
         <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-        <input type="email" name="email" id="email" value="{{ old('email', $user->email ?? '') }}" required
+        <input type="email" name="email" id="email" value="{{ old('email', $user->email ?? '') }}" @required(! $user?->employee_id)
                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand focus:ring-brand sm:text-sm">
         @error('email') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
     </div>

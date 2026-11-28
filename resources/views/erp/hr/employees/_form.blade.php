@@ -38,6 +38,7 @@
             @endforeach
         </select>
         @error('status') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        <p class="mt-1 text-xs text-gray-500">Employees can log in to the ERP with their employee number (first password: the employee number). Resigned employees cannot log in.</p>
     </div>
     <div>
         <label for="join_date" class="block text-sm font-medium text-gray-700">Join Date</label>

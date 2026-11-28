@@ -3,6 +3,7 @@
 use App\Http\Middleware\AuthenticateTapDevice;
 use App\Http\Middleware\EnsurePortalPasswordChanged;
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\EnsureUserPasswordChanged;
 use App\Http\Middleware\PortalReadOnlyInPreview;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup('web', EnsureUserIsActive::class);
+        $middleware->appendToGroup('web', EnsureUserPasswordChanged::class);
 
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('portal', 'portal/*') ? route('portal.login') : route('login'));
 

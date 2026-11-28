@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasIdCardToken;
+use App\Services\EmployeeLogin;
 use App\Services\EmployeeNumberGenerator;
 use Database\Factories\EmployeeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -36,6 +38,10 @@ class Employee extends Model
         static::creating(function (Employee $employee) {
             $employee->employee_number ??= EmployeeNumberGenerator::next(now());
         });
+
+        // Employees can log in to the ERP until they resign; resigning (or deletion) switches the login off.
+        static::saved(fn (Employee $employee) => EmployeeLogin::sync($employee));
+        static::deleting(fn (Employee $employee) => EmployeeLogin::deactivate($employee->user));
 
         static::deleted(function (Employee $employee) {
             foreach ([$employee->signature_path, $employee->photo_path] as $path) {
@@ -66,6 +72,12 @@ class Employee extends Model
         return [
             'join_date' => 'date',
         ];
+    }
+
+    /** The ERP login made for this employee (see EmployeeLogin). */
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class);
     }
 
     public function leaveRequests(): HasMany

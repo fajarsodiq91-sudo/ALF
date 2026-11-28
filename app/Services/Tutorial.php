@@ -118,7 +118,7 @@ class Tutorial
         ],
         'hr-employees' => [
             'title' => 'HR: Karyawan',
-            'summary' => 'Data karyawan, nomor karyawan otomatis, foto, dan tanda tangan sertifikat.',
+            'summary' => 'Data karyawan, nomor karyawan otomatis, akun login karyawan, foto, dan tanda tangan sertifikat.',
             'group' => 'Operasional',
             'permission' => 'hr.view',
             'route' => 'hr.index',

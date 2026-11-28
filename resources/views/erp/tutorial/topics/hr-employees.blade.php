@@ -17,6 +17,16 @@
     </x-tutorial.note>
 </x-tutorial.section>
 
+<x-tutorial.section title="Akun login karyawan">
+    <p>Setiap karyawan yang masih terdaftar (status <em>Active</em> atau <em>On Leave</em>) otomatis punya akun untuk masuk ke ERP, tanpa perlu dibuatkan di Settings → Users.</p>
+    <ul>
+        <li>Login memakai <strong>Employee Number</strong> (atau email akun) di kolom <strong>Email or Employee Number</strong>. Password awalnya sama dengan nomor karyawan, dan karyawan wajib menggantinya di halaman Profile saat pertama kali masuk.</li>
+        <li>Akun baru mendapat role <strong>Staff</strong> (hanya Dashboard dan Tutorial). Akses modul lain diberikan Super Admin lewat Settings → Users.</li>
+        <li>Bila sudah ada user dengan email yang sama dengan email karyawan, user itu yang dipakai: password dan rolenya tidak berubah.</li>
+        <li>Mengubah status menjadi <em>Resigned</em>, atau menghapus karyawan, langsung menonaktifkan akunnya. Karyawan <em>On Leave</em> tetap bisa login. Mengubah status kembali dari <em>Resigned</em> mengaktifkannya lagi.</li>
+    </ul>
+</x-tutorial.section>
+
 <x-tutorial.section title="Mencari, mengubah, dan menghapus">
     <ul>
         <li>Daftar bisa dicari berdasarkan nama, nomor karyawan, jabatan, atau departemen, dan difilter menurut status serta tipe kepegawaian.</li>
