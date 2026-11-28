@@ -13,19 +13,41 @@
         <h1>{{ SiteContent::text('home.hero_title') }}</h1>
         <p class="hero__text">{{ SiteContent::multiline('home.hero_text') }}</p>
         <div class="hero__actions">
-          <a class="btn btn--primary" href="{{ route('contact') }}">{{ SiteContent::text('home.hero_primary_button') }}</a>
+          <a class="btn btn--primary" href="{{ route('contact') }}">{{ SiteContent::text('home.hero_primary_button') }} <span aria-hidden="true">&rarr;</span></a>
           <a class="btn btn--secondary" href="{{ route('services') }}">{{ SiteContent::text('home.hero_secondary_button') }}</a>
         </div>
-        <div class="hero__badges">
-          <span>{{ SiteContent::text('home.hero_badge_1') }}</span>
-          <span>{{ SiteContent::text('home.hero_badge_2') }}</span>
-          <span>{{ SiteContent::text('home.hero_badge_3') }}</span>
-        </div>
+        <ul class="hero__badges">
+          @foreach (['home.hero_badge_1', 'home.hero_badge_2', 'home.hero_badge_3'] as $badge)
+            <li>
+              <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-8 8a1 1 0 01-1.4 0l-4-4a1 1 0 011.4-1.4L8 12.6l7.3-7.3a1 1 0 011.4 0z" clip-rule="evenodd"/></svg>
+              {{ SiteContent::text($badge) }}
+            </li>
+          @endforeach
+        </ul>
       </div>
       <div class="hero__visual reveal reveal--right">
-        <img src="{{ SiteContent::image('home.hero_image') }}" alt="{{ SiteContent::text('home.hero_image_alt') }}" loading="lazy" />
+        <img src="{{ SiteContent::image('home.hero_image') }}" alt="{{ SiteContent::text('home.hero_image_alt') }}" fetchpriority="high" />
+        @if ($programs->isNotEmpty())
+          <a class="hero__float" href="#programs">
+            <strong>{{ $programs->count() }}</strong>
+            <span>{{ SiteContent::text('home.hero_float_label') }}</span>
+          </a>
+        @endif
       </div>
     </div>
+
+    @if ($stats->isNotEmpty())
+      <div class="container">
+        <div class="hero-stats reveal">
+          @foreach ($stats as $stat)
+            <div class="stat">
+              <strong data-count="{{ $stat->number }}">0</strong>
+              <span>{{ $stat->title }}</span>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    @endif
   </section>
 
   <section class="section" id="about-teaser">
@@ -52,11 +74,12 @@
       </div>
       <div class="services-grid">
         @foreach ($homeServices as $service)
-          <article class="service-card reveal">
-            <div class="service-card__icon">{{ $service->icon }}</div>
+          <a class="service-card service-card--link reveal" href="{{ route('services') }}">
+            <span class="service-card__icon" aria-hidden="true">{{ $service->icon }}</span>
             <h3>{{ $service->title }}</h3>
             <p>{{ $service->body }}</p>
-          </article>
+            <span class="service-card__more">{{ SiteContent::text('home.services_card_link') }} <span aria-hidden="true">&rarr;</span></span>
+          </a>
         @endforeach
       </div>
       <div class="hero__actions" style="justify-content:center;margin-top:40px;">
@@ -64,6 +87,23 @@
       </div>
     </div>
   </section>
+
+  @if ($programs->isNotEmpty())
+    <section class="section" id="programs">
+      <div class="container">
+        <div class="section-heading reveal">
+          <p class="eyebrow">{{ SiteContent::text('home.programs_eyebrow') }}</p>
+          <h2>{{ SiteContent::text('home.programs_title') }}</h2>
+          <p class="section-heading__text">{{ SiteContent::multiline('home.programs_text') }}</p>
+        </div>
+        <div class="program-grid">
+          @foreach ($programs as $program)
+            @include('public._program-card')
+          @endforeach
+        </div>
+      </div>
+    </section>
+  @endif
 
   @if ($testimonials->isNotEmpty())
     <section class="section" id="testimonials">
@@ -95,19 +135,6 @@
           @endforeach
           <div class="dots" aria-label="Testimonial navigation"></div>
         </div>
-      </div>
-    </section>
-  @endif
-
-  @if ($stats->isNotEmpty())
-    <section class="section stats-section">
-      <div class="container stats-grid">
-        @foreach ($stats as $stat)
-          <div class="stat reveal">
-            <strong data-count="{{ $stat->number }}">0</strong>
-            <span>{{ $stat->title }}</span>
-          </div>
-        @endforeach
       </div>
     </section>
   @endif

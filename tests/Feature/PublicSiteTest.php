@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
+use App\Models\TrainingProgram;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,6 +18,50 @@ class PublicSiteTest extends TestCase
         $response->assertOk();
         $response->assertSee('PT Alfajar Logic Futura', false);
         $response->assertSee('Empowering Business Through Technology');
+    }
+
+    public function test_home_page_lists_only_active_training_programs(): void
+    {
+        $program = TrainingProgram::factory()->create(['name' => 'Power BI Fundamentals', 'is_active' => true, 'standard_price' => 1500000]);
+        TrainingProgram::factory()->create(['name' => 'Retired Excel Course', 'is_active' => false]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('id="programs"', false)
+            ->assertSee('Power BI Fundamentals')
+            ->assertSee(route('programs.show', $program), false)
+            ->assertDontSee('1.500.000')
+            ->assertDontSee('Retired Excel Course');
+    }
+
+    public function test_program_detail_page_describes_the_program_without_a_price(): void
+    {
+        $program = TrainingProgram::factory()->create([
+            'name' => 'Power BI Fundamentals',
+            'description' => 'Build your first dashboard.',
+            'is_active' => true,
+            'standard_price' => 1500000,
+        ]);
+
+        $this->get(route('programs.show', $program))
+            ->assertOk()
+            ->assertSee('Power BI Fundamentals')
+            ->assertSee('Build your first dashboard.')
+            ->assertSee('wa.me/', false)
+            ->assertSee(rawurlencode('Power BI Fundamentals'), false)
+            ->assertDontSee('1.500.000');
+    }
+
+    public function test_inactive_program_detail_page_is_not_found(): void
+    {
+        $program = TrainingProgram::factory()->create(['is_active' => false]);
+
+        $this->get(route('programs.show', $program))->assertNotFound();
+    }
+
+    public function test_home_page_hides_the_programs_section_without_active_programs(): void
+    {
+        $this->get('/')->assertOk()->assertDontSee('id="programs"', false);
     }
 
     public function test_about_page_loads(): void

@@ -90,6 +90,7 @@ class SiteContent
                     'hero_badge_3' => ['type' => 'text', 'label' => 'Badge 3', 'default' => 'AI Solutions', 'max' => 60],
                     'hero_image' => ['type' => 'image', 'label' => 'Illustration', 'default' => 'assets/images/hero-illustration.png'],
                     'hero_image_alt' => ['type' => 'text', 'label' => 'Illustration description (alt text)', 'default' => 'Technology dashboard illustration'],
+                    'hero_float_label' => ['type' => 'text', 'label' => 'Floating card text', 'default' => 'training programs open for registration', 'max' => 80, 'hint' => 'Shown on the illustration after the number of active training programs.'],
                 ],
                 'About teaser' => [
                     'about_eyebrow' => ['type' => 'text', 'label' => 'Small heading', 'default' => 'About Company'],
@@ -103,6 +104,25 @@ class SiteContent
                     'services_eyebrow' => ['type' => 'text', 'label' => 'Small heading', 'default' => 'Services'],
                     'services_title' => ['type' => 'text', 'label' => 'Title', 'default' => 'End-to-end digital capability for growth and transformation.'],
                     'services_button' => ['type' => 'text', 'label' => 'Button label', 'default' => 'View All Services', 'max' => 60],
+                    'services_card_link' => ['type' => 'text', 'label' => 'Link on each card', 'default' => 'Learn more', 'max' => 40],
+                ],
+                'Training programs section' => [
+                    'programs_eyebrow' => ['type' => 'text', 'label' => 'Small heading', 'default' => 'Training Programs'],
+                    'programs_title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Practical training programs, ready for your team.'],
+                    'programs_text' => ['type' => 'textarea', 'label' => 'Paragraph', 'default' => 'Programs come straight from our current catalogue. Ask us for a schedule that fits your team.'],
+                    'programs_card_button' => ['type' => 'text', 'label' => 'Link on each card', 'default' => 'View details', 'max' => 60],
+                    'programs_corporate_label' => ['type' => 'text', 'label' => 'Corporate badge', 'default' => 'Corporate', 'max' => 40],
+                ],
+                'Training program detail page' => [
+                    'program_back' => ['type' => 'text', 'label' => 'Back link', 'default' => 'All training programs', 'max' => 60],
+                    'program_about_title' => ['type' => 'text', 'label' => 'Description heading', 'default' => 'About this program', 'max' => 80],
+                    'program_duration_label' => ['type' => 'text', 'label' => 'Duration label', 'default' => 'Duration', 'max' => 40],
+                    'program_session_label' => ['type' => 'text', 'label' => 'Session length label', 'default' => 'Per session', 'max' => 40],
+                    'program_price_title' => ['type' => 'text', 'label' => 'Price box title', 'default' => 'Interested in this program?', 'max' => 80],
+                    'program_price_note' => ['type' => 'textarea', 'label' => 'Price box text', 'default' => 'Contact our admin for pricing, group packages and the next available schedule.'],
+                    'program_whatsapp_button' => ['type' => 'text', 'label' => 'WhatsApp button', 'default' => 'Ask admin on WhatsApp', 'max' => 60],
+                    'program_whatsapp_message' => ['type' => 'text', 'label' => 'WhatsApp message', 'default' => 'Hello, I would like to know the price and schedule for this training program:', 'hint' => 'The program name is added after this text.'],
+                    'program_contact_button' => ['type' => 'text', 'label' => 'Contact form button', 'default' => 'Send a message', 'max' => 60],
                 ],
                 'Testimonials section' => [
                     'testimonials_eyebrow' => ['type' => 'text', 'label' => 'Small heading', 'default' => 'Testimonials'],
