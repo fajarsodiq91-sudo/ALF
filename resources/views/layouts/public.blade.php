@@ -16,7 +16,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="icon" href="{{ SiteContent::image('global.favicon') }}" />
-    <link rel="stylesheet" href="{{ asset('css/site.css') }}" />
+    {{-- ?v= changes whenever the file does, so the CDN (cached for 7 days) never serves a stale copy --}}
+    <link rel="stylesheet" href="{{ asset('css/site.css') }}?v={{ filemtime(public_path('css/site.css')) }}" />
   </head>
   <body>
     <div class="loader" aria-hidden="true">
@@ -120,6 +121,6 @@
 
     <button class="back-to-top" aria-label="Back to top">&uarr;</button>
 
-    <script src="{{ asset('js/site.js') }}"></script>
+    <script src="{{ asset('js/site.js') }}?v={{ filemtime(public_path('js/site.js')) }}"></script>
   </body>
 </html>

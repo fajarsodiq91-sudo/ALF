@@ -89,6 +89,14 @@ class PublicSiteTest extends TestCase
             ->assertDontSee('id="faq"', false);
     }
 
+    public function test_site_assets_carry_a_version_so_the_cdn_cache_refreshes_on_deploy(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('css/site.css?v='.filemtime(public_path('css/site.css')), false)
+            ->assertSee('js/site.js?v='.filemtime(public_path('js/site.js')), false);
+    }
+
     public function test_about_page_loads(): void
     {
         $response = $this->get('/about');
